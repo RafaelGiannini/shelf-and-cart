@@ -14,8 +14,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,750&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
-<script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,750&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" media="print" onload="this.media='all'">
 <style>
 :root{
   --bg:#F1F5F1; --surface:#FFFFFF; --sunk:#E6ECE7; --ink:#14251D; --muted:#5B6C63; --line:#D7E0DA;
@@ -391,6 +390,8 @@ select.field.small{height:34px;padding:0 8px;font-size:13.5px;width:auto}
 .inghead{display:flex;align-items:center;gap:8px;width:100%;padding:8px 2px;border:0;background:transparent;color:var(--ink);font:700 15px var(--f-body);text-align:left;cursor:pointer}
 .inghead span:first-child{flex:1} .inghead .chev{color:var(--muted)}
 .rvsteps{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:10px;font-size:16px;line-height:1.5}
+.stmeter{display:flex;flex-direction:column;gap:6px;margin:6px 0 10px}.sttop{font-size:15px}
+.stbar{height:12px;border-radius:99px;background:var(--line);overflow:hidden}.stbar i{display:block;height:100%;border-radius:99px}
 .fdlist{display:flex;flex-direction:column;gap:2px;max-height:55vh;overflow:auto;margin:4px 0 8px}
 .fdrow{display:flex;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line)}
 .fdrow input{width:20px;height:20px;flex:none}
@@ -1013,7 +1014,7 @@ const ADMINS = Array.isArray(CFG.admins) ? CFG.admins : [];
 const isMainAdmin = email => ADMINS.some(x => emailIs(x, email));
 const familyName = email => { const g = familyOf(email); if (!g) return ''; const k = Object.keys(g.people).find(e => emailIs(e, email)); return g.people[k] || ''; };
 
-const VERSION = "3.15.3";
+const VERSION = "3.16.0";
 const BASE_CATS = ['Leftovers','Produce','Dairy & Eggs','Meat & Seafood','Bakery','Pantry','Spices & Seasonings','Frozen','Snacks','Drinks','Cleaning','Bathroom','Laundry','Paper & Household','Other'];
 /* the household can add its own categories (Baby, Pets, Garden…); they sit before Other */
 let CATS = BASE_CATS.slice(), _catsKey = '';
@@ -1276,11 +1277,13 @@ function startData() {
   for (const [coll, key] of [['list', 'list'], ['kitchen', 'kitchen'], ['hprods', 'products'], ['receipts', 'receipts'], ['recipes', 'recipes'], ['plan', 'plan'], ['waste', 'waste']]) {
     dataUnsubs.push(onSnapshot(collection(fs, 'households', hid, coll), {includeMetadataChanges: true}, snap => {
       if (S.hid !== hid) return;
+      // only the "synced" state changed: no need to redraw anything
+      if (S.ready[key] && snap.docChanges && !snap.docChanges().length) { setSync(!snap.metadata.fromCache); return; }
       const arr = snap.docs.map(d => ({id: d.id, ...d.data()}));
       if (key === 'products') S.products = Object.fromEntries(arr.map(p => [p.id, p])); else S[key] = arr;
       S.ready[key] = true; S.ver = (S.ver || 0) + 1;
       setSync(!snap.metadata.fromCache);
-      render();
+      renderSoon();
     }, err => { if (err.code !== 'permission-denied') showBanner('Lost the connection. It will reconnect on its own.'); }));
   }
 }
@@ -1418,7 +1421,46 @@ async function adminHousekeeping() {
     }
   } catch (e) {}
 }
-const A = {tab: 'people', users: [], hs: []};
+const A = {tab: 'people', users: [], hs: [], st: null};
+/* ---- storage: the free Firebase plan holds 1 GiB. Everything is measured by reading it, so it runs only when asked. ---- */
+const ST_COLLS = [['rphotos', 'Receipt photos'], ['receipts', 'Receipts'], ['hprods', 'Product notes and prices'], ['kitchen', 'In stock'], ['recipes', 'Recipes'], ['list', 'List'], ['activity', 'Activity'], ['plan', 'Meal plan'], ['waste', 'Waste log']];
+const ST_LIMIT = 1024 ** 3;
+const docBytes = (id, d) => { try { return id.length + JSON.stringify(d).length + 40; } catch (e) { return 0; } };
+const fmtBytes = b => b >= 1e9 ? (b / 1e9).toFixed(2) + ' GB' : b >= 1e6 ? (b / 1e6).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1e3)) + ' KB';
+const OLD_PHOTO_DAYS = 90, SMALL_PHOTO = 150000;
+async function storageScan(progress) {
+  const out = {at: Date.now(), hs: [], total: 0, oldBig: [], orphans: []};
+  const live = A.hs.filter(h => !h.deletedAt);
+  for (const [hi, h] of live.entries()) {
+    const row = {h, by: {}, total: 0};
+    let rdates = {};
+    // receipts first, so each photo can be matched to its receipt's date
+    for (const [c] of [...ST_COLLS].sort((a, b) => (b[0] === 'receipts') - (a[0] === 'receipts'))) {
+      progress?.(`${h.name}: ${c} (${hi + 1} of ${live.length})`);
+      const snap = await getDocs(collection(fs, 'households', h.id, c));
+      let b = 0;
+      snap.forEach(d => { const data = d.data(); b += docBytes(d.id, data);
+        if (c === 'receipts') rdates[d.id] = data.date || null;
+        if (c === 'rphotos') { const len = String(data.img || '').length, rd = rdates[d.id];
+          if (!(d.id in rdates)) out.orphans.push({hid: h.id, id: d.id, b: len});
+          else if (len > SMALL_PHOTO && rd && daysUntil(rd) < -OLD_PHOTO_DAYS) out.oldBig.push({hid: h.id, id: d.id, b: len}); } });
+      row.by[c] = {n: snap.size, b}; row.total += b;
+    }
+    out.hs.push(row); out.total += row.total;
+  }
+  return out;
+}
+/* make an old receipt photo smaller: still readable, a fraction of the size */
+async function shrinkPhoto(src) {
+  const im = new Image(); im.src = src; await im.decode();
+  const w = im.naturalWidth, h = im.naturalHeight; let last = null;
+  for (const [mw, mh, q] of [[800, 1400, .5], [650, 1150, .45], [520, 950, .42]]) {
+    const sc = Math.min(1, mw / w, mh / h), c = document.createElement('canvas'); c.width = Math.round(w * sc); c.height = Math.round(h * sc);
+    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+    const url = c.toDataURL('image/jpeg', q); if (url.length < SMALL_PHOTO) return url; last = url;
+  }
+  return last && last.length < src.length * .7 ? last : null;
+}
 async function adminLoad() {
   const [us, hs] = await Promise.all([getDocs(collection(fs, 'users')), getDocs(collection(fs, 'households'))]);
   A.users = us.docs.map(d => ({uid: d.id, ...d.data()})).filter(u => u.email).sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email));
@@ -1431,6 +1473,50 @@ async function adminSheet(tab) {
   try { await adminLoad(); }
   catch (e) { sheet(`<h3>Admin</h3><p class="err">Couldn’t load (${esc(e.code || 'error')}). Make sure the latest firestore.rules are published.</p><div class="actions col"><button class="btn" data-act="closeSheet">Close</button></div>`); return; }
   renderAdmin();
+}
+function storageHtml() {
+  const st = A.st;
+  if (!st || st.busy) return `<p class="hint">The free Firebase plan holds <b>1 GB</b> for everyone together. Checking reads every household’s data once (a few MB of mobile data if there are many receipt photos), so it only runs when you tap it.</p>
+    ${st?.busy ? `<div class="estnote"><span class="spinner"></span> Measuring… <span class="note">${esc(st.msg || '')}</span></div>` : '<button class="btn primary" id="stGo">Check storage</button>'}${st?.err ? `<p class="err">${esc(st.err)}</p>` : ''}`;
+  const pct = st.total / ST_LIMIT, bar = Math.max(1, Math.min(100, pct * 100));
+  const oldB = st.oldBig.reduce((n, x) => n + x.b, 0), orB = st.orphans.reduce((n, x) => n + x.b, 0);
+  return `<div class="stmeter"><div class="sttop"><b>${fmtBytes(st.total)}</b> of 1 GB used <span class="note">· ${pct < .001 ? 'under 0.1' : (pct * 100).toFixed(1)}%</span></div>
+      <div class="stbar"><i style="width:${bar}%;background:${pct > .8 ? 'var(--danger)' : pct > .5 ? '#d9a21b' : 'var(--green)'}"></i></div>
+      <div class="note">${pct < .25 ? 'Plenty of room.' : pct < .6 ? 'Fine for now; shrinking old receipt photos keeps it that way.' : 'Getting full. Shrink old receipt photos below.'} Checked ${esc(new Date(st.at).toLocaleString([], {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'}))}.</div></div>
+    <div class="rows">${st.hs.sort((a, b) => b.total - a.total).map(r => { const top = ST_COLLS.filter(([c]) => r.by[c]?.b > 0).sort((a, b) => r.by[b[0]].b - r.by[a[0]].b).slice(0, 4);
+      return `<div class="row" style="flex-direction:column;align-items:stretch;gap:4px"><div style="display:flex;justify-content:space-between;gap:8px"><span class="name">${esc(r.h.name)}</span><b>${fmtBytes(r.total)}</b></div>
+        <div class="note" style="white-space:normal">${top.map(([c, n]) => `${esc(n)} ${fmtBytes(r.by[c].b)}${r.by[c].n ? ` (${r.by[c].n})` : ''}`).join(' · ')}</div></div>`; }).join('')}</div>
+    ${st.oldBig.length ? `<div class="estnote"><b>${st.oldBig.length} receipt photo${st.oldBig.length === 1 ? '' : 's'} older than 3 months</b> use ${fmtBytes(oldB)}. Shrinking keeps them readable at about a fifth of the size; the receipt’s prices and lines aren’t touched.
+      <div style="margin-top:8px"><button class="btn small primary" id="stShrink">Shrink them</button></div></div>` : ''}
+    ${st.orphans.length ? `<div class="estnote"><b>${st.orphans.length} photo${st.orphans.length === 1 ? '' : 's'} left over from deleted receipts</b> use ${fmtBytes(orB)}.
+      <div style="margin-top:8px"><button class="btn small" id="stOrphans">Delete leftover photos</button></div></div>` : ''}
+    <p class="hint">Food and water logs are private to each person, so they aren’t counted here; they’re tiny. Firebase’s own number (console → Firestore → Usage) can differ a little from this estimate.</p>
+    <button class="btn ghost" id="stGo">Check again</button>`;
+}
+function wireStorage(el) {
+  const go = el.querySelector('#stGo'); if (go) go.onclick = async () => {
+    A.st = {busy: true, msg: ''}; renderAdmin();
+    try { A.st = await storageScan(m => { if (A.st?.busy) { A.st.msg = m; const n = document.querySelector('#sheetRoot .estnote .note'); if (n) n.textContent = m; } }); }
+    catch (e) { A.st = {err: 'Couldn’t measure (' + (e.code || e.message) + ').'}; }
+    if (A.tab === 'storage') renderAdmin();
+  };
+  const sh = el.querySelector('#stShrink'); if (sh) sh.onclick = async () => {
+    sh.disabled = true; let n = 0, saved = 0;
+    for (const x of A.st.oldBig) {
+      sh.textContent = `Shrinking ${n + 1} of ${A.st.oldBig.length}…`;
+      try { const d = await getDoc(doc(fs, 'households', x.hid, 'rphotos', x.id)); const img = d.exists() ? d.data().img : null; if (!img) continue;
+        const small = await shrinkPhoto(img); if (!small || small.length >= img.length) continue;
+        await setDoc(doc(fs, 'households', x.hid, 'rphotos', x.id), {img: small}); if (x.hid === S.hid) RIMG.set(x.id, small); n++; saved += img.length - small.length; } catch (e) {}
+    }
+    toast(n ? `Shrank ${n} photo${n === 1 ? '' : 's'} · saved about ${fmtBytes(saved)}` : 'Nothing needed shrinking');
+    A.st = null; renderAdmin(); document.querySelector('#stGo')?.click();
+  };
+  const orp = el.querySelector('#stOrphans'); if (orp) orp.onclick = async () => {
+    orp.disabled = true;
+    for (const x of A.st.orphans) await deleteDoc(doc(fs, 'households', x.hid, 'rphotos', x.id)).catch(() => {});
+    toast(`Deleted ${A.st.orphans.length} leftover photo${A.st.orphans.length === 1 ? '' : 's'}`);
+    A.st = null; renderAdmin(); document.querySelector('#stGo')?.click();
+  };
 }
 function renderAdmin() {
   const live = A.hs.filter(h => !h.deletedAt), trash = A.hs.filter(h => h.deletedAt);
@@ -1462,12 +1548,13 @@ function renderAdmin() {
       return `<div class="row" style="flex-wrap:wrap"><div class="meta"><div class="name">${esc(h.name)}</div><div class="note">Deleted ${new Date(h.deletedAt).toLocaleDateString()} · ${left} days left · ${esc((h.deletedMembers || []).map(nameOf).join(', '))}</div></div>
         <div class="minor"><button class="btn small primary" data-arest="${h.id}">Restore</button><button class="btn small ghost danger" data-apurge="${h.id}">Delete forever</button></div></div>`; }).join('')}</div></div>` : ''}`;
   sheet(`<h3>Admin</h3>
-    <div class="modes" style="grid-template-columns:1fr 1fr" role="group"><button data-atab="people" aria-pressed="${A.tab === 'people'}">People · ${A.users.length}</button><button data-atab="households" aria-pressed="${A.tab === 'households'}">Households · ${live.length}</button></div>
-    ${A.tab === 'people' ? people : households}
+    <div class="modes" style="grid-template-columns:1fr 1fr 1fr" role="group"><button data-atab="people" aria-pressed="${A.tab === 'people'}">People · ${A.users.length}</button><button data-atab="households" aria-pressed="${A.tab === 'households'}">Households · ${live.length}</button><button data-atab="storage" aria-pressed="${A.tab === 'storage'}">Storage</button></div>
+    ${A.tab === 'people' ? people : A.tab === 'storage' ? storageHtml() : households}
     <div class="actions col"><button class="btn ghost" data-act="closeSheet">Close</button></div>`, el => {
     const H = id => A.hs.find(h => h.id === id), U = uid => A.users.find(u => u.uid === uid);
     const busy = async (btn, fn, ok) => { btn.disabled = true; try { await fn(); if (ok) toast(ok); } catch (e) { toast('Couldn’t do that (' + (e.code || e.message || 'error') + ').'); } await adminSheet(); };
     el.querySelectorAll('[data-atab]').forEach(b => b.onclick = () => { A.tab = b.dataset.atab; renderAdmin(); });
+    wireStorage(el);
     el.querySelectorAll('[data-mem]').forEach(b => b.onclick = () => {
       const [hid, uid] = b.dataset.mem.split('|'), h = H(hid), u = U(uid), on = (h.members || []).includes(uid);
       busy(b, async () => {
@@ -1741,15 +1828,29 @@ function sizeOf(name) {
 const unitPrice = (price, name) => { const z = sizeOf(name); return z && z.q > 0 && price > 0 ? {v: price / z.q, u: z.u} : null; };
 const fmtUnit = up => up ? `${up.v < 1 ? (up.v * 100).toFixed(up.v < .1 ? 1 : 0) + '¢' : money(up.v)}/${up.u}` : '';
 /* the same type of thing at different stores and brands, cheapest per unit first */
+let _pc = {v: -1, src: null, idx: null, memo: null};
+function priceIndex() {
+  if (_pc.v !== S.ver || _pc.src !== S.products) {
+    const idx = new Map();
+    for (const p of Object.values(S.products)) {
+      if (!(p.prices || []).length) continue;
+      const k = lc(typeOf({name: p.name, code: /^\d+$/.test(p.id) ? p.id : null}).kind);
+      if (!idx.has(k)) idx.set(k, []); idx.get(k).push(p);
+    }
+    _pc = {v: S.ver, src: S.products, idx, memo: new Map()};
+  }
+  return _pc;
+}
 function priceCompare(it) {
-  const kind = lc(typeOf(it).kind), rows = [];
-  for (const p of Object.values(S.products)) {
-    if (!(p.prices || []).length || lc(typeOf({name: p.name, code: /^\d+$/.test(p.id) ? p.id : null}).kind) !== kind) continue;
+  const kind = lc(typeOf(it).kind), pc = priceIndex(), rows = [];
+  if (pc.memo.has(kind)) return pc.memo.get(kind).slice();
+  for (const p of pc.idx.get(kind) || []) {
     const byStore = {};
     for (const x of p.prices) if (x.p > 0) { const k = x.store || '—'; if (!byStore[k] || x.at > byStore[k].at) byStore[k] = x; }
     for (const [store, x] of Object.entries(byStore)) rows.push({name: p.name, store, p: x.p, up: unitPrice(x.p, p.name)});
   }
-  return rows.sort((a, b) => (a.up && b.up && a.up.u === b.up.u ? a.up.v - b.up.v : a.p - b.p)).slice(0, 6);
+  const out = rows.sort((a, b) => (a.up && b.up && a.up.u === b.up.u ? a.up.v - b.up.v : a.p - b.p)).slice(0, 6);
+  pc.memo.set(kind, out); return out.slice();
 }
 function priceNote(it) {
   const i = priceInfo(it); if (!i) return '';
@@ -2038,7 +2139,11 @@ document.addEventListener('input', e => {
 });
 
 /* ================= rendering ================= */
+/* several collections arrive at once when the app opens: draw once per frame instead of once per collection */
+let _rq = 0;
+function renderSoon() { if (_rq) return; _rq = requestAnimationFrame(() => { _rq = 0; render(); }); }
 function render() {
+  if (_rq) { cancelAnimationFrame(_rq); _rq = 0; }
   applyCats();
   for (const v of ['list', 'kitchen', 'add', 'receipts', 'recipes']) $('#v-' + v).hidden = S.tab !== v;
   showSearchTools();
@@ -2600,6 +2705,19 @@ async function saveForm(form, s) {
 }
 
 /* ================= live scanner ================= */
+/* the backup barcode reader (ZXing) is only fetched when scanning needs it, so the app opens faster */
+const ZX_URL = 'https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js';
+let zxWait = null;
+function loadZXing() {
+  if (window.ZXing) return Promise.resolve(window.ZXing);
+  return zxWait ||= new Promise(res => { const sc = document.createElement('script'); sc.src = ZX_URL; sc.async = true; sc.onload = () => res(window.ZXing || null); sc.onerror = () => { zxWait = null; res(null); }; document.head.appendChild(sc); setTimeout(() => res(window.ZXing || null), 12000); });
+}
+function zxReader() {
+  const Z = window.ZXing; if (!Z) return null;
+  const F = Z.BarcodeFormat;
+  SC.zhints = new Map([[Z.DecodeHintType.POSSIBLE_FORMATS, [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.CODE_39, F.ITF, F.QR_CODE]], [Z.DecodeHintType.TRY_HARDER, true]]);
+  const r = new Z.MultiFormatReader(); r.setHints(SC.zhints); return r;
+}
 const SC = {stream: null, track: null, det: null, running: false, busy: false, lastCode: '', lastAt: 0, timer: 0, audio: null, torch: false, zreader: null, zhints: null, form: null,
   n: 0, idleSince: 0, glare: 0, caps: {}, zoom: false, exp: false, hint: ''};
 
@@ -2630,11 +2748,12 @@ async function openScanner() {
       if (want.includes('ean_13') || want.includes('upc_a')) SC.det = new BarcodeDetector({formats: want});
     } catch (e) {}
   }
-  // ZXing always runs too: alone when the phone has no built-in reader, otherwise as a second reader on cleaned-up frames
-  if (window.ZXing) {
-    const Z = window.ZXing, F = Z.BarcodeFormat;
-    SC.zhints = new Map([[Z.DecodeHintType.POSSIBLE_FORMATS, [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.CODE_39, F.ITF, F.QR_CODE]], [Z.DecodeHintType.TRY_HARDER, true]]);
-    SC.zreader = new Z.MultiFormatReader(); SC.zreader.setHints(SC.zhints);
+  // ZXing always runs too: alone when the phone has no built-in reader, otherwise as a second reader on cleaned-up frames.
+  // With a built-in reader, scanning starts right away and ZXing joins when it has loaded.
+  SC.zreader = zxReader();
+  if (!SC.zreader) {
+    if (SC.det) loadZXing().then(() => { if (SC.running && !SC.zreader) SC.zreader = zxReader(); });
+    else { scanMsg('Getting the barcode reader ready…'); await loadZXing(); SC.zreader = zxReader(); }
   }
   if (!SC.det && !SC.zreader) { scanMsg('Barcode reading didn’t load. Check your connection and reopen the scanner.'); return; }
   SC.running = true; SC.n = 0; SC.glare = 0; SC.hint = ''; SC.idleSince = Date.now(); $('#scanAI').hidden = true; scanMsg(MODE_HINT[S.mode]);
@@ -2793,6 +2912,7 @@ async function makeThumb(img) {
 /* a saved photo: if it shows a barcode, look that up; otherwise treat it as a photo item */
 async function barcodeInImage(file) {
   const img = await loadImage(file);
+  await loadZXing();
   if ('BarcodeDetector' in window) {
     try { const r = await new BarcodeDetector().detect(img); if (r && r[0]) return r[0].rawValue; } catch (e) {}
   }
@@ -4554,6 +4674,8 @@ function kTile(k) {
 
 /* ================= help and what's new ================= */
 const WHATS_NEW = [
+  ['3.16', 'October 2026', ['Opens faster, especially with a lot in stock: the screen is drawn once instead of once for each kind of data, price comparisons are worked out once, and the barcode library and fonts no longer hold up the first screen.',
+    'Admin → Storage shows how much of the free 1 GB is used, by household, and can shrink receipt photos older than 3 months or delete photos left over from deleted receipts.']],
   ['3.15', 'October 2026', ['Quick add → Your usual: press and hold a tile (or right-click) to rename it, give it a photo or emoji, or remove it from Quick add.', 'List items can have their own picture now (tap one on the list): take one, choose one, find one online or make an AI picture. It carries over to the same item in stock.', 'When App Check blocks AI, the message now says which setting is wrong instead of a general hint.',
     'Produce and other fresh food without a sticker gets an estimated expiration date when it goes into stock, from the USDA FoodKeeper times for that food and where you keep it (bananas on the counter, berries in the fridge, potatoes in the pantry). It shows “est.” and you can change it. Item → No date? Estimate it, or In stock → View → Estimate missing dates for what you already have. Foods it doesn’t know: ✨ Ask AI.']],
   ['3.14', 'October 2026', ['Scanning reads shiny and curved labels better: every frame is also tried with glare and shadows evened out, at a close-up, and with a second barcode reader. It warns you about glare, turns the exposure down when it can, has a 2× zoom button on phones that support it, and you can tap the picture to focus.',

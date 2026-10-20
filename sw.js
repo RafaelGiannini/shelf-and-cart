@@ -1,7 +1,7 @@
 // Shelf & Cart — offline startup.
 // Keeps a copy of the app on the phone so it opens with no signal.
 // Bump VERSION whenever you upload a new index.html so phones refresh their copy.
-const VERSION = '3.15.3';
+const VERSION = '3.16.0';
 const APP_CACHE = `shelf-app-${VERSION}`;
 const LIB_CACHE = 'shelf-libs-v1';   // Firebase, barcode reader, fonts
 const IMG_CACHE = 'shelf-imgs-v1';   // product photos from the online databases
