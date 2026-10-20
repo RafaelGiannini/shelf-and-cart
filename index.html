@@ -401,6 +401,11 @@ select.field.small{height:34px;padding:0 8px;font-size:13.5px;width:auto}
 .row.tidy .meta > .field{flex:none;height:42px}
 .tidy2 .field{flex:none;height:38px;font-size:14.5px;padding:0 10px;width:100%}
 .row.tidy .meta .name{font-weight:650}
+.tdbar{position:sticky;top:-1px;z-index:3;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 12px;margin:6px 0;border-radius:12px;background:var(--surface);border:1px solid var(--green);box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.tdbar span{flex:1;font-weight:650;font-size:14px}
+.tdsaved{color:var(--green);font-weight:650;font-size:12.5px;margin-left:6px}
+#tdQ{margin:4px 0 8px;flex:none;height:44px}
+.leftq{display:flex;flex-direction:column;gap:6px;margin-top:12px;padding:12px;border:1px dashed var(--line);border-radius:12px}
 .fdlist{display:flex;flex-direction:column;gap:2px;max-height:55vh;overflow:auto;margin:4px 0 8px}
 .fdrow{display:flex;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line)}
 .fdrow input{width:20px;height:20px;flex:none}
@@ -708,7 +713,7 @@ label.lbl,div.lbl{display:flex;flex-direction:column;gap:5px;font-size:12px;font
 .chips button[aria-pressed="true"]{background:#fff;color:#14251D;border-color:#fff}
 .scanmsg{text-align:center;font-size:13.5px;opacity:.85}
 .scanmsg.warn{opacity:1;color:#FFD66B}
-#scanAI{display:flex;justify-content:center}
+#scanAI{display:flex;justify-content:center}#scanAI[hidden],.tdbar[hidden]{display:none}
 .scanai{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);font-weight:600}
 .zoombtn{font:700 13px/1 system-ui;margin-left:6px}.zoombtn.on{background:#F5C22F;color:#111}
 .cropper .bar .btn{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.22);padding:10px 14px;min-height:44px}
@@ -1023,7 +1028,7 @@ const ADMINS = Array.isArray(CFG.admins) ? CFG.admins : [];
 const isMainAdmin = email => ADMINS.some(x => emailIs(x, email));
 const familyName = email => { const g = familyOf(email); if (!g) return ''; const k = Object.keys(g.people).find(e => emailIs(e, email)); return g.people[k] || ''; };
 
-const VERSION = "3.17.0";
+const VERSION = "3.17.2";
 const BASE_CATS = ['Leftovers','Produce','Dairy & Eggs','Meat & Seafood','Bakery','Pantry','Spices & Seasonings','Frozen','Snacks','Drinks','Cleaning','Bathroom','Laundry','Paper & Household','Other'];
 /* the household can add its own categories (Baby, Pets, Garden…); they sit before Other */
 let CATS = BASE_CATS.slice(), _catsKey = '';
@@ -4548,8 +4553,9 @@ function tidyItems(all = false) {
   for (const [code, p] of Object.entries(S.products)) { const it = {...p, code: /^\d+$/.test(code) ? code : null}; if (!p.name || p.hideQuick) continue;
     if (!(p.nameOnly || S.kitchen.some(k => k.code === code))) continue;
     const w = why(it); if (w === 'Looks like a seasoning') add({...it, category: 'Spices & Seasonings', _orig: it.category}, w); else if (w || all) add(it, w || 'Looks fine'); }
-  const rank = w => ['No name yet', 'Category: Other', 'Looks like a seasoning', 'Name in ALL CAPS', 'Long name', 'No brand', 'Looks fine'].indexOf(w);
-  return [...out.values()].sort((a, b) => rank(a.why) - rank(b.why) || a.name.localeCompare(b.name));
+  if (all) for (const l of S.list) if (!l.done && l.name) add(l, why(l) || 'Looks fine');
+  // alphabetical; things with no name yet go last
+  return [...out.values()].sort((a, b) => (unnamed(a) - unnamed(b)) || a.name.localeCompare(b.name, undefined, {sensitivity: 'base'}));
 }
 /* what's missing on the food in stock: an expiration date, nutrition facts, ingredients */
 const PERISH = ['Produce', 'Dairy & Eggs', 'Meat & Seafood', 'Bakery', 'Leftovers'];
@@ -4565,78 +4571,122 @@ function missingInfo() {
   }
   return [...seen.values()].filter(r => r.date || r.facts || r.ingr).sort((a, b) => (b.date + b.facts + b.ingr) - (a.date + a.facts + a.ingr) || a.k.name.localeCompare(b.k.name));
 }
-const T = {tab: 'names', all: false};
+const T = {tab: 'names', q: ''};
+const tidySame = x => o => x.code ? o.code === x.code : !o.code && lc(o.name) === lc(x.name);
+/* where a name shows up: in stock (and how many places), on the list, as a Quick add tile (and the label the tile uses) */
+function tidyWhere(x) {
+  const k = S.kitchen.filter(tidySame(x)), l = S.list.filter(o => !o.done && tidySame(x)(o)), pr = S.products[x.key] || prodOf(x) || {};
+  const usual = (S._usualKeys ||= new Set(usualItems().map(pkey))).has(x.key);
+  const label = byType() ? typeOf({...x, brand: x.brand ?? undefined, kind: x.kind || undefined}).kind : x.name;
+  return {stock: k.length, list: l.length, quick: usual, hidden: !!pr.hideQuick, label};
+}
+/* unsaved AI suggestions survive closing the sheet by mistake */
+const TD_KEY = 'tidy:draft';
+const tdDrafts = () => { try { return JSON.parse(localStorage.getItem(TD_KEY) || '{}'); } catch (e) { return {}; } };
+const tdSetDrafts = d => { try { Object.keys(d).length ? localStorage.setItem(TD_KEY, JSON.stringify(d)) : localStorage.removeItem(TD_KEY); } catch (e) {} };
+/* save one row now: name, brand, type, category, everywhere the item appears */
+async function saveTidyRow(x, v) {
+  const bChanged = (v.brand || null) !== (x.brand || null), kChanged = (v.kind || null) !== (x.kind || null);
+  if (v.name === x.name && v.category === x.orig && !bChanged && !kChanged) { if (['Name in ALL CAPS', 'Long name', 'No brand'].includes(x.why)) updateProduct({name: x.name, code: x.code, category: v.category}, {tidied: true}).catch(() => {}); return false; }
+  const old = {name: x.name, code: x.code}, extra = {...(bChanged ? {brand: v.brand || null} : {}), ...(kChanged ? {kind: v.kind || null} : {})}, same = tidySame(x);
+  await updateProduct(old, {name: v.name, category: v.category, ...extra, tidied: true});
+  for (const k of S.kitchen.filter(same)) await put('kitchen', k.id, {...strip(k), name: v.name, category: v.category, ...extra}).catch(() => {});
+  for (const l of S.list.filter(same)) await put('list', l.id, {...strip(l), name: v.name, category: v.category}).catch(() => {});
+  // name-only products are keyed by name: move the notes (prices, facts, cooking) to the new name
+  if (!x.code && lc(v.name) !== lc(x.name)) { const from = S.products[pkey(old)]; if (from) { await updateProduct({name: v.name, category: v.category}, {...strip(from), name: v.name, category: v.category, ...extra}); del('products', pkey(old)).catch(() => {}); delete S.products[pkey(old)]; } }
+  Object.assign(x, {name: v.name, category: v.category, orig: v.category, brand: v.brand || null, kind: v.kind || '', key: x.code || pkey({name: v.name}), why: 'Saved'});
+  _typeCache.clear(); S._usualKeys = null;
+  return true;
+}
 function tidySheet(tab) {
   if (tab) T.tab = tab;
-  const rows = tidyItems(T.all), miss = missingInfo();
+  S._usualKeys = null;
+  const all = T.tab === 'all', rows = T.tab === 'info' ? [] : tidyItems(all), miss = missingInfo(), need = T.tab === 'names' ? rows.length : tidyItems(false).length;
   const head = `<h3>Tidy up items</h3>
-    <div class="modes" style="grid-template-columns:1fr 1fr" role="group"><button data-ttab="names" aria-pressed="${T.tab === 'names'}">Names & categories · ${tidyItems(false).length}</button><button data-ttab="info" aria-pressed="${T.tab === 'info'}">Missing info · ${miss.length}</button></div>`;
+    <div class="modes" style="grid-template-columns:1fr 1fr 1fr" role="group"><button data-ttab="names" aria-pressed="${T.tab === 'names'}">Needs a look · ${need}</button><button data-ttab="all" aria-pressed="${all}">All names</button><button data-ttab="info" aria-pressed="${T.tab === 'info'}">Missing · ${miss.length}</button></div>`;
   if (T.tab === 'info') return tidyInfo(head, miss);
+  const drafts = tdDrafts();
+  // a suggested move (smoked paprika out of Pantry) waits as a suggestion until it's saved
+  for (const x of rows) if (x.category !== x.orig && !drafts[x.key]) { drafts[x.key] = {category: x.category}; x.category = x.orig; }
+  tdSetDrafts(drafts);
   const field = (attr, j, v, ph, label, cls = '') => `<input class="field ${cls}" ${attr}="${j}" value="${esc(v || '')}" placeholder="${esc(ph || '')}" aria-label="${label}">`;
+  const rowHtml = (x, j) => { const d = drafts[x.key], w = tidyWhere(x), dv = (f, v) => d && d[f] != null ? d[f] : v;
+    const chips = [w.stock ? `In stock${w.stock > 1 ? ' ×' + w.stock : ''}` : '', w.list ? 'On the list' : '', w.quick ? `Quick add tile: “${w.label}”` : w.hidden ? 'Hidden from Quick add' : ''].filter(Boolean);
+    return `<div class="row tidy" data-trow="${j}" data-search="${esc(lc([x.name, x.brand, x.kind, x.category, w.label].join(' ')))}">${x.img ? `<img class="thumb" src="${esc(x.img)}" alt="">` : phThumb(x)}
+      <div class="meta">${field('data-tn', j, dv('name', unnamed(x) ? '' : x.name), unnamed(x) ? 'What is it? e.g. Tokyo Straw ramen' : '', 'Name', d?.name != null ? 'aifill' : '')}
+        <div class="tidy2">${field('data-tb', j, dv('brand', x.brand), x.gBrand || 'Brand', 'Brand', 'small' + (d?.brand != null ? ' aifill' : ''))}${field('data-tk', j, dv('kind', x.kind), x.gKind || 'Type, e.g. Drink mix', 'Type', 'small' + (d?.kind != null ? ' aifill' : ''))}
+          <select class="field small${d?.category ? ' aifill' : ''}" data-tc="${j}" aria-label="Category">${CATS.filter(c => c !== 'Leftovers').map(c => `<option${c === dv('category', x.category) ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select></div>
+        <div class="note">${!all ? `<span class="bought">${esc(x.why)}</span>` : ''}${chips.map(c => `<span class="mtag">${esc(c)}</span>`).join('')}${x.code ? `<span class="code">${esc(x.code)}</span>` : ''}<span class="tdsaved" data-tsaved="${j}"></span>
+          ${x.code ? `<button type="button" class="linkbtn" data-tlook="${j}">Look up again</button>` : ''}<button type="button" class="linkbtn" data-thide="${j}">${w.hidden ? 'Show on Quick add' : 'Hide from Quick add'}</button></div></div></div>`; };
+  const nDraft = rows.filter(x => drafts[x.key]).length;
   sheet(`${head}
-    <p class="hint">${rows.length ? `${T.all ? `All ${rows.length} items.` : `${rows.length} item${rows.length === 1 ? '' : 's'} could use a better name, brand or category.`} Fix them here and they’re fixed everywhere: In stock, the list, Quick add and Spending.` : 'Everything has a clean name and a category. Nice.'}
-      <button class="linkbtn" id="tdAll">${T.all ? 'Show only the ones that need it' : 'Show all items'}</button></p>
-    ${rows.length && aiShow() ? `<button class="btn aibtn" id="tdAI">✨ Clean up ${rows.length === 1 ? 'it' : `all ${rows.length}`} with AI</button><span class="aistatus" id="tdBusy"></span>` : ''}
-    <div class="rows">${rows.map((x, j) => `<div class="row tidy" data-trow="${j}">${x.img ? `<img class="thumb" src="${esc(x.img)}" alt="">` : phThumb(x)}
-      <div class="meta">${field('data-tn', j, unnamed(x) ? '' : x.name, unnamed(x) ? 'What is it? e.g. Tokyo Straw ramen' : '', 'Name')}
-        <div class="tidy2">${field('data-tb', j, x.brand, x.gBrand || 'Brand', 'Brand', 'small')}${field('data-tk', j, x.kind, x.gKind || 'Type, e.g. Drink mix', 'Type', 'small')}
-          <select class="field small" data-tc="${j}" aria-label="Category">${CATS.filter(c => c !== 'Leftovers').map(c => `<option${c === x.category ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select></div>
-        <div class="note"><span class="bought">${esc(x.why)}</span>${x.code ? `<span class="code">${esc(x.code)}</span>` : ''}
-          ${x.code ? `<button type="button" class="linkbtn" data-tlook="${j}">Look up again</button>` : ''}<button type="button" class="linkbtn" data-thide="${j}">Hide from Quick add</button></div></div></div>`).join('')}</div>
-    <div class="actions">${rows.length ? '<button class="btn primary" id="tdSave">Save changes</button>' : ''}<button class="btn" data-act="closeSheet">Close</button></div>`, el => {
+    <p class="hint">${all ? `Every name in the app, A to Z: what’s in stock, on the list and on Quick add. ${byType() ? 'Quick add and grouped views show the <b>Type</b>, so that’s the name to fix if a tile looks odd.' : ''}` : rows.length ? `${rows.length} item${rows.length === 1 ? '' : 's'} could use a better name, brand or category, A to Z.` : 'Everything has a clean name and a category. Nice.'} Changes save as you go, everywhere the item appears.</p>
+    ${all ? `<input class="field" id="tdQ" type="search" placeholder="🔎 Find a name, brand, type or category" value="${esc(T.q)}" aria-label="Filter">` : ''}
+    ${rows.length && aiShow() ? `<button class="btn aibtn" id="tdAI">✨ Suggest clean names ${all ? 'for the ones shown' : rows.length === 1 ? 'for it' : `for all ${rows.length}`} with AI</button>` : ''}
+    <div class="tdbar" id="tdBar"${nDraft ? '' : ' hidden'}><span id="tdBarTxt">${nDraft} AI suggestion${nDraft === 1 ? '' : 's'} to check</span><button class="btn small primary" id="tdKeep">Save all suggestions</button><button class="btn small ghost" id="tdDrop">Discard</button></div>
+    <span class="aistatus" id="tdBusy"></span>
+    <div class="rows" id="tdRows">${rows.map(rowHtml).join('')}</div>
+    <div class="actions col"><button class="btn" data-act="closeSheet">Done</button></div>`, el => {
     wireTidyTabs(el);
-    el.querySelector('#tdAll').onclick = () => { T.all = !T.all; tidySheet(); };
+    const vals = j => ({name: el.querySelector(`[data-tn="${j}"]`).value.trim() || rows[j].name, category: el.querySelector(`[data-tc="${j}"]`).value,
+      brand: el.querySelector(`[data-tb="${j}"]`).value.trim() || null, kind: el.querySelector(`[data-tk="${j}"]`).value.trim() || null});
+    const bar = () => { const d = tdDrafts(), n = rows.filter(x => d[x.key]).length; el.querySelector('#tdBar').hidden = !n; el.querySelector('#tdBarTxt').textContent = `${n} AI suggestion${n === 1 ? '' : 's'} to check`; };
+    const saveRow = async j => {
+      const x = rows[j], oldKey = x.key, mark = el.querySelector(`[data-tsaved="${j}"]`);
+      try {
+        const did = await saveTidyRow(x, vals(j));
+        const d = tdDrafts(); delete d[oldKey]; tdSetDrafts(d); bar();
+        el.querySelectorAll(`[data-trow="${j}"] .aifill`).forEach(f => f.classList.remove('aifill'));
+        if (did && mark) { mark.textContent = '✓ Saved'; clearTimeout(mark._t); mark._t = setTimeout(() => { mark.textContent = ''; }, 2500); renderSoon(); }
+      } catch (e) { if (mark) mark.textContent = 'Couldn’t save'; }
+    };
+    // save as you go: when a field is left or a category picked
+    el.querySelector('#tdRows').addEventListener('change', e => { const r = e.target.closest('[data-trow]'); if (r && e.target.matches('input, select')) saveRow(+r.dataset.trow); });
+    el.querySelector('#tdQ')?.addEventListener('input', e => { T.q = e.target.value; const q = lc(T.q.trim()); el.querySelectorAll('#tdRows [data-trow]').forEach(r => { r.hidden = !!q && !r.dataset.search.includes(q); }); });
+    if (T.q) el.querySelector('#tdQ')?.dispatchEvent(new Event('input'));
+    el.querySelector('#tdKeep').onclick = async e => { const b = e.target; b.disabled = true; const d = tdDrafts(); let n = 0;
+      for (const [j, x] of rows.entries()) if (d[x.key]) { b.textContent = `Saving ${++n}…`; await saveRow(j); }
+      toast(`Saved ${n} suggestion${n === 1 ? '' : 's'}`); tidySheet(); };
+    el.querySelector('#tdDrop').onclick = () => { const d = tdDrafts(); for (const x of rows) delete d[x.key]; tdSetDrafts(d); tidySheet(); };
     el.querySelector('#tdAI')?.addEventListener('click', async e => {
       const btn = e.target.closest('button'), st = el.querySelector('#tdBusy'); btn.disabled = true;
       const cats = CATS.filter(c => c !== 'Leftovers'), health = cats.find(c => /health|medicine|pharmacy/i.test(c));
+      const todo = rows.filter(x => !el.querySelector(`[data-trow="${rows.indexOf(x)}"]`)?.hidden);
       let changed = 0;
       try {
-        for (let o = 0; o < rows.length; o += 40) {
-          const part = rows.slice(o, o + 40);
-          st.innerHTML = `<span class="spinner"></span> Cleaning up ${o + 1}–${o + part.length} of ${rows.length}… ${aiWait('sort')}`;
+        for (let o = 0; o < todo.length; o += 40) {
+          const part = todo.slice(o, o + 40);
+          st.innerHTML = `<span class="spinner"></span> Cleaning up ${o + 1}–${o + part.length} of ${todo.length}… ${aiWait('sort')}`;
           const out = await askAI(`Clean up items in a family's grocery and home inventory app. Names often come from store receipts or barcode databases: ALL CAPS, the brand jumbled in, sizes in odd places.
 For each item return:
 - "name": a clean shopping-list name in Title Case: brand first, then the product, then the size if known (e.g. "Liquid I.V. Hydration Multiplier Electrolyte Drink Mix", "Equate Extra Strength Acetaminophen 500 mg"). Keep the real product; don't invent sizes or flavors. null if the item only has a barcode and you don't know it.
 - "brand": the brand alone, as it's normally written ("Great Value", "Liquid I.V.", "Marketside"), or null if there's none (fresh produce).
-- "type": what it is in 1–3 plain words, singular unless it's always plural ("Drink mix", "Pain reliever", "Salad kit", "Cheddar cheese", "Bananas").
+- "type": what it is in 1–3 plain words, singular unless it's always plural ("Drink mix", "Pain reliever", "Salad kit", "Cheddar cheese", "Bananas"). This is the label on Quick add tiles, so it should be short and obvious.
 - "category": exactly one of ${JSON.stringify(cats)}. ${health ? `Medicine and vitamins go in ${health}; skin care and hair care in Bathroom.` : 'Medicine, vitamins, skin care and hair care go in Bathroom.'} Drink mixes go in Drinks. Bagged salads and salad kits go in Produce.
 Items: ${JSON.stringify(part.map((x, i) => ({i: o + i, name: unnamed(x) ? null : x.name, barcode: x.code, now: x.category})))}
 Return only JSON: {"items":[{"i": index, "name": string or null, "brand": string or null, "type": string, "category": string}]}`, [], 'sort');
-          for (const x of out?.items || []) {
-            const set = (sel, v) => { const f = el.querySelector(`[${sel}="${x.i}"]`); if (f && v && f.value !== v) { f.value = v; f.classList.add('aifill'); changed++; } };
-            set('data-tn', x.name); set('data-tb', x.brand); set('data-tk', x.type);
-            const c = el.querySelector(`[data-tc="${x.i}"]`); if (c && cats.includes(x.category) && c.value !== x.category) { c.value = x.category; c.classList.add('aifill'); changed++; }
+          const d = tdDrafts();
+          for (const r of out?.items || []) {
+            const x = todo[r.i]; if (!x) continue; const j = rows.indexOf(x), dr = {};
+            const set = (sel, f, v) => { const fl = el.querySelector(`[${sel}="${j}"]`); if (fl && v && fl.value !== v) { fl.value = v; fl.classList.add('aifill'); dr[f] = v; changed++; } };
+            set('data-tn', 'name', r.name); set('data-tb', 'brand', r.brand); set('data-tk', 'kind', r.type);
+            const c = el.querySelector(`[data-tc="${j}"]`); if (c && cats.includes(r.category) && c.value !== r.category) { c.value = r.category; c.classList.add('aifill'); dr.category = r.category; changed++; }
+            if (Object.keys(dr).length) d[x.key] = dr;
           }
+          tdSetDrafts(d); bar();
         }
-        st.textContent = changed ? 'Highlighted fields changed. Check them, then Save changes.' : 'The AI had nothing to change.';
+        st.textContent = changed ? 'Suggestions are outlined. Edit any you don’t like (that saves the row), then Save all suggestions.' : 'The AI had nothing to change.';
       } catch (err) { st.textContent = err.message; }
       btn.disabled = false;
     });
     el.querySelectorAll('[data-tlook]').forEach(b => b.onclick = async () => {
-      const x = rows[+b.dataset.tlook]; b.disabled = true; b.textContent = 'Looking…';
+      const j = +b.dataset.tlook, x = rows[j]; b.disabled = true; b.textContent = 'Looking…';
       const found = await lookupOnline(x.code).catch(() => null);
-      if (found?.name) { el.querySelector(`[data-tn="${b.dataset.tlook}"]`).value = found.name; if (found.brand) el.querySelector(`[data-tb="${b.dataset.tlook}"]`).value = found.brand; if (found.category) el.querySelector(`[data-tc="${b.dataset.tlook}"]`).value = found.category; b.textContent = 'Found it'; }
+      if (found?.name) { el.querySelector(`[data-tn="${j}"]`).value = found.name; if (found.brand) el.querySelector(`[data-tb="${j}"]`).value = found.brand; if (found.category) el.querySelector(`[data-tc="${j}"]`).value = found.category; b.textContent = 'Found it'; saveRow(j); }
       else b.textContent = 'Not found online';
     });
-    el.querySelectorAll('[data-thide]').forEach(b => b.onclick = async () => { const x = rows[+b.dataset.thide]; await updateProduct({name: x.name, code: x.code, category: x.category}, {hideQuick: true}); b.textContent = 'Hidden'; b.disabled = true; });
-    el.querySelector('#tdSave')?.addEventListener('click', async () => {
-      let n = 0;
-      for (const [j, x] of rows.entries()) {
-        const name = el.querySelector(`[data-tn="${j}"]`).value.trim() || x.name, category = el.querySelector(`[data-tc="${j}"]`).value;
-        const brand = el.querySelector(`[data-tb="${j}"]`).value.trim() || null, kind = el.querySelector(`[data-tk="${j}"]`).value.trim() || null;
-        const bChanged = (brand || null) !== (x.brand || null), kChanged = (kind || null) !== (x.kind || null);
-        const soft = ['Name in ALL CAPS', 'Long name', 'No brand'].includes(x.why);
-        if (name === x.name && category === x.orig && !bChanged && !kChanged) { if (soft) updateProduct({name: x.name, code: x.code, category}, {tidied: true}).catch(() => {}); continue; }
-        n++;
-        const old = {name: x.name, code: x.code}, extra = {...(bChanged ? {brand} : {}), ...(kChanged ? {kind} : {})};
-        await updateProduct(old, {name, category, ...extra, tidied: true});
-        for (const k of S.kitchen.filter(k => x.code ? k.code === x.code : lc(k.name) === lc(x.name))) await put('kitchen', k.id, {...strip(k), name, category, ...extra}).catch(() => {});
-        for (const l of S.list.filter(l => x.code ? l.code === x.code : lc(l.name) === lc(x.name))) await put('list', l.id, {...strip(l), name, category}).catch(() => {});
-        // name-only products are keyed by name: move the notes (prices, facts, cooking) to the new name
-        if (!x.code && lc(name) !== lc(x.name)) { const from = S.products[pkey(old)]; if (from) { await updateProduct({name, category}, {...strip(from), name, category, ...extra}); del('products', pkey(old)).catch(() => {}); delete S.products[pkey(old)]; } }
-      }
-      _typeCache.clear(); closeSheet(); render(); toast(n ? `Fixed ${n} item${n === 1 ? '' : 's'}` : 'Nothing changed');
-    });
+    el.querySelectorAll('[data-thide]').forEach(b => b.onclick = async () => { const x = rows[+b.dataset.thide], hide = !/Show/.test(b.textContent);
+      await updateProduct({name: x.name, code: x.code, category: x.category}, {hideQuick: hide}); S._usualKeys = null; b.textContent = hide ? 'Show on Quick add' : 'Hide from Quick add'; renderSoon(); });
   });
 }
 function wireTidyTabs(el) { el.querySelectorAll('[data-ttab]').forEach(b => b.onclick = () => tidySheet(b.dataset.ttab)); }
@@ -4796,7 +4846,9 @@ function kTile(k) {
 
 /* ================= help and what's new ================= */
 const WHATS_NEW = [
-  ['3.17', 'October 2026', ['Tidy up items: ✨ Clean up with AI fixes names (no more ALL CAPS), splits out the brand and type, and picks the category for every item at once; you check the highlighted changes and save. Show all items to tidy anything.',
+  ['3.17', 'October 2026', ['We ate out → Bringing leftovers home? Tick 🥡 on the dishes you’re taking (or Yes, all of it) and they go in the fridge as leftovers with a use-by date for that food: 3–4 days for most cooked food, 1–2 for salads, a day for sushi.',
+    'Tidy up saves as you go (no Save button to forget), lists items A to Z, keeps unsaved AI suggestions if the sheet closes by accident, and has an All names tab: every name in stock, on the list and on Quick add, with the label each Quick add tile uses and a search box.',
+    'Tidy up items: ✨ Clean up with AI fixes names (no more ALL CAPS), splits out the brand and type, and picks the category for every item at once; you check the highlighted changes and save. Show all items to tidy anything.',
     'Tidy up → Missing info lists food in stock without a date, nutrition facts or ingredients, with one-tap fixes for all of them: estimate dates, look up barcodes on Open Food Facts, or fill typical nutrition for fresh food with AI.']],
   ['3.16', 'October 2026', ['Opens faster, especially with a lot in stock: the screen is drawn once instead of once for each kind of data, price comparisons are worked out once, and the barcode library and fonts no longer hold up the first screen.',
     'Admin → Storage shows how much of the free 1 GB is used, by household, and can shrink receipt photos older than 3 months or delete photos left over from deleted receipts.']],
@@ -5698,6 +5750,14 @@ function tipCalcHtml(r) {
       <div class="tipcustom"><input class="field" id="tpPct" type="number" min="0" max="100" step="0.5" inputmode="decimal" placeholder="Other %" value="${custom ? pct : ''}" aria-label="Custom tip percent"><span class="note" id="tpOut">${custom ? (x => `${pct}% = <b>${money(x.t)}</b>, total ${money(x.tot)}${c.n > 1 ? `, ${money(x.tot / c.n)} each` : ''}`)(line(pct)) : `${money(c.sub)} + ${money(c.tax)} tax${c.fees ? ` + ${money(c.fees)} fees` : ''} = ${money(c.before)} before tip. Tap a tip to fill in the total.`}</span></div>`
       : '<div class="note">Type the food and drinks before tax (or snap the receipt). Tax is added at the rate above, then 10, 15, 18 and 20% tips.</div>'}`;
 }
+/* restaurant leftovers: FoodSafety.gov says 3–4 days in the fridge for cooked food; raw fish and dressed salads go sooner */
+function leftoverKeep(name) {
+  const n = lc(name);
+  if (/sushi|sashimi|poke|ceviche|tartare|crudo|raw oyster|\braw\b/.test(n)) return {days: 1, txt: 'Raw fish: eat it within a day', z: null};
+  if (/salad|slaw|greens/.test(n)) return {days: 2, txt: 'Dressed salad: 1–2 days before it wilts', z: null};
+  if (/fries|fried|tempura|wings|nugget|tenders|crispy/.test(n)) return {days: 3, txt: 'Fried food: 3–4 days (it softens; reheat in the oven or air fryer)', z: 60};
+  return {days: 3, txt: 'Cooked leftovers: 3–4 days', z: 60};
+}
 function diningSheet(r0, photoForAI = null) {
   const r = {...r0, dishes: (r0.dishes || []).map(d => ({...d})), split: [...(r0.split || [])], paid: {...(r0.paid || {})}};
   if (r0.sub && !r.taxAmt && r0.tax != null) r.taxAmt = r0.tax;
@@ -5727,10 +5787,17 @@ function diningSheet(r0, photoForAI = null) {
           <div class="note">${d.kcal ? `<span><b>${fmtKcal(d.kcal)} cal</b>${d.est ? ' est.' : ''}</span>` : ''}${d.n ? `<span>${esc(nutrLine(d.n))}</span>` : ''}${dishFlagHtml(d)}${!d.kcal && aiShow() ? `<button type="button" class="linkbtn" data-dest="${i}">Estimate nutrition</button>` : ''}</div>
           <div class="drow"><span class="stars" role="radiogroup" aria-label="Rating">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-dstar="${i}" data-v="${n}" aria-pressed="${(d.rating || 0) >= n}" aria-label="${n} star${n === 1 ? '' : 's'}">★</button>`).join('')}</span>
             <label class="checkline"><input type="checkbox" data-dmine="${i}" ${d.mine ? 'checked' : ''}> I ate this</label>
+            <label class="checkline"><input type="checkbox" data-dleft="${i}" ${d.left ? 'checked' : ''}> 🥡 Bringing some home</label>
             ${aiShow() ? `<button type="button" class="btn small ghost" data-dhome="${i}">Make it at home</button>` : ''}</div>
+          ${d.left ? `<div class="note">🥡 Goes in the fridge as leftovers · ${esc(leftoverKeep(d.name).txt)} · use by ${esc(fmtDate(addDaysTo(r.date || todayYmd(), leftoverKeep(d.name).days)))}</div>` : ''}
           <input class="field dnote" data-dnote="${i}" value="${esc(d.note || '')}" placeholder="Notes: what was in it, what you’d change, order it again?">
         </div>`).join('')}</div>` : '<p class="hint">Snap the receipt and the AI lists the dishes, or add them yourself.</p>'}
-        <div class="addrow" style="margin-top:8px"><input class="field" id="dnAdd" placeholder="Add a dish, e.g. chicken tikka masala"><button type="button" class="btn" id="dnAddBtn">Add</button></div></div>
+        <div class="addrow" style="margin-top:8px"><input class="field" id="dnAdd" placeholder="Add a dish, e.g. chicken tikka masala"><button type="button" class="btn" id="dnAddBtn">Add</button></div>
+        <div class="leftq"><b>🥡 Bringing leftovers home?</b>
+          ${r.dishes.length ? `<span class="hint">${r.dishes.some(d => d.left) ? `${r.dishes.filter(d => d.left).length} dish${r.dishes.filter(d => d.left).length === 1 ? '' : 'es'} will go in the fridge with a use-by date.` : 'Tick 🥡 on the dishes you’re taking home.'}</span>
+            <div class="expchips"><button type="button" data-dleftall="1" aria-pressed="${r.dishes.length > 0 && r.dishes.every(d => d.left)}">Yes, all of it</button><button type="button" data-dleftall="0" aria-pressed="${!r.dishes.some(d => d.left)}">No</button></div>`
+          : `<div class="expchips"><button type="button" data-dleft1="1" aria-pressed="${!!r.leftover}">Yes</button><button type="button" data-dleft1="0" aria-pressed="${!r.leftover}">No</button></div>
+            ${r.leftover ? `<input class="field" id="dnLeftName" value="${esc(r.leftName || '')}" placeholder="What is it? e.g. Pad thai">` : ''}`}</div></div>
       <label class="lbl">Note<input class="field" id="dnNote" value="${esc(r.note || '')}" placeholder="Optional, e.g. Raquel’s birthday dinner"></label>
       <div class="actions"><button class="btn primary" type="submit">Save</button><button class="btn" type="button" data-act="closeSheet">Cancel</button></div>
       ${r.id ? '<button class="btn danger ghost" type="button" id="dnDel">Delete</button>' : ''}</form>`;
@@ -5741,6 +5808,7 @@ function diningSheet(r0, photoForAI = null) {
     el.querySelectorAll('[data-dn]').forEach(x => { r.dishes[+x.dataset.dn].name = x.value.trim() || r.dishes[+x.dataset.dn].name; });
     el.querySelectorAll('[data-dp]').forEach(x => { r.dishes[+x.dataset.dp].price = x.value === '' ? null : Number(x.value); });
     el.querySelectorAll('[data-dnote]').forEach(x => { r.dishes[+x.dataset.dnote].note = x.value.trim(); });
+    const ln = el.querySelector('#dnLeftName'); if (ln) r.leftName = ln.value.trim();
   };
   const rerender = (skipKeep = false) => { const el = $('#sheetRoot .sheet'); if (!el || !el.querySelector('#dnForm')) return; if (!skipKeep) keep(el); const top = el.scrollTop; el.innerHTML = draw(); wire(el); el.scrollTop = top; };
   const readAI = async canvas => {
@@ -5787,6 +5855,9 @@ function diningSheet(r0, photoForAI = null) {
     el.querySelectorAll('[data-drate]').forEach(b => b.onclick = () => { keep(el); const v = +b.dataset.drate; r.ratings = {...(r.ratings || {})}; if (r.ratings[S.uid] === v) delete r.ratings[S.uid]; else r.ratings[S.uid] = v; rerender(); });
     el.querySelectorAll('[data-dstar]').forEach(b => b.onclick = () => { keep(el); const d = r.dishes[+b.dataset.dstar], v = +b.dataset.v; d.rating = d.rating === v ? 0 : v; rerender(); });
     el.querySelectorAll('[data-dmine]').forEach(c => c.onchange = () => { keep(el); r.dishes[+c.dataset.dmine].mine = c.checked; rerender(); });
+    el.querySelectorAll('[data-dleft]').forEach(c => c.onchange = () => { keep(el); r.dishes[+c.dataset.dleft].left = c.checked; rerender(); });
+    el.querySelectorAll('[data-dleftall]').forEach(b => b.onclick = () => { keep(el); for (const d of r.dishes) d.left = b.dataset.dleftall === '1'; rerender(); });
+    el.querySelectorAll('[data-dleft1]').forEach(b => b.onclick = () => { keep(el); r.leftover = b.dataset.dleft1 === '1'; rerender(); setTimeout(() => $('#dnLeftName')?.focus(), 50); });
     el.querySelectorAll('[data-ddel]').forEach(b => b.onclick = () => { keep(el); r.dishes.splice(+b.dataset.ddel, 1); rerender(); });
     el.querySelectorAll('[data-dest]').forEach(b => b.onclick = async () => { keep(el); const d = r.dishes[+b.dataset.dest]; b.textContent = 'Estimating…'; try { Object.assign(d, await aiDish(d.name, r.store), {est: true}); } catch (e) { toast(e.message); } rerender(); });
     el.querySelectorAll('[data-dhome]').forEach(b => b.onclick = async () => { keep(el); const d = r.dishes[+b.dataset.dhome]; b.disabled = true; b.innerHTML = '<span class="spinner"></span> Writing…'; try { const rec = await aiDishRecipe(d, r.store); d.recipe = true; await saveDining(true); recipeForm(rec); } catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Make it at home'; } });
@@ -5806,8 +5877,26 @@ function diningSheet(r0, photoForAI = null) {
     const id = r.id || uid(); const isNew = !r.id; r.id = id;
     const ck = checkOf(r);
     const data = {kind: 'restaurant', store: r.store || 'Restaurant', date: r.date || todayYmd(), total, tip: Number(r.tip) || null, tax: ck.sub ? ck.tax : (Number(r.tax) || null), sub: ck.sub || null, fees: ck.fees || null, via: r.via || null, ratings: r.ratings || {}, personal: Number(r.personal) || 0, split: r.split, paid: Object.fromEntries(r.split.map(u => [u, r.paid[u] || null])), by: r.by, note: r.note || '', place: r.place || '',
-      dishes: r.dishes.map(({name, price, qty, kcal, n, est, rating, note, mine, eater, recipe}) => ({name, price: price ?? null, qty: qty || 1, kcal: kcal ?? null, n: n || null, est: !!est, rating: rating || 0, note: note || '', mine: !!mine, eater: mine ? (eater || S.uid) : null, recipe: !!recipe})),
+      dishes: r.dishes.map(({name, price, qty, kcal, n, est, rating, note, mine, eater, recipe, left, loId}) => ({name, price: price ?? null, qty: qty || 1, kcal: kcal ?? null, n: n || null, est: !!est, rating: rating || 0, note: note || '', mine: !!mine, eater: mine ? (eater || S.uid) : null, recipe: !!recipe, left: !!left, loId: loId || null})),
+      leftover: !r.dishes.length && !!r.leftover, leftName: r.leftName || null, loId: r.loId || null,
       lines: [], at: r0.at || Date.now(), addedBy: r0.addedBy || S.uid};
+    // leftovers coming home: one fridge item per dish, with a use-by for that kind of food; unticking takes it back out
+    const fridge = zones().find(z => z.kind === 'fridge')?.id || defLoc('Leftovers'), place = workPlace() || null;
+    const putLeft = async (name, cur) => {
+      const kp = leftoverKeep(name), lid = cur || uid(), ex = S.kitchen.find(k => k.id === lid);
+      if (ex) return lid;
+      await put('kitchen', lid, {name: `${name}${data.store ? ' (' + data.store + ')' : ''}`, code: null, category: 'Leftovers', kind: 'Leftovers', brand: '', location: fridge, place, qty: 1, note: `Brought home from ${data.store || 'a restaurant'}`, thumb: null,
+        exp: addDaysTo(data.date, kp.days), expEst: true, bought: data.date, leftover: true, track: 'pkg', by: S.uid, at: Date.now()}).catch(() => {});
+      return lid;
+    };
+    let nLeft = 0;
+    for (const d of data.dishes) {
+      if (d.left) { d.loId = await putLeft(d.name, d.loId); nLeft++; }
+      else if (d.loId) { if (S.kitchen.some(k => k.id === d.loId && (k.qty || 0) > 0)) del('kitchen', d.loId).catch(() => {}); d.loId = null; }
+    }
+    if (data.leftover) { data.loId = await putLeft(data.leftName || 'Leftovers', data.loId); nLeft++; }
+    else if (data.loId) { del('kitchen', data.loId).catch(() => {}); data.loId = null; }
+    r.dishes.forEach((d, i) => { d.loId = data.dishes[i].loId; }); r.loId = data.loId;
     const cur = (S.receipts || []).find(x => x.id === id);
     if (r.img !== (r0.img || null) || isNew) Object.assign(data, await saveReceiptPhoto(id, r.img || null)); else Object.assign(data, {img: null, hasImg: !!cur?.hasImg || !!r.img, thumb: cur?.thumb || null});
     await put('receipts', id, data).catch(() => {});
@@ -5818,7 +5907,7 @@ function diningSheet(r0, photoForAI = null) {
     for (const d of data.dishes.filter(d => d.mine && d.eater === S.uid)) lg.meals.push({t: Date.now(), meal, name: `${d.name}${data.store ? ' (' + data.store + ')' : ''}`, kcal: d.kcal ? d.kcal * (d.qty || 1) : null, est: true, n: d.n, src: tag});
     await saveLog(data.date, lg);
     if (isNew) logAct(`ate out at ${data.store} (${money(total)})`);
-    if (!stay) { closeSheet(); toast(`Saved ${data.store}${data.dishes.some(d => d.mine) ? ' · added to your food log' : ''}`); }
+    if (!stay) { closeSheet(); toast(`Saved ${data.store}${data.dishes.some(d => d.mine) ? ' · added to your food log' : ''}${nLeft ? ` · ${nLeft} leftover${nLeft === 1 ? '' : 's'} in the fridge` : ''}`); }
   };
   sheet(draw(), wire);
   if (photoForAI && aiShow()) readAI(photoForAI);
