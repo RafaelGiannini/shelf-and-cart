@@ -392,6 +392,15 @@ select.field.small{height:34px;padding:0 8px;font-size:13.5px;width:auto}
 .rvsteps{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:10px;font-size:16px;line-height:1.5}
 .stmeter{display:flex;flex-direction:column;gap:6px;margin:6px 0 10px}.sttop{font-size:15px}
 .stbar{height:12px;border-radius:99px;background:var(--line);overflow:hidden}.stbar i{display:block;height:100%;border-radius:99px}
+.tidy2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px}
+@media (max-width:520px){.tidy2{grid-template-columns:1fr 1fr}.tidy2 select{grid-column:1/-1}}
+.field.aifill{border-color:var(--green);box-shadow:0 0 0 2px color-mix(in srgb,var(--green) 25%,transparent)}
+.mtag{display:inline-block;font-size:12px;font-weight:650;padding:2px 8px;border-radius:99px;background:var(--line);margin-right:4px}
+.fixall{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0}
+.row.tidy .note .linkbtn{margin-left:10px;font-size:12.5px}
+.row.tidy .meta > .field{flex:none;height:42px}
+.tidy2 .field{flex:none;height:38px;font-size:14.5px;padding:0 10px;width:100%}
+.row.tidy .meta .name{font-weight:650}
 .fdlist{display:flex;flex-direction:column;gap:2px;max-height:55vh;overflow:auto;margin:4px 0 8px}
 .fdrow{display:flex;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line)}
 .fdrow input{width:20px;height:20px;flex:none}
@@ -1014,7 +1023,7 @@ const ADMINS = Array.isArray(CFG.admins) ? CFG.admins : [];
 const isMainAdmin = email => ADMINS.some(x => emailIs(x, email));
 const familyName = email => { const g = familyOf(email); if (!g) return ''; const k = Object.keys(g.people).find(e => emailIs(e, email)); return g.people[k] || ''; };
 
-const VERSION = "3.16.0";
+const VERSION = "3.17.0";
 const BASE_CATS = ['Leftovers','Produce','Dairy & Eggs','Meat & Seafood','Bakery','Pantry','Spices & Seasonings','Frozen','Snacks','Drinks','Cleaning','Bathroom','Laundry','Paper & Household','Other'];
 /* the household can add its own categories (Baby, Pets, Garden…); they sit before Other */
 let CATS = BASE_CATS.slice(), _catsKey = '';
@@ -4525,40 +4534,88 @@ function dealRow(x, mine = false) {
    Barcodes that never got a real name ("Item 194346393435"), things filed under Other, and items with only a generic icon:
    rename them, pick a category, look them up again, or let the AI sort them. Fixes apply to every copy (stock, list, product). */
 const unnamed = it => /^item\s*\d{6,}$/i.test(String(it.name || '').trim()) || (it.code && String(it.name || '').trim() === it.code);
-function tidyItems() {
+const capsy = n => { const L = String(n || '').replace(/[^A-Za-z]/g, ''); return L.length >= 8 && L.replace(/[^A-Z]/g, '').length / L.length > .7; };
+function tidyItems(all = false) {
   const out = new Map();
-  const add = (it, why) => { const key = pkey(it); if (!out.has(key)) out.set(key, {key, name: it.name, code: it.code || (/^\d+$/.test(key) ? key : null), category: it.category || 'Other', orig: it._orig || it.category || 'Other', why, img: imgOf(it)}); };
-  for (const k of S.kitchen) { if (unnamed(k)) add(k, 'No name yet'); else if ((k.category || 'Other') === 'Other') add(k, 'Category: Other'); else if (k.category === 'Pantry' && guessCat(rtokens(k.name).join(' ').replace(/^/, ' ')) === 'Spices & Seasonings') add({...k, category: 'Spices & Seasonings', _orig: k.category}, 'Looks like a seasoning (was Pantry)'); }
-  for (const [code, p] of Object.entries(S.products)) { const it = {...p, code: /^\d+$/.test(code) ? code : null}; if (!p.name || p.hideQuick) continue; if (unnamed(it)) add(it, 'No name yet'); else if ((p.category || 'Other') === 'Other' && (p.nameOnly || S.kitchen.some(k => k.code === code))) add(it, 'Category: Other'); }
-  return [...out.values()].sort((a, b) => (b.why === 'No name yet') - (a.why === 'No name yet'));
+  const add = (it, why) => { const key = pkey(it); if (out.has(key)) return; const pr = prodOf(it) || {}, t = typeOf(it);
+    out.set(key, {key, name: it.name, code: it.code || (/^\d+$/.test(key) ? key : null), category: it.category || 'Other', orig: it._orig || it.category || 'Other', why, img: imgOf(it),
+      brand: it.brand ?? pr.brand ?? null, kind: it.kind || pr.kind || '', gBrand: t.brand || '', gKind: t.kind || ''}); };
+  const why = it => unnamed(it) ? 'No name yet' : (it.category || 'Other') === 'Other' ? 'Category: Other'
+    : it.category === 'Pantry' && guessCat(rtokens(it.name).join(' ').replace(/^/, ' ')) === 'Spices & Seasonings' ? 'Looks like a seasoning'
+    : prodOf(it)?.tidied ? ''
+    : capsy(it.name) ? 'Name in ALL CAPS' : String(it.name || '').length > 48 ? 'Long name' : (it.code && !(it.brand ?? prodOf(it)?.brand) && !typeOf(it).brand) ? 'No brand' : '';
+  for (const k of S.kitchen) { if (k.leftover) continue; const w = why(k); if (w === 'Looks like a seasoning') add({...k, category: 'Spices & Seasonings', _orig: k.category}, w); else if (w || all) add(k, w || 'Looks fine'); }
+  for (const [code, p] of Object.entries(S.products)) { const it = {...p, code: /^\d+$/.test(code) ? code : null}; if (!p.name || p.hideQuick) continue;
+    if (!(p.nameOnly || S.kitchen.some(k => k.code === code))) continue;
+    const w = why(it); if (w === 'Looks like a seasoning') add({...it, category: 'Spices & Seasonings', _orig: it.category}, w); else if (w || all) add(it, w || 'Looks fine'); }
+  const rank = w => ['No name yet', 'Category: Other', 'Looks like a seasoning', 'Name in ALL CAPS', 'Long name', 'No brand', 'Looks fine'].indexOf(w);
+  return [...out.values()].sort((a, b) => rank(a.why) - rank(b.why) || a.name.localeCompare(b.name));
 }
-function tidySheet() {
-  const rows = tidyItems();
-  sheet(`<h3>Tidy up items</h3>
-    <p class="hint">${rows.length ? `${rows.length} item${rows.length === 1 ? '' : 's'} could use a better name or category. Fix them here and they’re fixed everywhere: In stock, the list, Quick add and Spending.` : 'Everything has a name and a category. Nice.'}</p>
-    ${rows.length && aiShow() ? `<button class="btn aibtn" id="tdAI">✨ Suggest names and categories</button><span class="aistatus" id="tdBusy"></span>` : ''}
-    <div class="rows">${rows.map((x, j) => `<div class="row tidy">${x.img ? `<img class="thumb" src="${esc(x.img)}" alt="">` : phThumb(x)}
-      <div class="meta"><input class="field" data-tn="${j}" value="${esc(unnamed(x) ? '' : x.name)}" placeholder="${unnamed(x) ? 'What is it? e.g. Tokyo Straw ramen' : ''}" aria-label="Name">
-        <div class="note"><span class="bought">${esc(x.why)}</span>${x.code ? `<span class="code">${esc(x.code)}</span>` : ''}</div>
-        <div class="minor"><select class="field small" data-tc="${j}" aria-label="Category">${CATS.filter(c => c !== 'Leftovers').map(c => `<option${c === x.category ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>
-          ${x.code ? `<button type="button" class="btn small ghost" data-tlook="${j}">Look up again</button>` : ''}<button type="button" class="btn small ghost" data-thide="${j}">Hide from Quick add</button></div></div></div>`).join('')}</div>
+/* what's missing on the food in stock: an expiration date, nutrition facts, ingredients */
+const PERISH = ['Produce', 'Dairy & Eggs', 'Meat & Seafood', 'Bakery', 'Leftovers'];
+function missingInfo() {
+  const seen = new Map();
+  for (const k of visK()) {
+    if (!(k.qty > 0) || NON_FOOD.includes(k.category) || k.category === 'Spices & Seasonings') continue;
+    const pr = prodOf(k) || {}, key = pkey(k);
+    const r = seen.get(key) || {key, k, items: [], date: false, facts: !factsOf(k), ingr: !pr.ingr && !(factsOf(k)?.ingr), code: k.code || null, tried: !!pr.nutrTried};
+    r.items.push(k);
+    if (!k.exp && !k.leftover && (PERISH.includes(k.category) || shelfFor(k))) r.date = true;
+    seen.set(key, r);
+  }
+  return [...seen.values()].filter(r => r.date || r.facts || r.ingr).sort((a, b) => (b.date + b.facts + b.ingr) - (a.date + a.facts + a.ingr) || a.k.name.localeCompare(b.k.name));
+}
+const T = {tab: 'names', all: false};
+function tidySheet(tab) {
+  if (tab) T.tab = tab;
+  const rows = tidyItems(T.all), miss = missingInfo();
+  const head = `<h3>Tidy up items</h3>
+    <div class="modes" style="grid-template-columns:1fr 1fr" role="group"><button data-ttab="names" aria-pressed="${T.tab === 'names'}">Names & categories · ${tidyItems(false).length}</button><button data-ttab="info" aria-pressed="${T.tab === 'info'}">Missing info · ${miss.length}</button></div>`;
+  if (T.tab === 'info') return tidyInfo(head, miss);
+  const field = (attr, j, v, ph, label, cls = '') => `<input class="field ${cls}" ${attr}="${j}" value="${esc(v || '')}" placeholder="${esc(ph || '')}" aria-label="${label}">`;
+  sheet(`${head}
+    <p class="hint">${rows.length ? `${T.all ? `All ${rows.length} items.` : `${rows.length} item${rows.length === 1 ? '' : 's'} could use a better name, brand or category.`} Fix them here and they’re fixed everywhere: In stock, the list, Quick add and Spending.` : 'Everything has a clean name and a category. Nice.'}
+      <button class="linkbtn" id="tdAll">${T.all ? 'Show only the ones that need it' : 'Show all items'}</button></p>
+    ${rows.length && aiShow() ? `<button class="btn aibtn" id="tdAI">✨ Clean up ${rows.length === 1 ? 'it' : `all ${rows.length}`} with AI</button><span class="aistatus" id="tdBusy"></span>` : ''}
+    <div class="rows">${rows.map((x, j) => `<div class="row tidy" data-trow="${j}">${x.img ? `<img class="thumb" src="${esc(x.img)}" alt="">` : phThumb(x)}
+      <div class="meta">${field('data-tn', j, unnamed(x) ? '' : x.name, unnamed(x) ? 'What is it? e.g. Tokyo Straw ramen' : '', 'Name')}
+        <div class="tidy2">${field('data-tb', j, x.brand, x.gBrand || 'Brand', 'Brand', 'small')}${field('data-tk', j, x.kind, x.gKind || 'Type, e.g. Drink mix', 'Type', 'small')}
+          <select class="field small" data-tc="${j}" aria-label="Category">${CATS.filter(c => c !== 'Leftovers').map(c => `<option${c === x.category ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select></div>
+        <div class="note"><span class="bought">${esc(x.why)}</span>${x.code ? `<span class="code">${esc(x.code)}</span>` : ''}
+          ${x.code ? `<button type="button" class="linkbtn" data-tlook="${j}">Look up again</button>` : ''}<button type="button" class="linkbtn" data-thide="${j}">Hide from Quick add</button></div></div></div>`).join('')}</div>
     <div class="actions">${rows.length ? '<button class="btn primary" id="tdSave">Save changes</button>' : ''}<button class="btn" data-act="closeSheet">Close</button></div>`, el => {
+    wireTidyTabs(el);
+    el.querySelector('#tdAll').onclick = () => { T.all = !T.all; tidySheet(); };
     el.querySelector('#tdAI')?.addEventListener('click', async e => {
-      e.target.disabled = true; el.querySelector('#tdBusy').innerHTML = `<span class="spinner"></span> Thinking… ${aiWait('sort')}`;
+      const btn = e.target.closest('button'), st = el.querySelector('#tdBusy'); btn.disabled = true;
+      const cats = CATS.filter(c => c !== 'Leftovers'), health = cats.find(c => /health|medicine|pharmacy/i.test(c));
+      let changed = 0;
       try {
-        const out = await askAI(`Clean up a household grocery and home inventory. For each item, give a clear shopping-list name (brand + product + size if known, title case) and the best category from ${JSON.stringify(CATS.filter(c => c !== 'Leftovers'))}. Medicine, skin care and hair care go in Bathroom; drink mixes like Liquid I.V. in Drinks.
-If an item has only a barcode and no name, return its name as null.
-Items: ${JSON.stringify(rows.map((x, i) => ({i, name: unnamed(x) ? null : x.name, barcode: x.code})))}
-Return only JSON: {"items":[{"i": index, "name": string or null, "category": string}]}`, [], 'sort');
-        for (const x of out?.items || []) { const n = el.querySelector(`[data-tn="${x.i}"]`), c = el.querySelector(`[data-tc="${x.i}"]`); if (n && x.name && !n.value) n.value = x.name; else if (n && x.name && n.value !== x.name) n.value = x.name; if (c && CATS.includes(x.category)) c.value = x.category; }
-        el.querySelector('#tdBusy').textContent = 'Check them, then Save changes.';
-      } catch (err) { el.querySelector('#tdBusy').textContent = err.message; }
-      e.target.disabled = false;
+        for (let o = 0; o < rows.length; o += 40) {
+          const part = rows.slice(o, o + 40);
+          st.innerHTML = `<span class="spinner"></span> Cleaning up ${o + 1}–${o + part.length} of ${rows.length}… ${aiWait('sort')}`;
+          const out = await askAI(`Clean up items in a family's grocery and home inventory app. Names often come from store receipts or barcode databases: ALL CAPS, the brand jumbled in, sizes in odd places.
+For each item return:
+- "name": a clean shopping-list name in Title Case: brand first, then the product, then the size if known (e.g. "Liquid I.V. Hydration Multiplier Electrolyte Drink Mix", "Equate Extra Strength Acetaminophen 500 mg"). Keep the real product; don't invent sizes or flavors. null if the item only has a barcode and you don't know it.
+- "brand": the brand alone, as it's normally written ("Great Value", "Liquid I.V.", "Marketside"), or null if there's none (fresh produce).
+- "type": what it is in 1–3 plain words, singular unless it's always plural ("Drink mix", "Pain reliever", "Salad kit", "Cheddar cheese", "Bananas").
+- "category": exactly one of ${JSON.stringify(cats)}. ${health ? `Medicine and vitamins go in ${health}; skin care and hair care in Bathroom.` : 'Medicine, vitamins, skin care and hair care go in Bathroom.'} Drink mixes go in Drinks. Bagged salads and salad kits go in Produce.
+Items: ${JSON.stringify(part.map((x, i) => ({i: o + i, name: unnamed(x) ? null : x.name, barcode: x.code, now: x.category})))}
+Return only JSON: {"items":[{"i": index, "name": string or null, "brand": string or null, "type": string, "category": string}]}`, [], 'sort');
+          for (const x of out?.items || []) {
+            const set = (sel, v) => { const f = el.querySelector(`[${sel}="${x.i}"]`); if (f && v && f.value !== v) { f.value = v; f.classList.add('aifill'); changed++; } };
+            set('data-tn', x.name); set('data-tb', x.brand); set('data-tk', x.type);
+            const c = el.querySelector(`[data-tc="${x.i}"]`); if (c && cats.includes(x.category) && c.value !== x.category) { c.value = x.category; c.classList.add('aifill'); changed++; }
+          }
+        }
+        st.textContent = changed ? 'Highlighted fields changed. Check them, then Save changes.' : 'The AI had nothing to change.';
+      } catch (err) { st.textContent = err.message; }
+      btn.disabled = false;
     });
     el.querySelectorAll('[data-tlook]').forEach(b => b.onclick = async () => {
       const x = rows[+b.dataset.tlook]; b.disabled = true; b.textContent = 'Looking…';
       const found = await lookupOnline(x.code).catch(() => null);
-      if (found?.name) { el.querySelector(`[data-tn="${b.dataset.tlook}"]`).value = found.name; if (found.category) el.querySelector(`[data-tc="${b.dataset.tlook}"]`).value = found.category; b.textContent = 'Found it'; }
+      if (found?.name) { el.querySelector(`[data-tn="${b.dataset.tlook}"]`).value = found.name; if (found.brand) el.querySelector(`[data-tb="${b.dataset.tlook}"]`).value = found.brand; if (found.category) el.querySelector(`[data-tc="${b.dataset.tlook}"]`).value = found.category; b.textContent = 'Found it'; }
       else b.textContent = 'Not found online';
     });
     el.querySelectorAll('[data-thide]').forEach(b => b.onclick = async () => { const x = rows[+b.dataset.thide]; await updateProduct({name: x.name, code: x.code, category: x.category}, {hideQuick: true}); b.textContent = 'Hidden'; b.disabled = true; });
@@ -4566,16 +4623,81 @@ Return only JSON: {"items":[{"i": index, "name": string or null, "category": str
       let n = 0;
       for (const [j, x] of rows.entries()) {
         const name = el.querySelector(`[data-tn="${j}"]`).value.trim() || x.name, category = el.querySelector(`[data-tc="${j}"]`).value;
-        if (name === x.name && category === x.orig) continue;
+        const brand = el.querySelector(`[data-tb="${j}"]`).value.trim() || null, kind = el.querySelector(`[data-tk="${j}"]`).value.trim() || null;
+        const bChanged = (brand || null) !== (x.brand || null), kChanged = (kind || null) !== (x.kind || null);
+        const soft = ['Name in ALL CAPS', 'Long name', 'No brand'].includes(x.why);
+        if (name === x.name && category === x.orig && !bChanged && !kChanged) { if (soft) updateProduct({name: x.name, code: x.code, category}, {tidied: true}).catch(() => {}); continue; }
         n++;
-        const old = {name: x.name, code: x.code};
-        await updateProduct(old, {name, category});
-        for (const k of S.kitchen.filter(k => x.code ? k.code === x.code : lc(k.name) === lc(x.name))) await put('kitchen', k.id, {...strip(k), name, category}).catch(() => {});
+        const old = {name: x.name, code: x.code}, extra = {...(bChanged ? {brand} : {}), ...(kChanged ? {kind} : {})};
+        await updateProduct(old, {name, category, ...extra, tidied: true});
+        for (const k of S.kitchen.filter(k => x.code ? k.code === x.code : lc(k.name) === lc(x.name))) await put('kitchen', k.id, {...strip(k), name, category, ...extra}).catch(() => {});
         for (const l of S.list.filter(l => x.code ? l.code === x.code : lc(l.name) === lc(x.name))) await put('list', l.id, {...strip(l), name, category}).catch(() => {});
         // name-only products are keyed by name: move the notes (prices, facts, cooking) to the new name
-        if (!x.code && lc(name) !== lc(x.name)) { const from = S.products[pkey(old)]; if (from) { await updateProduct({name, category}, {...strip(from), name, category}); del('products', pkey(old)).catch(() => {}); delete S.products[pkey(old)]; } }
+        if (!x.code && lc(name) !== lc(x.name)) { const from = S.products[pkey(old)]; if (from) { await updateProduct({name, category}, {...strip(from), name, category, ...extra}); del('products', pkey(old)).catch(() => {}); delete S.products[pkey(old)]; } }
       }
       _typeCache.clear(); closeSheet(); render(); toast(n ? `Fixed ${n} item${n === 1 ? '' : 's'}` : 'Nothing changed');
+    });
+  });
+}
+function wireTidyTabs(el) { el.querySelectorAll('[data-ttab]').forEach(b => b.onclick = () => tidySheet(b.dataset.ttab)); }
+/* Missing info: fill it in for many items at once, or jump to one */
+function tidyInfo(head, miss) {
+  const dates = missingDates(), online = miss.filter(r => r.code && (r.facts || r.ingr) && !r.tried), noCode = miss.filter(r => r.facts && (!r.code || r.tried));
+  const nD = miss.filter(r => r.date).length, nF = miss.filter(r => r.facts).length, nI = miss.filter(r => r.ingr).length;
+  const tag = (on, t) => on ? `<span class="mtag">${t}</span>` : '';
+  sheet(`${head}
+    <p class="hint">${miss.length ? `${miss.length} food item${miss.length === 1 ? '' : 's'} in stock ${miss.length === 1 ? 'is' : 'are'} missing something: ${[nD && `${nD} without a date`, nF && `${nF} without nutrition facts`, nI && `${nI} without ingredients`].filter(Boolean).join(', ')}.` : 'Everything in stock has a date, nutrition facts and ingredients. Nice.'}</p>
+    ${miss.length ? `<div class="fixall">
+      ${dates.length ? `<button class="btn" id="tiDates">📅 Estimate ${dates.length} date${dates.length === 1 ? '' : 's'}</button>` : ''}
+      ${online.length ? `<button class="btn" id="tiOnline">🌐 Look up ${online.length} by barcode</button>` : ''}
+      ${noCode.length && aiShow() ? `<button class="btn aibtn" id="tiAI">✨ Typical nutrition for ${noCode.length} fresh food${noCode.length === 1 ? '' : 's'}</button>` : ''}
+      <span class="aistatus" id="tiBusy"></span></div>
+      <p class="hint">Barcodes are looked up free on Open Food Facts. The AI fills in typical values for fresh food like bananas or chicken thighs and skips packaged things it can’t know; for those, tap 📷 Label and snap the package.</p>` : ''}
+    <div class="rows">${miss.map((r, j) => `<div class="row tidy">${thumbHtml(r.k)}
+      <div class="meta"><div class="name">${esc(r.k.name)}</div>
+        <div class="note">${tag(r.date, '📅 No date')}${tag(r.facts, '🥗 No nutrition')}${tag(r.ingr, '🧾 No ingredients')}${r.items.length > 1 ? `<span>${r.items.length} places</span>` : ''}</div>
+        <div class="minor">${r.date ? `<button type="button" class="btn small ghost" data-tiexp="${j}">Estimate date</button>` : ''}${r.facts || r.ingr ? `<button type="button" class="btn small ghost" data-tifacts="${j}">📷 Label</button>` : ''}</div></div></div>`).join('')}</div>
+    <div class="actions col"><button class="btn" data-act="closeSheet">Close</button></div>`, el => {
+    wireTidyTabs(el);
+    const st = el.querySelector('#tiBusy');
+    el.querySelector('#tiDates')?.addEventListener('click', () => fillDatesSheet());
+    el.querySelectorAll('[data-tiexp]').forEach(b => b.onclick = () => estimateSheet(miss[+b.dataset.tiexp].k));
+    el.querySelectorAll('[data-tifacts]').forEach(b => b.onclick = () => factsSheet(miss[+b.dataset.tifacts].k));
+    el.querySelector('#tiOnline')?.addEventListener('click', async e => {
+      const btn = e.target.closest('button'); btn.disabled = true; let got = 0;
+      for (const [i, r] of online.entries()) {
+        st.innerHTML = `<span class="spinner"></span> ${i + 1} of ${online.length}: ${esc(r.k.name.slice(0, 40))}`;
+        try {
+          const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${r.code}.json?fields=${OFF_FIELDS}`), j = res.ok ? await res.json() : null;
+          const nf = j?.product ? offFacts(j.product) : null, extra = j?.product ? nutrOf(j.product) : {}, pr = prodOf(r.k) || {};
+          await updateProduct(r.k, {nutrTried: true, ...(extra.nutr && !pr.nutr ? {nutr: extra.nutr} : {}), ...(extra.ingr && !pr.ingr ? {ingr: extra.ingr} : {}), ...((extra.allergens || []).length && !(pr.allergens || []).length ? {allergens: extra.allergens} : {})});
+          if (nf && !factsOf(r.k)) await saveFacts(r.k, nf);
+          if (nf || extra.ingr) got++;
+        } catch (err) {}
+      }
+      toast(`Found info for ${got} of ${online.length}`); tidySheet('info');
+    });
+    el.querySelector('#tiAI')?.addEventListener('click', async e => {
+      const btn = e.target.closest('button'); btn.disabled = true; let got = 0;
+      try {
+        for (let o = 0; o < noCode.length; o += 30) {
+          const part = noCode.slice(o, o + 30);
+          st.innerHTML = `<span class="spinner"></span> ${o + 1}–${o + part.length} of ${noCode.length}… ${aiWait('sort')}`;
+          const out = await askAI(`Give typical nutrition facts (USDA-style averages) for these foods from a family's kitchen. Only for fresh or single-ingredient foods where typical values are reliable (produce, eggs, milk, plain meat and fish, bread, rice). For packaged or prepared products whose recipe varies by brand (salad kits, frozen meals, snacks, sauces), set "packaged": true and leave the numbers out.
+Use one common serving (e.g. "1 medium banana (118 g)", "4 oz raw (112 g)", "1 cup (240 ml)").
+Foods: ${JSON.stringify(part.map((r, i) => ({i: o + i, name: r.k.name, category: r.k.category})))}
+Return only JSON: {"items":[{"i": index, "packaged": true or false, "serving": text, "g": grams in the serving, "kcal": number, "protein": g, "carbs": g, "fat": g, "satfat": g, "fiber": g, "sugar": g, "sodium": mg, "chol": mg, "ingr": the ingredient list for a single-ingredient food (e.g. "Bananas") or null}]}`, [], 'sort');
+          for (const x of out?.items || []) {
+            const r = noCode[x.i]; if (!r || x.packaged || !(Number(x.kcal) >= 0) || x.kcal == null) continue;
+            const num = v => v == null || isNaN(+v) ? null : Math.round(+v * 10) / 10;
+            const f = {serving: String(x.serving || '1 serving').slice(0, 40), g: num(x.g), kcal: Math.round(+x.kcal), protein: num(x.protein), carbs: num(x.carbs), fat: num(x.fat), satfat: num(x.satfat), fiber: num(x.fiber), sugar: num(x.sugar), sodium: x.sodium == null ? null : Math.round(+x.sodium), chol: x.chol == null ? null : Math.round(+x.chol), src: 'Typical values (AI estimate)', est: true};
+            if (x.ingr && !prodOf(r.k)?.ingr) f.ingr = String(x.ingr).slice(0, 200);
+            await saveFacts(r.k, f); got++;
+          }
+        }
+        toast(`Filled in typical nutrition for ${got} food${got === 1 ? '' : 's'}`);
+      } catch (err) { toast(err.message); }
+      tidySheet('info');
     });
   });
 }
@@ -4674,6 +4796,8 @@ function kTile(k) {
 
 /* ================= help and what's new ================= */
 const WHATS_NEW = [
+  ['3.17', 'October 2026', ['Tidy up items: ✨ Clean up with AI fixes names (no more ALL CAPS), splits out the brand and type, and picks the category for every item at once; you check the highlighted changes and save. Show all items to tidy anything.',
+    'Tidy up → Missing info lists food in stock without a date, nutrition facts or ingredients, with one-tap fixes for all of them: estimate dates, look up barcodes on Open Food Facts, or fill typical nutrition for fresh food with AI.']],
   ['3.16', 'October 2026', ['Opens faster, especially with a lot in stock: the screen is drawn once instead of once for each kind of data, price comparisons are worked out once, and the barcode library and fonts no longer hold up the first screen.',
     'Admin → Storage shows how much of the free 1 GB is used, by household, and can shrink receipt photos older than 3 months or delete photos left over from deleted receipts.']],
   ['3.15', 'October 2026', ['Quick add → Your usual: press and hold a tile (or right-click) to rename it, give it a photo or emoji, or remove it from Quick add.', 'List items can have their own picture now (tap one on the list): take one, choose one, find one online or make an AI picture. It carries over to the same item in stock.', 'When App Check blocks AI, the message now says which setting is wrong instead of a general hint.',
