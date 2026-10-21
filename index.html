@@ -404,6 +404,8 @@ select.field.small{height:34px;padding:0 8px;font-size:13.5px;width:auto}
 .tdbar{position:sticky;top:-1px;z-index:3;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 12px;margin:6px 0;border-radius:12px;background:var(--surface);border:1px solid var(--green);box-shadow:0 6px 18px rgba(0,0,0,.12)}
 .tdbar span{flex:1;font-weight:650;font-size:14px}
 .tdsaved{color:var(--green);font-weight:650;font-size:12.5px;margin-left:6px}
+.tdshow{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5}.tdshow b{color:var(--ink)}.tdshow .tdtile{display:inline-block;padding:1px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);margin-right:2px}.tdshow .tdwarn{color:#B0651A;font-weight:650}
+.tdfilt{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.tdfilt button{height:32px;padding:0 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:13px;color:inherit}.tdfilt button[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}.tdfilt .sep{flex-basis:100%;height:0}
 #tdQ{margin:4px 0 8px;flex:none;height:44px}
 .leftq{display:flex;flex-direction:column;gap:6px;margin-top:12px;padding:12px;border:1px dashed var(--line);border-radius:12px}
 .fdlist{display:flex;flex-direction:column;gap:2px;max-height:55vh;overflow:auto;margin:4px 0 8px}
@@ -1028,7 +1030,7 @@ const ADMINS = Array.isArray(CFG.admins) ? CFG.admins : [];
 const isMainAdmin = email => ADMINS.some(x => emailIs(x, email));
 const familyName = email => { const g = familyOf(email); if (!g) return ''; const k = Object.keys(g.people).find(e => emailIs(e, email)); return g.people[k] || ''; };
 
-const VERSION = "3.17.3";
+const VERSION = "3.17.4";
 const BASE_CATS = ['Leftovers','Produce','Dairy & Eggs','Meat & Seafood','Bakery','Pantry','Spices & Seasonings','Frozen','Snacks','Drinks','Cleaning','Bathroom','Laundry','Paper & Household','Other'];
 /* the household can add its own categories (Baby, Pets, Garden…); they sit before Other */
 let CATS = BASE_CATS.slice(), _catsKey = '';
@@ -4571,7 +4573,7 @@ function missingInfo() {
   }
   return [...seen.values()].filter(r => r.date || r.facts || r.ingr).sort((a, b) => (b.date + b.facts + b.ingr) - (a.date + a.facts + a.ingr) || a.k.name.localeCompare(b.k.name));
 }
-const T = {tab: 'names', q: ''};
+const T = {tab: 'names', q: '', f: 'all', sort: 'name'};
 const tidySame = x => o => x.code ? o.code === x.code : !o.code && lc(o.name) === lc(x.name);
 /* where a name shows up: in stock (and how many places), on the list, as a Quick add tile (and the label the tile uses) */
 function tidyWhere(x) {
@@ -4579,6 +4581,14 @@ function tidyWhere(x) {
   const usual = (S._usualKeys ||= new Set(usualItems().map(pkey))).has(x.key);
   const label = byType() ? typeOf({...x, brand: x.brand ?? undefined, kind: x.kind || undefined}).kind : x.name;
   return {stock: k.length, list: l.length, quick: usual, hidden: !!pr.hideQuick, label};
+}
+/* how an item's name shows around the app, so odd tiles and fridge labels are easy to spot */
+function tidyShows(x, v) {
+  const t = typeOf({name: v.name, code: x.code, brand: v.brand ?? undefined, kind: v.kind || undefined});
+  const small = [t.brand, t.detail].filter(Boolean).join(' · '), grouped = byType();
+  const warn = (t.kind.length > 22 || /\d/.test(t.kind)) ? ' <span class="tdwarn">⚠ long type</span>' : !t.kind ? ' <span class="tdwarn">⚠ no type</span>' : '';
+  return `<span title="Quick add tiles, the fridge and lists when Group by type is on">${grouped ? '<b>Now shows:</b>' : 'Grouped:'}</span> <span class="tdtile"><b>${esc(t.kind || '—')}</b>${small ? ' ' + esc(small) : ''}</span>${warn}
+    · <span title="The fridge and lists when Group by type is off">${grouped ? 'Ungrouped:' : '<b>Now shows:</b>'}</span> ${esc(tidyCase(v.name))}`;
 }
 /* unsaved AI suggestions survive closing the sheet by mistake */
 const TD_KEY = 'tidy:draft';
@@ -4605,6 +4615,7 @@ function tidySheet(tab) {
   const head = `<h3>Tidy up items</h3>
     <div class="modes" style="grid-template-columns:1fr 1fr 1fr" role="group"><button data-ttab="names" aria-pressed="${T.tab === 'names'}">Needs a look · ${need}</button><button data-ttab="all" aria-pressed="${all}">All names</button><button data-ttab="info" aria-pressed="${T.tab === 'info'}">Missing · ${miss.length}</button></div>`;
   if (T.tab === 'info') return tidyInfo(head, miss);
+  if (all && T.sort === 'tile') rows.sort((a, b) => lc(tidyWhere(a).label).localeCompare(lc(tidyWhere(b).label)) || a.name.localeCompare(b.name, undefined, {sensitivity: 'base'}));
   const drafts = tdDrafts();
   // a suggested move (smoked paprika out of Pantry) waits as a suggestion until it's saved
   for (const x of rows) if (x.category !== x.orig && !drafts[x.key]) { drafts[x.key] = {category: x.category}; x.category = x.orig; }
@@ -4612,16 +4623,21 @@ function tidySheet(tab) {
   const field = (attr, j, v, ph, label, cls = '') => `<input class="field ${cls}" ${attr}="${j}" value="${esc(v || '')}" placeholder="${esc(ph || '')}" aria-label="${label}">`;
   const rowHtml = (x, j) => { const d = drafts[x.key], w = tidyWhere(x), dv = (f, v) => d && d[f] != null ? d[f] : v;
     const chips = [w.stock ? `In stock${w.stock > 1 ? ' ×' + w.stock : ''}` : '', w.list ? 'On the list' : '', w.quick ? `Quick add tile: “${w.label}”` : w.hidden ? 'Hidden from Quick add' : ''].filter(Boolean);
-    return `<div class="row tidy" data-trow="${j}" data-search="${esc(lc([x.name, x.brand, x.kind, x.category, w.label].join(' ')))}">${x.img ? `<img class="thumb" src="${esc(x.img)}" alt="">` : phThumb(x)}
+    const flags = [w.stock && 'stock', w.list && 'list', w.quick && 'quick', w.hidden && 'hidden'].filter(Boolean).join(' ');
+    return `<div class="row tidy" data-trow="${j}" data-where="${flags}" data-search="${esc(lc([x.name, x.brand, x.kind, x.category, w.label].join(' ')))}">${x.img ? `<img class="thumb" src="${esc(x.img)}" alt="">` : phThumb(x)}
       <div class="meta">${field('data-tn', j, dv('name', unnamed(x) ? '' : x.name), unnamed(x) ? 'What is it? e.g. Tokyo Straw ramen' : '', 'Name', d?.name != null ? 'aifill' : '')}
         <div class="tidy2">${field('data-tb', j, dv('brand', x.brand), x.gBrand || 'Brand', 'Brand', 'small' + (d?.brand != null ? ' aifill' : ''))}${field('data-tk', j, dv('kind', x.kind), x.gKind || 'Type, e.g. Drink mix', 'Type', 'small' + (d?.kind != null ? ' aifill' : ''))}
           <select class="field small${d?.category ? ' aifill' : ''}" data-tc="${j}" aria-label="Category">${CATS.filter(c => c !== 'Leftovers').map(c => `<option${c === dv('category', x.category) ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select></div>
         <div class="note">${!all ? `<span class="bought">${esc(x.why)}</span>` : ''}${chips.map(c => `<span class="mtag">${esc(c)}</span>`).join('')}${x.code ? `<span class="code">${esc(x.code)}</span>` : ''}<span class="tdsaved" data-tsaved="${j}"></span>
-          ${x.code ? `<button type="button" class="linkbtn" data-tlook="${j}">Look up again</button>` : ''}<button type="button" class="linkbtn" data-thide="${j}">${w.hidden ? 'Show on Quick add' : 'Hide from Quick add'}</button></div></div></div>`; };
+          ${x.code ? `<button type="button" class="linkbtn" data-tlook="${j}">Look up again</button>` : ''}<button type="button" class="linkbtn" data-thide="${j}">${w.hidden ? 'Show on Quick add' : 'Hide from Quick add'}</button></div>
+        <div class="tdshow" data-tshow="${j}">${tidyShows(x, {name: dv('name', x.name), brand: dv('brand', x.brand), kind: dv('kind', x.kind)})}</div></div></div>`; };
   const nDraft = rows.filter(x => drafts[x.key]).length;
   sheet(`${head}
-    <p class="hint">${all ? `Every name in the app, A to Z: what’s in stock, on the list and on Quick add. ${byType() ? 'Quick add and grouped views show the <b>Type</b>, so that’s the name to fix if a tile looks odd.' : ''}` : rows.length ? `${rows.length} item${rows.length === 1 ? '' : 's'} could use a better name, brand or category, A to Z.` : 'Everything has a clean name and a category. Nice.'} Changes save as you go, everywhere the item appears.</p>
-    ${all ? `<input class="field" id="tdQ" type="search" placeholder="🔎 Find a name, brand, type or category" value="${esc(T.q)}" aria-label="Filter">` : ''}
+    <p class="hint">${all ? `Every name in the app: what’s in stock, on the list and on Quick add. Each row shows how it looks <b>grouped</b> (the bold Type on Quick add tiles and the fridge, brand and detail underneath) and <b>ungrouped</b> (the full name). Fix whichever looks odd.` : rows.length ? `${rows.length} item${rows.length === 1 ? '' : 's'} could use a better name, brand or category, A to Z.` : 'Everything has a clean name and a category. Nice.'} Changes save as you go, everywhere the item appears.</p>
+    ${all ? `<input class="field" id="tdQ" type="search" placeholder="🔎 Find a name, brand, type or category" value="${esc(T.q)}" aria-label="Filter">
+      <div class="tdfilt" role="group" aria-label="Show">${[['all', 'Everything'], ['stock', 'In stock'], ['list', 'On the list'], ['quick', 'Quick add'], ['hidden', 'Hidden']].map(([f, t]) => `<button type="button" data-tf="${f}" aria-pressed="${T.f === f}">${t}</button>`).join('')}
+        <span class="sep"></span>${[['name', 'A–Z by name'], ['tile', 'A–Z by tile label']].map(([f, t]) => `<button type="button" data-tsort="${f}" aria-pressed="${T.sort === f}">${t}</button>`).join('')}</div>
+      <p class="hint" id="tdCount"></p>` : ''}
     ${rows.length && aiShow() ? `<button class="btn aibtn" id="tdAI">✨ Suggest clean names ${all ? 'for the ones shown' : rows.length === 1 ? 'for it' : `for all ${rows.length}`} with AI</button>` : ''}
     <div class="tdbar" id="tdBar"${nDraft ? '' : ' hidden'}><span id="tdBarTxt">${nDraft} AI suggestion${nDraft === 1 ? '' : 's'} to check</span><button class="btn small primary" id="tdKeep">Save all suggestions</button><button class="btn small ghost" id="tdDrop">Discard</button></div>
     <span class="aistatus" id="tdBusy"></span>
@@ -4631,19 +4647,30 @@ function tidySheet(tab) {
     const vals = j => ({name: el.querySelector(`[data-tn="${j}"]`).value.trim() || rows[j].name, category: el.querySelector(`[data-tc="${j}"]`).value,
       brand: el.querySelector(`[data-tb="${j}"]`).value.trim() || null, kind: el.querySelector(`[data-tk="${j}"]`).value.trim() || null});
     const bar = () => { const d = tdDrafts(), n = rows.filter(x => d[x.key]).length; el.querySelector('#tdBar').hidden = !n; el.querySelector('#tdBarTxt').textContent = `${n} AI suggestion${n === 1 ? '' : 's'} to check`; };
-    const saveRow = async j => {
+    const saveRow = async (j, v = vals(j)) => {
       const x = rows[j], oldKey = x.key, mark = el.querySelector(`[data-tsaved="${j}"]`);
       try {
-        const did = await saveTidyRow(x, vals(j));
+        const did = await saveTidyRow(x, v);
         const d = tdDrafts(); delete d[oldKey]; tdSetDrafts(d); bar();
         el.querySelectorAll(`[data-trow="${j}"] .aifill`).forEach(f => f.classList.remove('aifill'));
         if (did && mark) { mark.textContent = '✓ Saved'; clearTimeout(mark._t); mark._t = setTimeout(() => { mark.textContent = ''; }, 2500); renderSoon(); }
       } catch (e) { if (mark) mark.textContent = 'Couldn’t save'; }
     };
-    // save as you go: when a field is left or a category picked
-    el.querySelector('#tdRows').addEventListener('change', e => { const r = e.target.closest('[data-trow]'); if (r && e.target.matches('input, select')) saveRow(+r.dataset.trow); });
-    el.querySelector('#tdQ')?.addEventListener('input', e => { T.q = e.target.value; const q = lc(T.q.trim()); el.querySelectorAll('#tdRows [data-trow]').forEach(r => { r.hidden = !!q && !r.dataset.search.includes(q); }); });
-    if (T.q) el.querySelector('#tdQ')?.dispatchEvent(new Event('input'));
+    // save as you go: a moment after typing stops, when a field is left, or a category is picked
+    const pending = new Map();
+    const queue = (j, ms) => { clearTimeout(pending.get(j)); pending.set(j, setTimeout(() => { pending.delete(j); saveRow(j); }, ms)); };
+    const preview = j => { const sh = el.querySelector(`[data-tshow="${j}"]`); if (sh) sh.innerHTML = tidyShows(rows[j], vals(j)); };
+    el.querySelector('#tdRows').addEventListener('input', e => { const r = e.target.closest('[data-trow]'); if (r && e.target.matches('input')) { preview(+r.dataset.trow); queue(+r.dataset.trow, 1200); } });
+    el.querySelector('#tdRows').addEventListener('change', e => { const r = e.target.closest('[data-trow]'); if (r && e.target.matches('input, select')) { preview(+r.dataset.trow); queue(+r.dataset.trow, 0); } });
+    // closing the sheet (tap outside, Done, another tab) saves anything still waiting
+    S._beforeClose = () => { for (const [j, t] of pending) { clearTimeout(t); const v = vals(j); saveTidyRow(rows[j], v).then(() => { const d = tdDrafts(); delete d[rows[j].key]; tdSetDrafts(d); renderSoon(); }).catch(() => {}); } pending.clear(); };
+    const applyFilter = () => { const q = lc(T.q.trim()); let n = 0;
+      el.querySelectorAll('#tdRows [data-trow]').forEach(r => { r.hidden = (!!q && !r.dataset.search.includes(q)) || (T.f !== 'all' && !r.dataset.where.split(' ').includes(T.f)); n += !r.hidden; });
+      const c = el.querySelector('#tdCount'); if (c) c.textContent = `Showing ${n} of ${rows.length}`; };
+    el.querySelector('#tdQ')?.addEventListener('input', e => { T.q = e.target.value; applyFilter(); });
+    el.querySelectorAll('[data-tf]').forEach(b => b.onclick = () => { T.f = b.dataset.tf; el.querySelectorAll('[data-tf]').forEach(o => o.setAttribute('aria-pressed', o === b)); applyFilter(); });
+    el.querySelectorAll('[data-tsort]').forEach(b => b.onclick = () => { T.sort = b.dataset.tsort; tidySheet(); });
+    if (all) applyFilter();
     el.querySelector('#tdKeep').onclick = async e => { const b = e.target; b.disabled = true; const d = tdDrafts(); let n = 0;
       for (const [j, x] of rows.entries()) if (d[x.key]) { b.textContent = `Saving ${++n}…`; await saveRow(j); }
       toast(`Saved ${n} suggestion${n === 1 ? '' : 's'}`); tidySheet(); };
@@ -4846,7 +4873,8 @@ function kTile(k) {
 
 /* ================= help and what's new ================= */
 const WHATS_NEW = [
-  ['3.17', 'October 2026', ['We ate out → Bringing leftovers home? Tick 🥡 on the dishes you’re taking (or Yes, all of it) and they go in the fridge as leftovers with a use-by date for that food: 3–4 days for most cooked food, 1–2 for salads, a day for sushi.',
+  ['3.17', 'October 2026', ['Tidy up → All names shows how every item looks grouped (the Quick add tile and fridge label) and ungrouped (the full name), with filters for In stock, On the list, Quick add and Hidden, and A–Z by name or by tile label. Edits save a moment after you stop typing, and closing the sheet by accident saves anything still waiting.',
+    'We ate out → Bringing leftovers home? Tick 🥡 on the dishes you’re taking (or Yes, all of it) and they go in the fridge as leftovers with a use-by date for that food: 3–4 days for most cooked food, 1–2 for salads, a day for sushi.',
     'Tidy up saves as you go (no Save button to forget), lists items A to Z, keeps unsaved AI suggestions if the sheet closes by accident, and has an All names tab: every name in stock, on the list and on Quick add, with the label each Quick add tile uses and a search box.',
     'Tidy up items: ✨ Clean up with AI fixes names (no more ALL CAPS), splits out the brand and type, and picks the category for every item at once; you check the highlighted changes and save. Show all items to tidy anything.',
     'Tidy up → Missing info lists food in stock without a date, nutrition facts or ingredients, with one-tap fixes for all of them: estimate dates, look up barcodes on Open Food Facts, or fill typical nutrition for fresh food with AI.']],
@@ -6927,11 +6955,13 @@ function cropPhoto(file, {square = false, title = 'Crop the photo', doc = false}
 }
 
 /* ================= sheets & toast ================= */
+function sheetFlush() { const f = S._beforeClose; S._beforeClose = null; try { f && f(); } catch (e) {} }
 function sheet(html, onMount) {
+  sheetFlush();
   $('#sheetRoot').innerHTML = `<div class="scrim" data-act="closeSheet"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;
   onMount && onMount($('#sheetRoot .sheet'));
 }
-const closeSheet = () => $('#sheetRoot').innerHTML = '';
+const closeSheet = () => { sheetFlush(); $('#sheetRoot').innerHTML = ''; };
 let toastT;
 function toast(msg, action, fn) {
   const root = $('#toastRoot');
