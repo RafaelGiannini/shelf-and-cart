@@ -1028,7 +1028,7 @@ const ADMINS = Array.isArray(CFG.admins) ? CFG.admins : [];
 const isMainAdmin = email => ADMINS.some(x => emailIs(x, email));
 const familyName = email => { const g = familyOf(email); if (!g) return ''; const k = Object.keys(g.people).find(e => emailIs(e, email)); return g.people[k] || ''; };
 
-const VERSION = "3.17.2";
+const VERSION = "3.17.3";
 const BASE_CATS = ['Leftovers','Produce','Dairy & Eggs','Meat & Seafood','Bakery','Pantry','Spices & Seasonings','Frozen','Snacks','Drinks','Cleaning','Bathroom','Laundry','Paper & Household','Other'];
 /* the household can add its own categories (Baby, Pets, Garden…); they sit before Other */
 let CATS = BASE_CATS.slice(), _catsKey = '';
@@ -6398,10 +6398,11 @@ const MENU = () => [
 const SHORTCUTS = () => MENU().flatMap(([, items]) => items);
 /* Check AI: App Check token, then a tiny text request, then a tiny picture request, with Google's own wording */
 async function aiCheckSheet() {
-  const rows = [['App Check', 'checking…'], ['Text AI (labels, receipts, recipes)', 'waiting…'], ['Pictures', 'waiting…']];
+  const rows = [['App Check', 'checking…'], ['Text AI (labels, receipts, recipes)', 'waiting…'], ['Pictures', 'waiting…']]; let acSwitch = false;
   const draw = () => sheet(`<h3>Check AI</h3><div class="rows">${rows.map(([n, v]) => `<div class="row"><div class="meta"><div class="name">${esc(n)}</div><div class="note" style="white-space:normal">${esc(v)}</div></div></div>`).join('')}</div>
     <p class="hint">Site key in firebase-config.js: ${esc(String((CFG.appCheck || {}).siteKey || '(none)'))} · provider ${esc((CFG.appCheck || {}).provider || 'enterprise')} · this site: ${esc(location.hostname)}</p>
-    <div class="actions col"><button class="btn ghost" data-act="closeSheet">Close</button></div>`);
+    ${acSwitch || aiLimited() ? `<div class="estnote">${aiLimited() ? 'Using <b>limited-use</b> App Check tokens.' : 'App Check gives a token but the AI refuses it.'} Some projects need the other kind of token. <button class="btn small" id="acMode">${aiLimited() ? 'Switch back to normal tokens' : 'Try limited-use tokens'}</button> <span class="hint">The app reloads; then run Check AI again.</span></div>` : ''}
+    <div class="actions col"><button class="btn ghost" data-act="closeSheet">Close</button></div>`, el => { const b = el.querySelector('#acMode'); if (b) b.onclick = () => { ls.set('ai:limited', aiLimited() ? null : '1'); location.reload(); }; });
   draw();
   await AC.ready;
   if (!AC.on) rows[0][1] = 'Not set up: no site key in firebase-config.js.';
@@ -6409,7 +6410,7 @@ async function aiCheckSheet() {
   else { const pr = await acProbe(); if (pr.state !== 'ok') { rows[0][1] = '✗ ' + acExplain(pr) + (pr.raw ? ` · App Check said: ${pr.raw.slice(0, 200)}` : ''); draw(); } }
   if (AC.on && !AC.err && rows[0][1] === 'checking…') { try { const t = await AC.mod.getToken(AC.inst, false); rows[0][1] = t?.token ? '✓ Working: this device got an App Check token.' : '✗ No token came back.'; } catch (e) { rows[0][1] = '✗ ' + String(e?.message || e).replace(/https?:\/\/\S+/g, '').slice(0, 300); } }
   draw();
-  AI.lastRaw = ''; try { await askAI('Reply with only this JSON: {"ok": true}', [], 'check'); rows[1][1] = '✓ Working.'; } catch (e) { rows[1][1] = '✗ ' + e.message + (AI.lastRaw ? ` · Google said: ${AI.lastRaw}` : ''); }
+  AI.lastRaw = ''; try { await askAI('Reply with only this JSON: {"ok": true}', [], 'check'); rows[1][1] = '✓ Working.'; } catch (e) { rows[1][1] = '✗ ' + e.message + (AI.lastRaw ? ` · Google said: ${AI.lastRaw}` : ''); if (/app.?check/i.test(e.message + AI.lastRaw)) acSwitch = true; }
   draw();
   AI.lastRaw = ''; try { await aiPicture('A small red apple on a white plate, simple photo.', 200); rows[2][1] = '✓ Working.'; } catch (e) { rows[2][1] = '✗ ' + e.message + (e.raw || AI.lastRaw ? ` · Google said: ${String(e.raw || AI.lastRaw).slice(0, 300)}` : ''); }
   draw();
@@ -6579,11 +6580,14 @@ const AI = {models: null, off: false, why: ''};
 // AI.off: AI isn't set up in Firebase (found at runtime). S.aiOff: this person turned AI features off.
 const aiShow = () => !S.aiOff && !AI.off;
 const aiModels = () => (Array.isArray(CFG.aiModels) && CFG.aiModels.length ? CFG.aiModels : ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite']);
+/* "limited-use" App Check tokens are a one-time kind some projects require (replay protection); Check AI can switch to them */
+const aiLimited = () => ls.get('ai:limited') === '1';
+const aiOpts = m => ({backend: new m.GoogleAIBackend(), ...(aiLimited() ? {useLimitedUseAppCheckTokens: true} : {})});
 async function aiReady() {
   if (AI.models) return AI.models;
   await AC.ready;
   const m = await import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-ai.js`);
-  const ai = m.getAI(fbApp, {backend: new m.GoogleAIBackend()});
+  const ai = m.getAI(fbApp, aiOpts(m));
   // low thinking: these are reading jobs, and less thinking answers several times faster
   const think = m.ThinkingLevel?.LOW ? {thinkingConfig: {thinkingLevel: m.ThinkingLevel.LOW}} : {};
   AI.models = aiModels().map(name => ({name,
@@ -6603,7 +6607,7 @@ async function aiPicture(prompt, size = 600) {
   if (!navigator.onLine) throw new Error('You’re offline.');
   await AC.ready;
   const m = await import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-ai.js`);
-  const ai = m.getAI(fbApp, {backend: new m.GoogleAIBackend()});
+  const ai = m.getAI(fbApp, aiOpts(m));
   const names = (typeof CFG.imageModels !== 'undefined' && CFG.imageModels?.length) ? CFG.imageModels : ['gemini-2.5-flash-image', 'gemini-3-pro-image-preview'];
   const t0 = AI.t0 = Date.now(), run = AI.run = {}; let last = null;
   try {
@@ -6722,7 +6726,7 @@ function acExplain(pr) {
   const regFix = `Firebase → App Check → Apps → your web app → reCAPTCHA Enterprise must show the same key ending ${kt}.`;
   if (pr.state === 'off') return '';
   if (pr.state === 'load') return `App Check couldn’t load on this device (${raw.slice(0, 120)}). Close the app fully and reopen it.`;
-  if (pr.state === 'ok') return `This device gets an App Check token, but the AI refused it. Check: (1) ${regFix} The app registered there must be the one whose appId is in firebase-config.js (…${String(firebaseConfig.appId || '').slice(-8)}). (2) If you set it up in the last 15 minutes, wait and try again.`;
+  if (pr.state === 'ok') return `This device gets an App Check token, but the AI refused it${AI.lastRaw ? ` (Google said: “${AI.lastRaw.slice(0, 160)}”)` : ''}. Menu → This device → Check AI can try the other token mode. Also check: (1) ${regFix} The app registered there must be the one whose appId is in firebase-config.js (…${String(firebaseConfig.appId || '').slice(-8)}). (2) If you set it up in the last 15 minutes, wait and try again.`;
   const throttled = /throttl/i.test(raw), s403 = /\b403\b/.test(raw), s400 = /\b400\b/.test(raw);
   const pause = throttled ? ' App Check is also pausing after the earlier failures, so after fixing it, fully close the app (or clear this site’s data) before trying again.' : '';
   if (/recaptcha/i.test(raw) && !s403 && !s400) return `reCAPTCHA wouldn’t give this site a token. ${capFix}${pause}`;
