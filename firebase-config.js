@@ -53,4 +53,4 @@ export const appCheck = { provider: "enterprise", siteKey: "6LcpTPctAAAAAIYvNpSX
 
 // USDA FoodData Central: typical nutrition for fresh food (bananas, chicken thighs). "DEMO_KEY" works for a few lookups an hour;
 // a free personal key from https://api.data.gov/signup/ allows 1,000 an hour. It is a public key, fine to keep here.
-export const usdaKey = "DEMO_KEY";
+export const usdaKey = "wWLtTgF6qfkLN7dNCzkcPBDKPQmpNBtcNjrzgKKP";

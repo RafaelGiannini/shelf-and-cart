@@ -440,6 +440,18 @@ select.field.small{height:34px;padding:0 8px;font-size:13.5px;width:auto}
 .pgrid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;background:#fff}.pgrid small{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .epick{display:flex;flex-direction:column;gap:8px;margin-top:8px}.epick .field{flex:none;height:42px}.epick .field.small{height:38px}.egrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}.egrid button{height:44px;font-size:24px;border:1px solid var(--line);background:var(--surface);border-radius:10px;cursor:pointer}
 .preview.pemoji{display:grid;place-items:center;font-size:40px}
+.ctiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}.ctile{border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--surface);display:flex;flex-direction:column}
+.ctile b{font-size:24px;font-variant-numeric:tabular-nums;line-height:1.1}.ctile span{font-size:12.5px;color:var(--muted)}.ctile.warn b{color:#b7791f}.ctile.bad b{color:var(--danger)}
+.cgroup{display:flex;flex-direction:column;gap:8px;margin-top:14px}.cgroup h4{margin:0;font-size:14px}
+.cstack{display:flex;gap:2px;height:16px;border-radius:6px;overflow:hidden;background:var(--line)}.cstack i{display:block;min-width:4px}
+.clegend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--muted)}.clegend span{display:inline-flex;align-items:center;gap:5px}.clegend i{width:10px;height:10px;border-radius:3px;display:inline-block}.clegend b{color:var(--ink)}
+.cweeks{display:flex;align-items:flex-end;gap:4px;height:140px;padding-top:16px}.cw{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px;min-width:0}
+.cw i{display:flex;flex-direction:column;justify-content:flex-start;width:min(28px,80%);background:var(--green);border-radius:4px 4px 0 0;min-height:0;overflow:hidden}.cw i b{display:block;width:100%;background:color-mix(in srgb,var(--green) 55%,#000)}
+.cw small{font-size:10.5px;color:var(--muted)}.cwv{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+.cbars{display:grid;grid-template-columns:minmax(60px,max-content) 1fr auto;gap:6px 8px;align-items:center;font-size:13.5px}.cbar{display:contents}.cbl{max-width:150px}
+.cbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cbt{height:14px;border-radius:4px;background:color-mix(in srgb,var(--line) 60%,transparent);overflow:hidden}
+.cbt i{display:flex;justify-content:flex-end;height:100%;background:var(--green);border-radius:0 4px 4px 0}.cbt i b{display:block;height:100%;background:color-mix(in srgb,var(--green) 55%,#000)}
+.cbv{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}.cbv small{font-weight:500;color:var(--muted)}
 .fdlist{display:flex;flex-direction:column;gap:2px;max-height:55vh;overflow:auto;margin:4px 0 8px}
 .fdrow{display:flex;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line)}
 .fdrow input{width:20px;height:20px;flex:none}
@@ -889,7 +901,7 @@ html[data-layout="desktop"] .shop .body>*{max-width:900px}
           <button class="btn micbtn" type="button" data-mic="#chAdd" aria-label="Say a chore" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
           <button class="btn primary" type="submit">Add</button></form>
         <div class="chpreview" id="chPreview"></div>
-        <div id="chFilters" style="display:flex;flex-direction:column;gap:6px"></div>
+        <div style="display:flex;gap:8px;align-items:flex-start"><div id="chFilters" style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:0"></div><button class="btn small" data-act="chStats">📊 Stats</button></div>
         <div id="chBody" style="display:flex;flex-direction:column;gap:12px"></div>
       </div>
     </section>
@@ -1077,7 +1089,7 @@ const ADMINS = Array.isArray(CFG.admins) ? CFG.admins : [];
 const isMainAdmin = email => ADMINS.some(x => emailIs(x, email));
 const familyName = email => { const g = familyOf(email); if (!g) return ''; const k = Object.keys(g.people).find(e => emailIs(e, email)); return g.people[k] || ''; };
 
-const VERSION = "3.20.0";
+const VERSION = "3.21.0";
 const BASE_CATS = ['Leftovers','Produce','Dairy & Eggs','Meat & Seafood','Bakery','Pantry','Spices & Seasonings','Frozen','Snacks','Drinks','Cleaning','Bathroom','Laundry','Paper & Household','Other'];
 /* the household can add its own categories (Baby, Pets, Garden…); they sit before Other */
 let CATS = BASE_CATS.slice(), _catsKey = '';
@@ -2343,7 +2355,7 @@ function renderChores() {
     ${labels.length ? `<div class="qchips qwrap">${chip('data-chlabel', '', 'All labels', !CH.label)}${labels.map(l => chip('data-chlabel', l, '🏷 ' + esc(l), CH.label === l)).join('')}</div>` : ''}`;
   body.innerHTML = !all.length ? `<div class="empty"><b>No chores yet</b>Type one above the way you’d say it: <i>“take out the trash every Tuesday”</i>, <i>“water the plants every 3 days @Raquel”</i>, <i>“pay rent on the 1st”</i>, <i>“change the AC filter every 3 months”</i>.</div>`
     : (byG.filter(([, l]) => l.length).map(([n, l]) => `<div class="group${n === 'Overdue' ? ' chover' : ''}"><h2>${n} <span class="hint" style="text-transform:none;letter-spacing:0">· ${l.length}</span></h2><div class="rows">${l.map(choreRow).join('')}</div></div>`).join('') || '<div class="empty"><b>Nothing to do here</b>Nice. Try another filter.</div>')
-      + (doneToday.length ? `<div class="group"><h2>Done today · ${doneToday.length}</h2><div class="rows">${doneToday.map(c => `<div class="row chrow done"><span class="chk on">✓</span><div class="meta tap" data-act="chEdit" data-id="${esc(c.id)}"><div class="name">${esc(c.title)}</div><div class="note"><span>${esc(firstName((c.history || [])[0]?.who || c.assignTo || S.uid))}</span>${c.done ? '' : `<span>next ${esc(dueWord(c.due))}</span>`}</div></div></div>`).join('')}</div></div>` : '');
+      + (doneToday.length ? `<div class="group"><h2>Done today · ${doneToday.length}</h2><div class="rows">${doneToday.map(c => `<div class="row chrow done"><button class="chk on" data-act="chUndo" data-id="${esc(c.id)}" aria-label="Not done: ${esc(c.title)}" title="Tap to undo">✓</button><div class="meta tap" data-act="chEdit" data-id="${esc(c.id)}"><div class="name">${esc(c.title)}</div><div class="note"><span>${esc(firstName((c.history || [])[0]?.who || c.assignTo || S.uid))}</span>${c.done ? '' : `<span>next ${esc(dueWord(c.due))}</span>`}<span class="hint">tap ✓ to undo</span></div></div></div>`).join('')}</div></div>` : '');
 }
 /* the add box: type it the way you'd say it, see how it was understood, then Add */
 function chorePreview() {
@@ -2389,10 +2401,10 @@ function choreSheet(ch0) {
       <label class="lbl">Notes<input class="field" id="chNotes" value="${esc(ch.notes || '')}" placeholder="Optional"></label>
       ${multiPlace() ? `<div class="lbl">Location<div class="expchips">${[['', 'Any'], ...places().map(x => [x.id, x.name])].map(([v, n]) => `<button type="button" data-chplace="${esc(v)}" aria-pressed="${(ch.place || '') === v}">${esc(n)}</button>`).join('')}</div></div>` : ''}
       ${(ch.history || []).length ? `<div class="group"><h2>History · done ${(ch.history || []).filter(h => !h.skip).length} times${Object.keys(counts).length > 1 ? ' · ' + Object.entries(counts).map(([u, n]) => `${esc(firstName(u))} ${n}`).join(' · ') : ''}</h2>
-        <div class="rows">${ch.history.slice(0, 10).map(h => `<div class="row"><div class="meta"><div class="name" style="font-weight:600">${h.skip ? 'Skipped' : esc(firstName(h.who || h.by))}</div><div class="note"><span>${esc(new Date(h.at).toLocaleDateString([], {weekday: 'short', month: 'short', day: 'numeric'}))}</span>${h.late && !h.skip ? `<span class="chlate">${h.due ? Math.max(1, Math.round((dOf(ymdOf(new Date(h.at))) - dOf(h.due)) / 864e5)) + ' day(s) late' : 'late'}</span>` : ''}</div></div></div>`).join('')}</div></div>` : ''}
+        <div class="rows">${ch.history.slice(0, 10).map((h, hi) => `<div class="row"><div class="meta"><div class="name" style="font-weight:600">${h.skip ? 'Skipped' : esc(firstName(h.who || h.by))}</div><div class="note"><span>${esc(new Date(h.at).toLocaleDateString([], {weekday: 'short', month: 'short', day: 'numeric'}))}</span>${h.late && !h.skip ? `<span class="chlate">${h.due ? Math.max(1, Math.round((dOf(ymdOf(new Date(h.at))) - dOf(h.due)) / 864e5)) + ' day(s) late' : 'late'}</span>` : ''}</div></div><button type="button" class="iconbtn" data-chhdel="${hi}" aria-label="Remove this entry">✕</button></div>`).join('')}</div></div>` : ''}
       <div class="actions"><button class="btn primary" type="submit">Save</button><button class="btn" type="button" data-act="closeSheet">Cancel</button></div>
       ${ch.id && !ch.done && ch.rep.type !== 'once' ? '<button class="btn ghost" type="button" id="chSkip">Skip this time</button>' : ''}
-      ${ch.done ? '<button class="btn ghost" type="button" id="chReopen">Not done after all</button>' : ''}
+      ${ch.id && (ch0.history || []).length && !(ch0.history[0] || {}).undone ? `<button class="btn ghost" type="button" id="chReopen">↩ Undo the last ${ch0.history[0].skip ? 'skip' : 'check-off'} (${esc(new Date(ch0.history[0].at).toLocaleDateString([], {weekday: 'short', month: 'short', day: 'numeric'}))})</button>` : ''}
       ${ch.id ? '<button class="btn danger ghost" type="button" id="chDel">Delete chore</button>' : ''}</form>`;
   };
   const keep = el => {
@@ -2421,7 +2433,8 @@ function choreSheet(ch0) {
       if (d.chsubdel != null) { keep(el); ch.subtasks.splice(+d.chsubdel, 1); return redraw(el); }
       if (b.id === 'chSubAdd') { keep(el); const v = el.querySelector('#chSubNew').value.trim(); if (v) ch.subtasks.push({t: v, done: false}); redraw(el); el.querySelector('#chSubNew')?.focus(); return; }
       if (b.id === 'chSkip') { closeSheet(); return completeChore(S.chores.find(x => x.id === ch.id) || ch0, {skip: true}); }
-      if (b.id === 'chReopen') { closeSheet(); await put('chores', ch.id, {...strip(ch0), done: false, doneAt: null, due: todayYmd(), history: (ch0.history || []).slice(1)}).catch(() => {}); return; }
+      if (b.id === 'chReopen') { closeSheet(); return undoChore(S.chores.find(x => x.id === ch.id) || ch0); }
+      if (d.chhdel != null) { keep(el); ch.history = (ch.history || []).filter((_, i) => i !== +d.chhdel); return redraw(el); }
       if (b.id === 'chDel') { if (!armed) { armed = true; b.textContent = 'Tap again to delete'; return; } closeSheet(); const prev = strip(ch0); await del('chores', ch.id).catch(() => {}); toast(`Deleted “${ch0.title}”`, 'Undo', () => put('chores', ch.id, prev)); return; }
     });
     el.addEventListener('keydown', e => { if (e.target.id === 'chSubNew' && e.key === 'Enter') { e.preventDefault(); el.querySelector('#chSubAdd').click(); } });
@@ -2433,6 +2446,61 @@ function choreSheet(ch0) {
       const id = ch.id || uid(), {id: _x, ...data} = ch;
       closeSheet(); await put('chores', id, {...data, by: ch.by || S.uid, at: Date.now()}).catch(() => {}); toast('Saved');
     });
+  });
+}
+/* checked by mistake: put the due date, whose turn it was and the steps back the way they were */
+async function undoChore(ch) {
+  const h = (ch.history || [])[0]; if (!h) return;
+  const prev = strip(ch), next = {...prev, history: (ch.history || []).slice(1), done: false, doneAt: null, due: h.due || ch.due || todayYmd(), at: Date.now()};
+  if (h.who && !h.skip) next.assignTo = h.who;
+  next.lastDone = (next.history.find(x => !x.skip) || {}).at || null;
+  await put('chores', ch.id, next).catch(() => {});
+  toast(`“${ch.title}” is back to ${dueWord(next.due).toLowerCase()}`, 'Redo', () => put('chores', ch.id, prev));
+}
+/* ---- chore stats: how the household is doing, by person, label, day and week ---- */
+const CS = {days: 30};
+function choreStats(days) {
+  const now = Date.now(), from = now - days * 864e5, all = choreList(), t = todayYmd();
+  const ev = all.flatMap(c => (c.history || []).filter(h => h.at >= from).map(h => ({...h, c})));
+  const done = ev.filter(e => !e.skip), late = done.filter(e => e.late), skipped = ev.filter(e => e.skip);
+  const open = all.filter(c => !c.done), overdue = open.filter(c => c.due && c.due < t);
+  const count = (arr, keyf) => { const m = new Map(); for (const x of arr) for (const k of [].concat(keyf(x))) m.set(k, (m.get(k) || 0) + 1); return m; };
+  const byWho = new Map(); for (const e of done) { const u = e.who || e.by; const r = byWho.get(u) || {n: 0, late: 0}; r.n++; if (e.late) r.late++; byWho.set(u, r); }
+  const labels = [...new Set(all.flatMap(c => c.labels || []))];
+  const byLabel = [...labels, ''].map(l => { const cs = all.filter(c => l ? (c.labels || []).includes(l) : !(c.labels || []).length); const d = done.filter(e => cs.includes(e.c));
+    return {l, chores: cs.length, done: d.length, late: d.filter(e => e.late).length, overdue: cs.filter(c => !c.done && c.due && c.due < t).length}; }).filter(x => x.chores);
+  const dow = [0, 0, 0, 0, 0, 0, 0]; for (const e of done) dow[new Date(e.at).getDay()]++;
+  const weeks = Math.min(12, Math.max(4, Math.ceil(days / 7))), wk = Array.from({length: weeks}, (_, i) => ({start: now - (weeks - i) * 7 * 864e5, n: 0, late: 0}));
+  for (const c of all) for (const h of c.history || []) { if (h.skip) continue; const w = wk.find(x => h.at >= x.start && h.at < x.start + 7 * 864e5); if (w) { w.n++; if (h.late) w.late++; } }
+  const per = all.map(c => { const d = done.filter(e => e.c === c); return {c, n: d.length, late: d.filter(e => e.late).length}; });
+  const statusOpen = [['Overdue', open.filter(c => c.due && c.due < t).length, 'var(--danger)'], ['Today', open.filter(c => c.due === t).length, '#d9a21b'], ['This week', open.filter(c => c.due > t && daysUntil(c.due) <= 7).length, 'var(--green)'], ['Later', open.filter(c => c.due && daysUntil(c.due) > 7).length, 'color-mix(in srgb,var(--green) 45%,var(--line))'], ['No date', open.filter(c => !c.due).length, 'var(--line)']];
+  return {done, late, skipped, open, overdue, byWho, byLabel, dow, wk, per, statusOpen, onTime: done.length ? Math.round((done.length - late.length) / done.length * 100) : null};
+}
+/* horizontal bars: one value (and an optional late part) per row, labels in ink, the number at the end */
+const hbars = (rows, max) => `<div class="cbars">${rows.map(r => `<div class="cbar" title="${esc(r.tip || '')}"><span class="cbl">${r.label}</span><span class="cbt"><i style="width:${max ? Math.max(r.v ? 3 : 0, r.v / max * 100) : 0}%">${r.late ? `<b style="width:${r.late / r.v * 100}%"></b>` : ''}</i></span><span class="cbv">${r.v}${r.extra ? ` <small>${r.extra}</small>` : ''}</span></div>`).join('')}</div>`;
+function choreStatsSheet() {
+  const st = choreStats(CS.days), maxW = Math.max(1, ...st.wk.map(w => w.n)), maxD = Math.max(1, ...st.dow);
+  const who = [...st.byWho.entries()].sort((a, b) => b[1].n - a[1].n), maxWho = Math.max(1, ...who.map(([, r]) => r.n));
+  const lab = st.byLabel.sort((a, b) => b.done - a.done || b.chores - a.chores), maxL = Math.max(1, ...lab.map(x => x.done));
+  const top = st.per.filter(x => x.n).sort((a, b) => b.n - a.n).slice(0, 6), lateTop = st.per.filter(x => x.late).sort((a, b) => b.late - a.late).slice(0, 5);
+  const totalOpen = Math.max(1, st.statusOpen.reduce((a, [, n]) => a + n, 0));
+  const tile = (v, l, cls = '') => `<div class="ctile ${cls}"><b>${v}</b><span>${l}</span></div>`;
+  sheet(`<h3>Chore stats</h3>
+    <div class="qchips qwrap">${[[7, 'Week'], [30, 'Month'], [90, '3 months'], [365, 'Year']].map(([d, n]) => `<button type="button" class="qchip" data-csd="${d}" aria-pressed="${CS.days === d}">${n}</button>`).join('')}</div>
+    <div class="ctiles">${tile(st.done.length, 'done')}${tile(st.onTime == null ? '–' : st.onTime + '%', 'on time')}${tile(st.late.length, 'done late', st.late.length ? 'warn' : '')}${tile(st.skipped.length, 'skipped')}${tile(st.overdue.length, 'overdue now', st.overdue.length ? 'bad' : '')}${tile(st.open.length, 'open chores')}</div>
+    <div class="cgroup"><h4>Open chores by status</h4>
+      <div class="cstack" role="img" aria-label="${esc(st.statusOpen.map(([l, n]) => `${l} ${n}`).join(', '))}">${st.statusOpen.filter(([, n]) => n).map(([l, n, c]) => `<i style="flex:${n};background:${c}" title="${esc(l)}: ${n}"></i>`).join('')}</div>
+      <div class="clegend">${st.statusOpen.map(([l, n, c]) => `<span><i style="background:${c}"></i>${esc(l)} <b>${n}</b></span>`).join('')}</div></div>
+    <div class="cgroup"><h4>Done per week <span class="hint">· late part darker</span></h4>
+      <div class="cweeks">${st.wk.map(w => `<div class="cw" title="Week of ${esc(new Date(w.start).toLocaleDateString([], {month: 'short', day: 'numeric'}))}: ${w.n} done${w.late ? `, ${w.late} late` : ''}"><span class="cwv">${w.n || ''}</span><i style="height:${w.n / maxW * 100}%">${w.late ? `<b style="height:${w.late / w.n * 100}%"></b>` : ''}</i><small>${esc(new Date(w.start + 6 * 864e5).toLocaleDateString([], {month: 'numeric', day: 'numeric'}))}</small></div>`).join('')}</div></div>
+    ${who.length ? `<div class="cgroup"><h4>By person</h4>${hbars(who.map(([u, r]) => ({label: esc(firstName(u)), v: r.n, late: r.late, extra: r.n ? `${Math.round((r.n - r.late) / r.n * 100)}% on time` : '', tip: `${firstName(u)}: ${r.n} done, ${r.late} late`})), maxWho)}</div>` : ''}
+    ${lab.length ? `<div class="cgroup"><h4>By label</h4>${hbars(lab.map(x => ({label: x.l ? '🏷 ' + esc(x.l) : '<i>No label</i>', v: x.done, late: x.late, extra: `${x.chores} chore${x.chores === 1 ? '' : 's'}${x.overdue ? ` · <span class="chlate">${x.overdue} overdue</span>` : ''}`, tip: `${x.l || 'No label'}: ${x.done} done, ${x.late} late, ${x.overdue} overdue`})), maxL)}</div>` : ''}
+    <div class="cgroup"><h4>Busiest days</h4>${hbars([1, 2, 3, 4, 5, 6, 0].map(i => ({label: DOW[i], v: st.dow[i], tip: `${DOW[i]}: ${st.dow[i]} done`})), maxD)}</div>
+    ${top.length ? `<div class="cgroup"><h4>Done most</h4>${hbars(top.map(x => ({label: esc(x.c.title), v: x.n, late: x.late, tip: `${x.c.title}: ${x.n} done`})), top[0].n)}</div>` : ''}
+    ${lateTop.length ? `<div class="cgroup"><h4>Most often late</h4>${hbars(lateTop.map(x => ({label: esc(x.c.title), v: x.late, extra: `of ${x.n}`, tip: `${x.c.title}: late ${x.late} of ${x.n} times`})), lateTop[0].late)}<p class="hint">Late a lot? Try a different day, “counts from when it’s done”, or taking turns.</p></div>` : ''}
+    ${!st.done.length && !st.open.length ? '<div class="empty"><b>No chores yet</b>Add some on the Chores tab and check them off; the stats fill in as you go.</div>' : ''}
+    <div class="actions col"><button class="btn ghost" data-act="closeSheet">Close</button></div>`, el => {
+    el.querySelectorAll('[data-csd]').forEach(b => b.onclick = () => { CS.days = +b.dataset.csd; const top = el.scrollTop; choreStatsSheet(); const n = $('#sheetRoot .sheet'); if (n) n.scrollTop = top; });
   });
 }
 /* chores on the Today card: what's due today or late */
@@ -5205,6 +5273,8 @@ function kTile(k) {
 
 /* ================= help and what's new ================= */
 const WHATS_NEW = [
+  ['3.21', 'October 2026', ['Chores: checked one by mistake? Tap its ✓ under Done today, or “Undo the last check-off” in the chore, and its date, turn and steps go back. History entries can be removed too.',
+    'Chores → 📊 Stats: done, on time, late, skipped and overdue for the week, month, 3 months or year, with charts of open chores by status, done per week, by person, by label, busiest days, done most and most often late.']],
   ['3.20', 'October 2026', ['Free pictures: 🔎 Find photos shows several from Open Food Facts, TheMealDB and Wikipedia/Wikimedia Commons to pick from, and 😀 Emoji gives any item an emoji (searchable). Tidy up → Missing info gives emoji to everything with no picture at once, matched by name, with the AI only for leftovers.',
     'Running out: “Not right? Fix it” on an item (and Fix in Running out) lets you set how long one lasts or how many you use a week, remove wrong “used” taps, forget its history, or stop predicting it.',
     'Typical nutrition for fresh food now comes free from USDA FoodData Central instead of the AI (the AI is still there as a backup).']],
@@ -8284,6 +8354,8 @@ document.addEventListener('click', async e => {
       case 'goExp': S.tab = 'kitchen'; S.zone = 'exp'; render(); scrollTo(0, 0); break;
       case 'usage': { const k = S.kitchen.find(x => x.id === t.dataset.id); if (k) usageSheet(k); break; }
       case 'chDone': { const c = (S.chores || []).find(x => x.id === t.dataset.id); if (c && !c.done) { t.classList.add('pop'); await completeChore(c); } break; }
+      case 'chUndo': { const c = (S.chores || []).find(x => x.id === t.dataset.id); if (c) await undoChore(c); break; }
+      case 'chStats': choreStatsSheet(); break;
       case 'chEdit': { const c = (S.chores || []).find(x => x.id === t.dataset.id); if (c) choreSheet(c); break; }
       case 'goChores': S.tab = 'chores'; render(); scrollTo(0, 0); break;
       case 'goRecipes': S.tab = 'recipes'; R.tab = 'mine'; render(); scrollTo(0, 0); break;
