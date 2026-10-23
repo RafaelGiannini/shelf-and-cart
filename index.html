@@ -1030,7 +1030,7 @@ const ADMINS = Array.isArray(CFG.admins) ? CFG.admins : [];
 const isMainAdmin = email => ADMINS.some(x => emailIs(x, email));
 const familyName = email => { const g = familyOf(email); if (!g) return ''; const k = Object.keys(g.people).find(e => emailIs(e, email)); return g.people[k] || ''; };
 
-const VERSION = "3.17.4";
+const VERSION = "3.17.5";
 const BASE_CATS = ['Leftovers','Produce','Dairy & Eggs','Meat & Seafood','Bakery','Pantry','Spices & Seasonings','Frozen','Snacks','Drinks','Cleaning','Bathroom','Laundry','Paper & Household','Other'];
 /* the household can add its own categories (Baby, Pets, Garden…); they sit before Other */
 let CATS = BASE_CATS.slice(), _catsKey = '';
@@ -6631,7 +6631,8 @@ async function aiReady() {
 }
 /* a picture made by the AI (Gemini image output). Some Google accounts only allow this on a paid plan,
    so failures say so plainly and the free "Find a photo" stays next to it. */
-async function aiPicture(prompt, size = 600) {
+async function aiPicture(...a) { try { return await aiPicture0(...a); } catch (e) { if (!acRetry(e)) throw e; return aiPicture0(...a); } }
+async function aiPicture0(prompt, size = 600) {
   if (!navigator.onLine) throw new Error('You’re offline.');
   await AC.ready;
   const m = await import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-ai.js`);
@@ -6754,6 +6755,7 @@ function acExplain(pr) {
   const regFix = `Firebase → App Check → Apps → your web app → reCAPTCHA Enterprise must show the same key ending ${kt}.`;
   if (pr.state === 'off') return '';
   if (pr.state === 'load') return `App Check couldn’t load on this device (${raw.slice(0, 120)}). Close the app fully and reopen it.`;
+  if (pr.state === 'ok' && aiLimited()) return `This device gets App Check tokens (one-time ones too), but the AI still refuses them${AI.lastRaw ? ` (Google said: “${AI.lastRaw.slice(0, 160)}”)` : ''}. Open Firebase → App Check → APIs → Firebase AI Logic: the graph says why requests are “unverified” (for example invalid, reused or outdated). Send me that reason. Also check: (1) ${regFix} The app registered there must be the one whose appId is in firebase-config.js (…${String(firebaseConfig.appId || '').slice(-8)}).`;
   if (pr.state === 'ok') return `This device gets an App Check token, but the AI refused it${AI.lastRaw ? ` (Google said: “${AI.lastRaw.slice(0, 160)}”)` : ''}. Menu → This device → Check AI can try the other token mode. Also check: (1) ${regFix} The app registered there must be the one whose appId is in firebase-config.js (…${String(firebaseConfig.appId || '').slice(-8)}). (2) If you set it up in the last 15 minutes, wait and try again.`;
   const throttled = /throttl/i.test(raw), s403 = /\b403\b/.test(raw), s400 = /\b400\b/.test(raw);
   const pause = throttled ? ' App Check is also pausing after the earlier failures, so after fixing it, fully close the app (or clear this site’s data) before trying again.' : '';
@@ -6786,7 +6788,16 @@ function aiError(e) {
   if (/\bSAFETY\b|was blocked/i.test(why)) return 'The AI couldn’t read that photo. Try another angle.';
   return 'AI didn’t work this time (' + why.slice(0, 140) + ').';
 }
-async function askAI(prompt, images = [], task = 'general', opts = {}) {
+/* Google answers 401 "App Check token is invalid" when the project has replay protection on: it wants one-time
+   (limited-use) tokens. The first time that happens the app switches to them on this device and tries again. */
+const acInvalid = e => /app.?check token is invalid|reused token/i.test(String(e?.message || e || '') + ' ' + (AI.lastRaw || ''));
+function acRetry(e) {
+  if (!AC.on || aiLimited() || AI.triedLimited || !acInvalid(e)) return false;
+  AI.triedLimited = true; ls.set('ai:limited', '1'); AI.models = null; console.warn('App Check token refused; switching to limited-use tokens');
+  return true;
+}
+async function askAI(...a) { try { return await askAI0(...a); } catch (e) { if (!acRetry(e)) throw e; return askAI0(...a); } }
+async function askAI0(prompt, images = [], task = 'general', opts = {}) {
   if (!navigator.onLine) throw new Error(aiError({message: 'offline'}));
   let models;
   try { models = await aiReady(); } catch (e) { throw new Error('Couldn’t load the AI module. Check your connection.'); }
