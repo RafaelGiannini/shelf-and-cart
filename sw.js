@@ -1,7 +1,7 @@
 // Shelf & Cart — offline startup.
 // Keeps a copy of the app on the phone so it opens with no signal.
 // Bump VERSION whenever you upload a new index.html so phones refresh their copy.
-const VERSION = '3.18.0';
+const VERSION = '3.20.0';
 const APP_CACHE = `shelf-app-${VERSION}`;
 const LIB_CACHE = 'shelf-libs-v1';   // Firebase, barcode reader, fonts
 const IMG_CACHE = 'shelf-imgs-v1';   // product photos from the online databases
@@ -16,7 +16,7 @@ const LIB_FILES = [
   'https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js',
 ];
 const LIB_HOSTS = ['www.gstatic.com', 'unpkg.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
-const IMG_HOSTS = ['www.themealdb.com', 'images.openfoodfacts.org', 'images.openproductsfacts.org', 'images.openbeautyfacts.org', 'static.openfoodfacts.org'];
+const IMG_HOSTS = ['www.themealdb.com', 'upload.wikimedia.org', 'images.openfoodfacts.org', 'images.openproductsfacts.org', 'images.openbeautyfacts.org', 'static.openfoodfacts.org'];
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {

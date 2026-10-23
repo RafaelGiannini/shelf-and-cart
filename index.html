@@ -250,6 +250,15 @@ html[data-theme="dark"] .hflag{color:#f3c56a} html[data-theme="dark"] .hflag.avo
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hflag{color:#f3c56a}}
 .fv-health{position:absolute;left:8px;top:calc(var(--tile) - 34px);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#F2B705;color:#2B2100;font-size:13px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.35)}
 .hgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hmine{display:flex;flex-wrap:wrap;gap:6px}.hchip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 4px 0 12px;border-radius:99px;background:var(--green);color:var(--green-ink);font-weight:650;font-size:13.5px}
+.hchip button{width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.18);color:inherit;font-size:12px;cursor:pointer}
+.hgroup{border:1px solid var(--line);border-radius:14px;padding:0 12px;background:var(--surface)}.hgroup summary{padding:12px 0;font-weight:700;cursor:pointer}.hgroup[open] summary{border-bottom:1px solid var(--line);margin-bottom:6px}
+.hrows{display:flex;flex-direction:column;gap:4px;padding-bottom:8px}#hRes{display:flex;flex-direction:column;gap:8px}
+.hrow{display:flex;align-items:center;gap:10px;width:100%;padding:10px;border-radius:12px;border:1px solid transparent;background:transparent;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.hrow:hover{background:var(--line)}.hrow[aria-pressed=true]{border-color:var(--green);background:color-mix(in srgb,var(--green) 10%,transparent)}
+.hrow .hic{font-size:22px;width:30px;text-align:center;flex:none}.hrow .htx{flex:1;min-width:0;display:flex;flex-direction:column}.hrow small{color:var(--muted);font-size:12.5px;line-height:1.35}
+.hrow .hck{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);font-weight:800}.hrow[aria-pressed=true] .hck{background:var(--green);color:var(--green-ink);border-color:var(--green)}
+.hmake{display:flex;flex-direction:column;gap:8px;align-items:flex-start;margin-top:4px}#hQ{flex:none;height:46px}
 .hopt{display:flex;align-items:center;gap:10px;padding:14px 12px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;text-align:left}
 .hopt span{font-size:22px} .hopt[aria-pressed="true"]{border-color:var(--green);box-shadow:0 0 0 2px var(--green) inset;background:var(--sunk)}
 .aitimer{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12.5px;margin-left:4px}
@@ -426,6 +435,11 @@ select.field.small{height:34px;padding:0 8px;font-size:13.5px;width:auto}
 .chrepbox{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
 .chevery{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}.chevery .field{width:72px;flex:none;height:38px}
 .chsubs{display:flex;flex-direction:column;gap:6px}.chsub{display:flex;gap:8px;align-items:center}.chsub input[type=checkbox]{width:20px;height:20px;flex:none}.chsub .field{height:40px}
+.pepanel:empty{display:none}.pepanel{flex-basis:100%;width:100%}.photoedit{flex-wrap:wrap}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:8px}.pgrid button{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:4px;display:flex;flex-direction:column;gap:2px;cursor:pointer}
+.pgrid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;background:#fff}.pgrid small{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.epick{display:flex;flex-direction:column;gap:8px;margin-top:8px}.epick .field{flex:none;height:42px}.epick .field.small{height:38px}.egrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}.egrid button{height:44px;font-size:24px;border:1px solid var(--line);background:var(--surface);border-radius:10px;cursor:pointer}
+.preview.pemoji{display:grid;place-items:center;font-size:40px}
 .fdlist{display:flex;flex-direction:column;gap:2px;max-height:55vh;overflow:auto;margin:4px 0 8px}
 .fdrow{display:flex;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line)}
 .fdrow input{width:20px;height:20px;flex:none}
@@ -1063,7 +1077,7 @@ const ADMINS = Array.isArray(CFG.admins) ? CFG.admins : [];
 const isMainAdmin = email => ADMINS.some(x => emailIs(x, email));
 const familyName = email => { const g = familyOf(email); if (!g) return ''; const k = Object.keys(g.people).find(e => emailIs(e, email)); return g.people[k] || ''; };
 
-const VERSION = "3.18.0";
+const VERSION = "3.20.0";
 const BASE_CATS = ['Leftovers','Produce','Dairy & Eggs','Meat & Seafood','Bakery','Pantry','Spices & Seasonings','Frozen','Snacks','Drinks','Cleaning','Bathroom','Laundry','Paper & Household','Other'];
 /* the household can add its own categories (Baby, Pets, Garden…); they sit before Other */
 let CATS = BASE_CATS.slice(), _catsKey = '';
@@ -1953,6 +1967,9 @@ function usageStats(k) {
   return {perWeek: perDay * 7, daysLeft, span: Math.round(span), used};
 }
 function usageText(k) {
+  const p0 = k.qty > 0 ? predictOf(k) : null;
+  if (p0?.how === 'set') return `${p0.per ? `You set: about ${p0.per} ${unitLabel(k, 2) || ''} a week` : `You set: one lasts about ${p0.lasts} days`} · runs out ${daysWord(p0.days)}`.replace(/\s+/g, ' ');
+  if (k.noPredict) return '';
   const st = usageStats(k); if (!st) return '';
   const t = trackOf(k), w = st.perWeek;
   const rate = t === 'count' ? `${w < 1 ? w.toFixed(1) : Math.round(w)} ${unitLabel(k, 2) || 'a week'}${unitLabel(k, 2) ? ' a week' : ''}` : t === 'level' ? `${w < 1 ? '¼–1' : w.toFixed(1)} ${w <= 1 ? 'container' : 'containers'} a week` : `${w < 1 ? w.toFixed(1) : Math.round(w)} a week`;
@@ -2803,7 +2820,7 @@ function quickEditSheet(k) {
       }
       const cur = {name, category: k.category, code: null};
       if ((emoji || null) !== (pr.emoji || null)) await updateProduct(cur, {emoji: emoji || null});
-      if (ph.changed) await savePhotoEverywhere(cur, ph.thumb);
+      if (ph.changed || ph.emoji !== undefined) await savePhotoEverywhere(cur, ph.thumb, ph.emoji);
       renderQuick(); if (S.tab === 'kitchen') renderKitchen();
       toast('Saved');
     };
@@ -4158,7 +4175,7 @@ function renderRecipes() {
   }
   const food = visK().filter(k => (k.qty || 0) > 0 && !NON_FOOD.includes(k.category));
   const f = R.f ||= {cuisine: '', mood: ''}, hl = healthOn();
-  body.innerHTML = `<div class="card" style="box-shadow:none"><div class="note">Ideas use what’s in stock${curPlace() ? ' in ' + esc(placeName(curPlace())) : ''} (${food.length} food items), favor anything expiring soon${hl.length ? ` and fit your health filters (${esc(hl.map(k => HEALTH[k].short).join(', '))})` : ''}. Each tap brings different ones.</div>
+  body.innerHTML = `<div class="card" style="box-shadow:none"><div class="note">Ideas use what’s in stock${curPlace() ? ' in ' + esc(placeName(curPlace())) : ''} (${food.length} food items), favor anything expiring soon${hl.length ? ` and fit your health filters (${esc(hl.map(k => lc(hdef(k).name)).join(', '))})` : ''}. Each tap brings different ones.</div>
     <div class="qchips">${MOODS.filter(([v]) => v !== 'healthy' || hl.length || allergiesOn().length).map(([v, n]) => `<button type="button" class="qchip" data-act="ideaF" data-k="mood" data-v="${v}" aria-pressed="${f.mood === v}">${n}</button>`).join('')}</div>
     <div class="qchips">${CUISINES.map(([v, n]) => `<button type="button" class="qchip" data-act="ideaF" data-k="cuisine" data-v="${v}" aria-pressed="${f.cuisine === v}">${n}</button>`).join('')}</div>
     <div class="minor">${!aiShow() ? '' : `<button class="btn aibtn" data-act="ideasAI" ${R.busy ? 'disabled' : ''}>${R.busy === 'ai' ? '<span class="spinner"></span> Thinking…' : '✨ Suggest with AI'}</button>${R.busy === 'ai' ? aiWait('ideas') : ''}`}
@@ -4175,7 +4192,7 @@ const CUISINES = [['', 'Any cuisine'], ['Latin', 'Latin'], ['Mexican', 'Mexican'
 const AREAS = {Latin: ['Mexican', 'Spanish', 'Jamaican', 'Argentinian', 'Venezulan', 'Peruvian'], Mexican: ['Mexican'], Italian: ['Italian'], Asian: ['Chinese', 'Japanese', 'Thai', 'Vietnamese', 'Filipino', 'Malaysian'],
   Mediterranean: ['Greek', 'Turkish', 'Moroccan', 'Spanish', 'Croatian', 'Egyptian', 'Tunisian'], Indian: ['Indian'], American: ['American', 'Canadian'], Caribbean: ['Jamaican'], French: ['French']};
 const seenIdeas = (key, add) => { let a = []; try { a = JSON.parse(localStorage.getItem('ideas:' + key) || '[]'); } catch (e) {} if (add) { a = [...add, ...a.filter(x => !add.includes(x))].slice(0, key === 'db' ? 200 : 60); try { localStorage.setItem('ideas:' + key, JSON.stringify(a)); } catch (e) {} } return a; };
-const healthText = () => [...healthOn().map(k => HEALTH[k].name), ...allergiesOn().map(a => 'allergic to ' + (ALLERGENS.find(x => x[0] === a)?.[1] || a).toLowerCase())].join('; ');
+const healthText = () => hActive().map(id => { const d = hdef(id); return d.group === 'allergy' ? (d.ai || 'no ' + lc(d.name)) : d.ai || d.name; }).join('; ');
 const MOOD_TEXT = {quick: 'ready in 30 minutes or less', healthy: 'especially good for their health conditions', expiring: 'built around the items marked [USE SOON]', comfort: 'comfort food', veg: 'vegetarian', onepan: 'made in one pan, pot or sheet tray'};
 async function ideasAI(more = false) {
   const food = visK().filter(k => (k.qty || 0) > 0 && !NON_FOOD.includes(k.category));
@@ -4221,7 +4238,7 @@ function stockIngredients(food, ingList) {
   }
   return [...out.entries()].sort((a, b) => b[1] - a[1]);
 }
-const HEALTH_CATS = {gout: ['Seafood', 'Beef', 'Lamb', 'Pork', 'Goat'], chol: ['Beef', 'Lamb', 'Pork', 'Goat'], sugar: ['Dessert']};
+const HEALTH_CATS = new Proxy({}, {get: (_, id) => { const d = hdef(id); return d ? [...(d.cats || []), ...(d.like || []).flatMap(x => HBYID[x]?.cats || [])] : []; }});
 function ideaPenalty(r) {
   let p = 0; for (const i of r.ingredients || []) for (const f of healthFlags({name: i.name})) p += f.level === 'avoid' ? 20 : f.level === 'limit' ? 4 : 0;
   return p;
@@ -4256,7 +4273,7 @@ async function ideasDB(more = false) {
       try { const r = await mealdbFull({id: 'db' + x.m.idMeal, mealdb: x.m.idMeal, title: x.m.strMeal, img: x.m.strMealThumb ? x.m.strMealThumb + '/preview' : null, source: 'TheMealDB'}); MDB_FULL.set(x.m.idMeal, r); return {...r, _x: x}; } catch (e) { return null; }
     }));
     const hlOn = healthOn().length || allergiesOn().length;
-    const ranked = full.filter(Boolean).map(r => { const st = readiness(r), pen = (hlOn ? ideaPenalty(r) : 0) + (healthOn().some(h => (HEALTH_CATS[h] || []).includes(r.category)) ? 6 : 0); return {r, st, pen, sc: (st.have || 0) * 3 - (st.missing || 0) - pen + r._x.hits.length * 2 + Math.random() * 3}; })
+    const ranked = full.filter(Boolean).map(r => { const st = readiness(r), pen = (hlOn ? ideaPenalty(r) : 0) + (hActive().some(h => (HEALTH_CATS[h] || []).includes(r.category)) ? 6 : 0); return {r, st, pen, sc: (st.have || 0) * 3 - (st.missing || 0) - pen + r._x.hits.length * 2 + Math.random() * 3}; })
       .filter(x => f.mood !== 'healthy' || x.pen < 6)
       .sort((a, b) => b.sc - a.sc).slice(0, 8);
     R.ideas = ranked.map(({r, st, pen}) => ({...r, why: [r._x.hits.length ? `Uses your ${r._x.hits.slice(0, 3).join(', ')}` : '', r.area && r.area !== 'Unknown' ? r.area : '', hlOn && !pen ? 'fits your health filters' : ''].filter(Boolean).join(' · '), _x: undefined}));
@@ -5026,7 +5043,9 @@ function tidyInfo(head, miss) {
     ${miss.length ? `<div class="fixall">
       ${dates.length ? `<button class="btn" id="tiDates">📅 Estimate ${dates.length} date${dates.length === 1 ? '' : 's'}</button>` : ''}
       ${online.length ? `<button class="btn" id="tiOnline">🌐 Look up ${online.length} by barcode</button>` : ''}
-      ${noCode.length && aiShow() ? `<button class="btn aibtn" id="tiAI">✨ Typical nutrition for ${noCode.length} fresh food${noCode.length === 1 ? '' : 's'}</button>` : ''}
+      ${noCode.length ? `<button class="btn" id="tiUsda">🌐 Typical nutrition for ${noCode.length} from USDA (free)</button>` : ''}
+      ${noCode.length && aiShow() ? `<button class="btn ghost" id="tiAI">✨ Or ask the AI</button>` : ''}
+      ${noPicItems().length ? `<button class="btn" id="tiEmoji">😀 Emoji for ${noPicItems().length} item${noPicItems().length === 1 ? '' : 's'} with no picture</button>` : ''}
       <span class="aistatus" id="tiBusy"></span></div>
       <p class="hint">Barcodes are looked up free on Open Food Facts. The AI fills in typical values for fresh food like bananas or chicken thighs and skips packaged things it can’t know; for those, tap 📷 Label and snap the package.</p>` : ''}
     <div class="rows">${miss.map((r, j) => `<div class="row tidy">${thumbHtml(r.k)}
@@ -5052,6 +5071,20 @@ function tidyInfo(head, miss) {
         } catch (err) {}
       }
       toast(`Found info for ${got} of ${online.length}`); tidySheet('info');
+    });
+    el.querySelector('#tiUsda')?.addEventListener('click', async e => {
+      const btn = e.target.closest('button'); btn.disabled = true; let got = 0, err = '';
+      for (const [i, r] of noCode.entries()) {
+        st.innerHTML = `<span class="spinner"></span> ${i + 1} of ${noCode.length}: ${esc(r.k.name.slice(0, 40))}`;
+        try { const nf = await usdaFacts(r.k.name); if (nf) { await saveFacts(r.k, nf); got++; } } catch (x) { err = x.message; if (/limit|reach/i.test(err)) break; }
+      }
+      toast(`USDA had ${got} of ${noCode.length}${err ? ' · ' + err : ''}`); tidySheet('info');
+    });
+    el.querySelector('#tiEmoji')?.addEventListener('click', async e => {
+      const btn = e.target.closest('button'); btn.disabled = true;
+      try { const r = await emojiBatch(noPicItems(), t => { st.innerHTML = `<span class="spinner"></span> ${esc(t)}`; }); toast(`Gave ${r.local + r.ai} item${r.local + r.ai === 1 ? '' : 's'} an emoji (${r.local} matched by name${r.ai ? `, ${r.ai} by AI` : ''})`); }
+      catch (x) { toast(x.message); }
+      render(); tidySheet('info');
     });
     el.querySelector('#tiAI')?.addEventListener('click', async e => {
       const btn = e.target.closest('button'); btn.disabled = true; let got = 0;
@@ -5172,6 +5205,10 @@ function kTile(k) {
 
 /* ================= help and what's new ================= */
 const WHATS_NEW = [
+  ['3.20', 'October 2026', ['Free pictures: 🔎 Find photos shows several from Open Food Facts, TheMealDB and Wikipedia/Wikimedia Commons to pick from, and 😀 Emoji gives any item an emoji (searchable). Tidy up → Missing info gives emoji to everything with no picture at once, matched by name, with the AI only for leftovers.',
+    'Running out: “Not right? Fix it” on an item (and Fix in Running out) lets you set how long one lasts or how many you use a week, remove wrong “used” taps, forget its history, or stop predicting it.',
+    'Typical nutrition for fresh food now comes free from USDA FoodData Central instead of the AI (the AI is still there as a backup).']],
+  ['3.19', 'October 2026', ['Health filters are now a searchable list of 50+ conditions, allergies, medicines and diets: diabetes, kidney disease, IBS/low-FODMAP, celiac, reflux, fatty liver, pregnancy, warfarin, grapefruit-sensitive meds, GLP-1 shots like Ozempic, keto, vegan, Mediterranean, halal and more. Not on the list? ✨ make one with AI, or “Avoid foods with…” any word. Each person picks their own, and labels, recipe ideas and meal plans follow them.']],
   ['3.18', 'October 2026', ['New Chores tab: type a chore the way you’d say it (“trash every Tuesday @Raquel”, “water plants every 3 days”, “pay rent on the 1st”), check it off and the next one is scheduled. Share a chore and take turns (in order, whoever’s done it least, or random), add steps that reset each time, labels, priority, a time, and see who did it when. Due and late chores show on the Today card and the tab badge.']],
   ['3.17', 'October 2026', ['Tap a list item to move it to another location (Davie, Plantation…) or make it “Any location”.',
     'Scanned a barcode nobody knows? 📸 Snap it takes the photo straight from the scanner’s camera (no switching apps), saves it with the item, and the AI names it.',
@@ -5497,7 +5534,7 @@ Return only JSON: {"dinners":[{"day": the day name, "title": string, "why": one 
   return (out?.dinners || []).filter(x => x && x.title).map((x, i) => cleanRecipe({...x, id: 'ai' + Date.now() + i, source: 'AI meal plan', why: [x.why, x.health].filter(Boolean).join(' · ')}));
 }
 async function planIdeasDB(n, opt, avoid) {
-  const banned = new Set(healthOn().flatMap(h => HEALTH_CATS[h] || []));
+  const banned = new Set(hActive().flatMap(h => HEALTH_CATS[h] || []));
   const cats = ['Chicken', 'Vegetarian', 'Pasta', 'Seafood', 'Beef', 'Pork', 'Lamb', 'Vegan', 'Miscellaneous'].filter(c => !banned.has(c));
   const areas = opt.cuisine ? AREAS[opt.cuisine] || [opt.cuisine] : [];
   const [byCat, byArea] = await Promise.all([Promise.all(cats.map(c => mdbGet('filter.php?c=' + c).then(j => (j.meals || []).map(m => ({...m, cat: c}))))), Promise.all(areas.map(a => mdbGet('filter.php?a=' + a).then(j => j.meals || [])))]);
@@ -5732,65 +5769,289 @@ async function takeShared() {
   if (text || files.length) importSheet({text, files});
 }
 
-/* ================= health filters =================
-   Each person can turn on filters for themselves (gout, cholesterol, blood pressure, less sugar, allergies).
-   Labels come from Open Food Facts nutrition per 100 g, using the UK traffic-light thresholds
-   (high sugar > 22.5 g, high salt > 1.5 g, high saturated fat > 5 g; low ≤ 5 g, ≤ 0.3 g, ≤ 1.5 g),
-   plus food-type rules when a product has no nutrition data. General guidance, not medical advice. */
-const HEALTH = {
-  gout: {name: 'Gout', short: 'gout', icon: '🦶'},
-  chol: {name: 'High cholesterol', short: 'cholesterol', icon: '❤️'},
-  bp: {name: 'High blood pressure', short: 'blood pressure', icon: '🩺'},
-  sugar: {name: 'Avoiding sugar', short: 'sugar', icon: '🍬'},
-};
-const ALLERGENS = [['peanuts', 'Peanuts', /peanut/], ['nuts', 'Tree nuts', /almond|walnut|pecan|cashew|pistachio|hazelnut|macadamia|\bnuts?\b/], ['milk', 'Milk', /milk|cheese|yogh?urt|butter|cream|mozzarella|cheddar|parmesan|whey|casein|lactose/],
-  ['eggs', 'Eggs', /\beggs?\b|mayo/], ['gluten', 'Gluten', /wheat|bread|pasta|flour|barley|\brye\b|bagel|tortilla|cracker|cookie|cereal/], ['soybeans', 'Soy', /\bsoy|tofu|edamame/],
-  ['fish', 'Fish', /salmon|tuna|cod|tilapia|anchov|sardine|\bfish\b/], ['crustaceans', 'Shellfish', /shrimp|crab|lobster|prawn|clam|mussel|oyster|scallop|shellfish/], ['sesame-seeds', 'Sesame', /sesame|tahini/]];
 const ADDED_SUGAR = /\bsugar|syrup|dextrose|fructose|sucrose|glucose|maltose|honey|molasses|cane juice|agave|caramel/i;
-const HRULES = {
-  gout: [[/\bliver|kidney|sweetbread|anchov|sardine|herring|mussel|scallop|trout|\bbeer\b|yeast extract|organ meat/, 'avoid', 'very high in purines'],
-    [/\bbeef|steak|pork|lamb|veal|bacon|\bham\b|sausage|hot dog|shrimp|lobster|crab|tuna|mackerel|\bduck|venison|gravy|broth|bouillon/, 'limit', 'high in purines'],
-    [/soda|\bcola\b|juice|lemonade|sweet tea|energy drink|high.fructose|corn syrup/, 'limit', 'fructose can raise uric acid'],
-    [/\bwine\b|liquor|whiskey|vodka|rum\b|tequila/, 'limit', 'alcohol raises uric acid'],
-    [/cherr|low.fat milk|skim|yogh?urt|coffee|\bwater\b/, 'ok', 'a good choice for gout']],
-  chol: [[/partially hydrogenated|shortening|\blard\b/, 'avoid', 'trans or saturated fat'],
-    [/bacon|sausage|salami|pepperoni|hot dog|\bbutter\b|heavy cream|whipping cream|ice cream|fried|pastry|croissant|donut|coconut oil|palm oil|ribeye|\bliver\b/, 'limit', 'high in saturated fat'],
-    [/\boats?\b|oatmeal|barley|beans|lentil|chickpea|almond|walnut|olive oil|canola|avocado|salmon|sardine|tofu/, 'ok', 'helps lower cholesterol']],
-  bp: [[/bacon|\bham\b|salami|pepperoni|hot dog|sausage|deli|cured|jerky|pickle|soy sauce|ramen|instant noodle|canned soup|\bsoup\b|broth|bouillon|frozen dinner|chips|pretzel|olives|salted|anchov/, 'limit', 'often high in salt'],
-    [/banana|potato|spinach|sweet potato|beans|lentil|avocado|yogh?urt|unsalted|oats?\b/, 'ok', 'a good choice for blood pressure']],
-  sugar: [[/soda|\bcola\b|juice|lemonade|sweet tea|energy drink|candy|chocolate|cookie|cake|pastry|donut|ice cream|syrup|\bjam\b|jelly|frosting|sweetened|cereal|granola bar|ketchup|bbq sauce/, 'limit', 'usually high in sugar'],
-    [/sparkling water|seltzer|\bwater\b|unsweetened|plain yogh?urt|\beggs?\b|vegetable|greens|broccoli|spinach/, 'ok', 'low in sugar']],
-};
-const healthOn = () => Object.keys(HEALTH).filter(k => S.health?.[k]);
-const allergiesOn = () => S.health?.allergies || [];
-function healthFlags(it, opts = {}) {
-  const on = healthOn(), al = allergiesOn(); if (!on.length && !al.length) return [];
-  const pr = it.code || it.name ? (prodOf(it) || {}) : {}, n = pr.nutr || it.nutr || null, ingr = lc(pr.ingr || it.ingr || '');
-  const text = lc(`${it.name || ''} ${typeOf(it).kind || ''}`), out = [];
-  const add = (key, level, why) => out.push({key, level, why});
-  for (const c of on) {
-    let hit = null;
-    if (n) {
-      if (c === 'sugar' && n.sugars != null) hit = n.sugars > 22.5 ? ['limit', `high sugar (${n.sugars} g/100 g)`] : n.sugars <= 5 ? ['ok', 'low sugar'] : null;
-      if (c === 'bp' && n.salt != null) hit = n.salt > 1.5 ? ['limit', `high salt (${n.salt} g/100 g)`] : n.salt <= 0.3 ? ['ok', 'low salt'] : null;
-      if (c === 'chol') { if (n.trans > 0) hit = ['avoid', 'contains trans fat']; else if (n.satfat != null) hit = n.satfat > 5 ? ['limit', `high saturated fat (${n.satfat} g/100 g)`] : n.satfat <= 1.5 ? ['ok', 'low saturated fat'] : null; }
-    }
-    if (c === 'chol' && /partially hydrogenated/.test(ingr)) hit = ['avoid', 'partially hydrogenated oil (trans fat)'];
-    if (c === 'sugar' && !hit && ingr && ADDED_SUGAR.test(ingr.split(',').slice(0, 3).join(','))) hit = ['limit', 'sugar is a main ingredient'];
-    if (c === 'gout' && /high.fructose corn syrup/.test(ingr)) hit = ['limit', 'high-fructose corn syrup'];
-    if (!hit) for (const [re, level, why] of HRULES[c]) if (re.test(text)) { hit = [level, why]; break; }
-    if (hit && (hit[0] !== 'ok' || opts.good)) add(c, hit[0], hit[1]);
-  }
-  for (const a of al) {
-    const def = ALLERGENS.find(x => x[0] === a); if (!def) continue;
-    if ((pr.allergens || []).includes(a) || (a === 'crustaceans' && (pr.allergens || []).includes('molluscs')) || def[2].test(text) || (ingr && def[2].test(ingr))) add('al:' + a, 'avoid', `contains ${lc(def[1])}`);
-  }
-  return out;
+/* ================= health filters =================
+   Each person picks what applies to them from a searchable list of medical conditions, allergies and
+   intolerances, medicines and life stages, and diets, or makes their own. Foods are labeled from:
+   - nutrition per 100 g (Open Food Facts, or the label you snapped), using the UK traffic-light thresholds
+     (high sugar > 22.5 g, high salt > 1.5 g, high saturated fat > 5 g; low ≤ 5 g, ≤ 0.3 g, ≤ 1.5 g)
+   - official allergen tags on the product, and the ingredient list
+   - what kind of food it is, when there's nothing else to go on.
+   Sources for the rules: AHA, the DASH plan, Arthritis Foundation, ADA, NKF, Monash University (FODMAP),
+   Celiac Disease Foundation, FDA/EPA fish advice for pregnancy, ACOG, NIH Office of Dietary Supplements.
+   General guidance, not medical advice. */
+const H_W = (words, level, why) => [new RegExp('\\b(?:' + words.join('|') + ')', 'i'), level, why];
+const H_MEAT = ['beef', 'steak', 'pork', 'chicken', 'turkey', 'lamb', 'veal', 'duck', 'goose', 'venison', 'bison', 'goat', 'bacon', 'ham\\b', 'sausage', 'salami', 'pepperoni', 'hot ?dog', 'jerky', 'prosciutto', 'chorizo', 'pastrami', 'meatball', 'burger(?! bun)', 'brisket', 'ribs?\\b', 'gelatin', 'lard', 'tallow', 'chicken broth', 'beef broth', 'bone broth', 'bouillon', 'meat\\b'];
+const H_FISH = ['fish\\b', 'salmon', 'tuna', 'cod\\b', 'tilapia', 'halibut', 'trout', 'sardine', 'anchov', 'mackerel', 'herring', 'mahi', 'snapper', 'catfish', 'shrimp', 'prawn', 'crab', 'lobster', 'clam', 'mussel', 'oyster', 'scallop', 'squid', 'calamari', 'octopus', 'fish sauce', 'caviar', 'roe\\b', 'surimi'];
+const H_MILK_RE = /(?<!(?:coconut|almond|oat|soy|rice|cashew|hemp|plant|flax|pea|macadamia)[ -])\bmilk\b|\bcheese(?!cake)|cheesecake|yogh?urt|(?<!(?:peanut|almond|cashew|apple|sun ?flower|cocoa|shea|nut|seed|soy)[ -])\bbutter\b(?! ?(?:lettuce|beans?|nut|scotch|squash))|\bcream(?:s|er)?\b(?! of tartar)|\bwhey|casein|lactose|\bghee|kefir|ricotta|mozzarella|cheddar|parmesan|queso|ice cream|custard|half (?:and|&) half/i;
+const H_EGG_RE = /\beggs?\b|mayo|meringue|albumin|eggnog|custard|hollandaise|aioli/i;
+const H_GLUTEN_RE = /wheat|\bbarley|\brye\b|\bmalt|spelt|farro|semolina|durum|couscous|seitan|triticale|bulgur|graham|brewer.?s yeast|\bbread|\bbuns?\b|bagel|pasta|spaghetti|noodle|ramen|tortilla(?! chips)|flour(?! ?\(?(?:rice|almond|coconut|corn|tapioca|cassava))|cracker|cookie|cake|pastry|croissant|muffin|pancake|waffle|pretzel|cereal|beer|soy sauce|panko|breadcrumb|crouton|pizza|dumpling/i;
+const H_SHELL_RE = /shrimp|prawn|crab|lobster|crawfish|crayfish|clam|mussel|oyster|scallop|squid|calamari|octopus|shellfish/i;
+const H_SUGARY = ['soda', 'cola\\b', 'juice', 'lemonade', 'sweet tea', 'energy drink', 'candy', 'chocolate', 'cookie', 'cake', 'pastry', 'donut', 'doughnut', 'ice cream', 'syrup', 'jam\\b', 'jelly', 'frosting', 'sweetened', 'honey', 'gummies', 'pop ?tarts?'];
+const H_REFINED = ['white bread', 'white rice', 'instant rice', 'bagel', 'pretzel', 'crackers?', 'chips', 'fries', 'sweetened cereal', 'frosted', 'pancake', 'waffle', 'croissant', 'muffin'];
+const H_SALTY = ['bacon', 'ham\\b', 'salami', 'pepperoni', 'hot ?dog', 'sausage', 'deli', 'cured', 'jerky', 'pickle', 'soy sauce', 'ramen', 'instant noodle', 'canned soup', 'soup\\b', 'broth', 'bouillon', 'frozen dinner', 'chips', 'pretzel', 'olives', 'salted', 'anchov'];
+const H_STARCH = ['bread', 'buns?\\b', 'bagel', 'pasta', 'macaroni', 'mac\\b', 'lasagna', 'spaghetti', 'noodle', 'rice\\b', 'potato', 'fries', 'cereal', 'oats?\\b', 'oatmeal', 'granola', 'tortilla', 'crackers?', 'chips', 'pretzel', 'corn\\b', 'beans', 'lentil', 'chickpea', 'pizza', 'pancake', 'waffle', 'muffin'];
+const H_FRIED = ['fried', 'fries', 'tempura', 'nuggets?', 'wings', 'onion rings', 'donut', 'doughnut', 'chips'];
+const H_ALCOHOL = ['beer', 'wine', 'liquor', 'vodka', 'whiskey', 'whisky', 'rum\\b', 'tequila', 'gin\\b', 'bourbon', 'brandy', 'sake', 'hard seltzer', 'margarita', 'cocktail', 'mimosa'];
+const H_HIGH_MERCURY = ['swordfish', 'shark', 'king mackerel', 'tilefish', 'bigeye', 'marlin', 'orange roughy'];
+const HDEFS = [
+  // ---- medical conditions ----
+  {id: 'gout', group: 'condition', name: 'Gout', icon: '🦶', aka: 'uric acid purines',
+    words: [H_W(['liver', 'kidney', 'sweetbread', 'anchov', 'sardine', 'herring', 'mussel', 'scallop', 'trout', 'beer', 'yeast extract', 'organ meat'], 'avoid', 'very high in purines'),
+      H_W(['beef', 'steak', 'pork', 'lamb', 'veal', 'bacon', 'ham\\b', 'sausage', 'hot ?dog', 'shrimp', 'lobster', 'crab', 'tuna', 'mackerel', 'duck', 'venison', 'gravy', 'broth', 'bouillon'], 'limit', 'high in purines'),
+      H_W(['soda', 'cola\\b', 'juice', 'lemonade', 'sweet tea', 'energy drink', 'high.fructose', 'corn syrup'], 'limit', 'fructose can raise uric acid'), H_W(['wine', 'liquor', 'whiskey', 'vodka', 'rum\\b', 'tequila'], 'limit', 'alcohol raises uric acid')],
+    ok: [H_W(['cherr', 'low.fat milk', 'skim', 'yogh?urt', 'coffee', 'water\\b'], 'ok', 'a good choice for gout')], cats: ['Seafood', 'Beef', 'Lamb', 'Pork', 'Goat'],
+    ai: 'gout: little red meat, organ meat, shellfish or beer; no sugary drinks; plenty of low-fat dairy, vegetables, cherries and water',
+    guide: {choose: ['Low-fat milk, yogurt and cheese', 'Vegetables (even spinach and mushrooms are fine)', 'Whole grains, beans, lentils, tofu', 'Eggs', 'Cherries and other fruit', 'Coffee and plenty of water'],
+      limit: ['Red meat: beef, pork, lamb', 'Shrimp, lobster, crab, tuna', 'Sugary drinks and fruit juice', 'Foods with high-fructose corn syrup', 'Wine and liquor'],
+      avoid: ['Organ meats: liver, kidney, sweetbreads', 'Anchovies, sardines, herring, mussels, scallops, trout', 'Beer', 'Gravies and meat extracts']}},
+  {id: 'chol', group: 'condition', name: 'High cholesterol', icon: '❤️', aka: 'ldl lipids hyperlipidemia statin',
+    nutr: [['trans', '>', 0, 'avoid', 'contains trans fat'], ['satfat', '>', 5, 'limit', 'high saturated fat ({v} g/100 g)'], ['satfat', '<=', 1.5, 'ok', 'low saturated fat']],
+    words: [[/partially hydrogenated|shortening|\blard\b/i, 'avoid', 'trans or saturated fat'], H_W(['bacon', 'sausage', 'salami', 'pepperoni', 'hot ?dog', '(?<!(?:peanut|almond|cashew|apple|nut|seed|sun ?flower|cocoa|shea) )butter\\b', 'heavy cream', 'whipping cream', 'ice cream', 'fried', 'pastry', 'croissant', 'donut', 'coconut oil', 'palm oil', 'ribeye', 'liver'], 'limit', 'high in saturated fat')],
+    ok: [H_W(['oats?\\b', 'oatmeal', 'barley', 'beans', 'lentil', 'chickpea', 'almond', 'walnut', 'olive oil', 'canola', 'avocado', 'salmon', 'sardine', 'tofu'], 'ok', 'helps lower cholesterol')],
+    dish: {satfat: 8}, cats: ['Beef', 'Lamb', 'Pork', 'Goat'], ai: 'high cholesterol: little saturated fat (fatty red meat, butter, cream, fried food), no trans fat; more oats, beans, nuts, fish and olive oil',
+    guide: {choose: ['Oats, barley and other whole grains', 'Beans, lentils, chickpeas', 'Nuts and seeds (unsalted)', 'Fatty fish like salmon, twice a week', 'Olive or canola oil', 'Fruits and vegetables'],
+      limit: ['Fatty and processed meats: bacon, sausage, salami', 'Butter, cream, full-fat cheese, ice cream', 'Coconut and palm oil', 'Fried foods and pastries'], avoid: ['Anything with “partially hydrogenated” oil (trans fat)', 'Shortening and lard']}},
+  {id: 'bp', group: 'condition', name: 'High blood pressure', icon: '🩺', aka: 'hypertension sodium salt dash',
+    nutr: [['salt', '>', 1.5, 'limit', 'high salt ({v} g/100 g)'], ['salt', '<=', 0.3, 'ok', 'low salt']],
+    words: [H_W(H_SALTY, 'limit', 'often high in salt')], ok: [H_W(['banana', 'potato', 'spinach', 'sweet potato', 'beans', 'lentil', 'avocado', 'yogh?urt', 'unsalted', 'oats?\\b'], 'ok', 'a good choice for blood pressure')],
+    dish: {sodium: 1000}, ai: 'high blood pressure: low sodium (under 2,300 mg a day), no cured meats or salty sauces; lots of vegetables, fruit, beans and low-fat dairy (DASH)',
+    guide: {choose: ['Fruits and vegetables, especially bananas, potatoes, spinach and beans (potassium)', 'Low-fat dairy', 'Whole grains', 'Unsalted nuts', 'Fresh chicken, fish and eggs', 'Herbs, spices and citrus instead of salt'],
+      limit: ['Deli, cured and processed meats', 'Canned soups, broth and frozen dinners', 'Chips, pretzels, salted snacks', 'Pickles, olives, soy sauce', 'Cheese and bread add up too'],
+      know: ['Aim for under 2,300 mg of sodium a day (1,500 mg if your doctor says so). On labels, 5% daily value or less is low and 20% or more is high.']}},
+  {id: 'sugar', group: 'diet', name: 'Less sugar', icon: '🍬', aka: 'sugar free no sugar added sugar cut sugar',
+    nutr: [['sugars', '>', 22.5, 'limit', 'high sugar ({v} g/100 g)'], ['sugars', '<=', 5, 'ok', 'low sugar']], sugarTop: 'limit',
+    words: [H_W([...H_SUGARY, 'cereal', 'granola bar', 'ketchup', 'bbq sauce'], 'limit', 'usually high in sugar')], ok: [H_W(['sparkling water', 'seltzer', 'water\\b', 'unsweetened', 'plain yogh?urt', 'eggs?\\b', 'vegetable', 'greens', 'broccoli', 'spinach'], 'ok', 'low in sugar')],
+    free: /sugar.?free|no sugar added|unsweetened|zero sugar/i, dish: {sugar: 20}, cats: ['Dessert'], ai: 'less sugar: no sugary drinks or desserts, little added sugar',
+    guide: {choose: ['Water, sparkling water, unsweetened tea and coffee', 'Whole fruit instead of juice', 'Plain yogurt (add your own fruit)', 'Eggs, nuts, cheese, vegetables', 'Unsweetened cereal or oatmeal'],
+      limit: ['Soda, juice, sweet tea, energy drinks', 'Candy, cookies, cakes and pastries', 'Sweetened cereal, granola bars, flavored yogurt', 'Syrups, jam, ketchup, BBQ sauce'],
+      know: ['Added sugar hides under many names: corn syrup, dextrose, sucrose, maltose, cane juice, honey, agave', 'The American Heart Association suggests no more than about 25 g (women) or 36 g (men) of added sugar a day']}},
+  {id: 'diabetes', group: 'condition', name: 'Type 2 diabetes / prediabetes', icon: '🩸', aka: 'blood sugar insulin resistance a1c glucose diabetic',
+    nutr: [['sugars', '>', 22.5, 'limit', 'high sugar ({v} g/100 g)'], ['fiber', '>=', 6, 'ok', 'high in fiber, gentler on blood sugar']], sugarTop: 'limit',
+    words: [H_W(H_SUGARY, 'limit', 'raises blood sugar quickly'), H_W(H_REFINED, 'limit', 'refined carbs raise blood sugar fast')],
+    ok: [H_W(['broccoli', 'spinach', 'greens', 'salad', 'cauliflower', 'zucchini', 'beans', 'lentil', 'chickpea', 'nuts?\\b', 'almond', 'walnut', 'eggs?\\b', 'salmon', 'chicken breast', 'berr', 'quinoa', 'steel.cut', 'greek yogh?urt', 'avocado'], 'ok', 'good for steady blood sugar')],
+    dish: {sugar: 20, carbs: 75}, cats: ['Dessert'], ai: 'type 2 diabetes: balanced plate (half non-starchy vegetables, a quarter lean protein, a quarter whole-grain or high-fiber carbs), no sugary drinks, few refined carbs',
+    guide: {choose: ['Non-starchy vegetables: half the plate', 'Beans, lentils and whole grains (quinoa, steel-cut oats, brown rice) in small portions', 'Lean protein: fish, chicken, eggs, tofu', 'Nuts, seeds, avocado, olive oil', 'Whole fruit, especially berries', 'Water, unsweetened tea and coffee'],
+      limit: ['White bread, white rice, regular pasta', 'Juice, sweetened yogurt and cereal', 'Desserts and sweets', 'Fried foods'], avoid: ['Soda, sweet tea, energy drinks and other sugary drinks'],
+      know: ['Carbs aren’t off limits; pairing them with protein, fat or fiber slows the rise in blood sugar.', 'Your doctor or diabetes educator can tell you your carb targets.']}},
+  {id: 'pcos', group: 'condition', name: 'PCOS', icon: '🌸', aka: 'polycystic ovary insulin resistance', like: ['diabetes'],
+    ai: 'PCOS: low-glycemic, high-fiber meals with lean protein and healthy fats; few sugary drinks or refined carbs',
+    guide: {choose: ['High-fiber carbs: beans, lentils, whole grains, vegetables', 'Lean protein at every meal', 'Healthy fats: olive oil, nuts, avocado, fatty fish', 'Anti-inflammatory foods: berries, leafy greens'], limit: ['Sugary drinks and sweets', 'White bread, white rice, pastries', 'Processed and fried foods'],
+      know: ['Steady blood sugar helps with insulin resistance, which is common with PCOS.']}},
+  {id: 'heart', group: 'condition', name: 'Heart disease / heart-healthy', icon: '🫀', aka: 'cardiac heart attack stroke cardiovascular', like: ['chol', 'bp'],
+    ai: 'heart-healthy: little saturated fat and sodium, no trans fat; vegetables, whole grains, beans, fish and olive oil',
+    guide: {choose: ['Vegetables and fruit at every meal', 'Whole grains, beans and lentils', 'Fish twice a week, especially salmon or sardines', 'Nuts, olive oil, avocado'], limit: ['Red and processed meat', 'Salty foods: deli meat, canned soup, chips', 'Butter, cream, fried food', 'Sugary drinks and sweets'], avoid: ['Trans fat (“partially hydrogenated”)']}},
+  {id: 'ckd', group: 'condition', name: 'Kidney disease (CKD)', icon: '🫘', aka: 'renal kidney dialysis potassium phosphorus',
+    nutr: [['salt', '>', 1.5, 'limit', 'high salt ({v} g/100 g)']],
+    words: [[/phosph/i, 'limit', 'phosphate additives are absorbed easily', 'ingr'], H_W(['dark cola', 'cola\\b', 'processed cheese', 'american cheese', 'cheese spread', 'bran\\b', 'chocolate', 'beer'], 'limit', 'high in phosphorus'),
+      H_W(['banana', 'potato', 'sweet potato', 'tomato', 'orange', 'avocado', 'spinach', 'beans', 'lentil', 'dried fruit', 'raisin', 'prune', 'melon', 'cantaloupe', 'coconut water', 'salt substitute'], 'limit', 'high in potassium'), H_W(H_SALTY, 'limit', 'often high in salt')],
+    ok: [H_W(['apple', 'berr', 'grapes?\\b', 'cauliflower', 'cabbage', 'white rice', 'egg white', 'onion', 'bell pepper', 'cucumber', 'pineapple'], 'ok', 'kidney-friendly (lower potassium and phosphorus)')], dish: {sodium: 1000},
+    ai: 'chronic kidney disease: low sodium, lower potassium and phosphorus (few bananas, potatoes, tomatoes, beans, dairy, cola, processed meats), moderate protein',
+    guide: {choose: ['Apples, berries, grapes, pineapple', 'Cauliflower, cabbage, cucumber, bell peppers, onions', 'White rice and white bread (lower in phosphorus than whole grain)', 'Egg whites, fresh chicken and fish in the portions your dietitian sets'],
+      limit: ['High-potassium foods: bananas, oranges, potatoes, tomatoes, avocado, beans, spinach', 'High-phosphorus foods: dairy, cola, processed cheese, bran', 'Salty and processed foods'], avoid: ['Ingredients with “phos” in the name (phosphate additives)', 'Salt substitutes made with potassium'],
+      know: ['Limits depend on your stage and lab results. Your renal dietitian sets your numbers.']}},
+  {id: 'fattyliver', group: 'condition', name: 'Fatty liver (NAFLD / MASLD)', icon: '🫄', aka: 'liver nafld masld nash',
+    nutr: [['sugars', '>', 22.5, 'limit', 'high sugar ({v} g/100 g)'], ['satfat', '>', 5, 'limit', 'high saturated fat']], sugarTop: 'limit',
+    words: [H_W(['soda', 'cola\\b', 'juice', 'sweet tea', 'energy drink', 'high.fructose', 'corn syrup', 'candy', 'pastry', 'donut'], 'limit', 'sugar and fructose build liver fat'), H_W(H_ALCOHOL, 'avoid', 'alcohol harms the liver'), H_W([...H_FRIED, 'bacon', 'sausage', 'hot ?dog'], 'limit', 'fried and processed foods')],
+    ok: [H_W(['coffee', 'olive oil', 'salmon', 'sardine', 'walnut', 'oats?\\b', 'beans', 'lentil', 'broccoli', 'greens', 'berr'], 'ok', 'good for the liver')], cats: ['Dessert'],
+    ai: 'fatty liver: Mediterranean-style, no alcohol, no sugary drinks, few fried or processed foods',
+    guide: {choose: ['A Mediterranean pattern: vegetables, beans, whole grains, fish, olive oil, nuts', 'Coffee (it’s linked to healthier livers)', 'Whole fruit'], limit: ['Sweets and refined carbs', 'Fried and processed meats'], avoid: ['Alcohol', 'Soda, juice and anything with high-fructose corn syrup']}},
+  {id: 'ibs', group: 'condition', name: 'IBS / low-FODMAP', icon: '🌀', aka: 'irritable bowel fodmap bloating gut sibo',
+    words: [H_W(['onion', 'garlic', 'shallot', 'leek', 'wheat', 'rye\\b', 'barley', 'beans', 'lentil', 'chickpea', 'hummus', 'apple', 'pear', 'mango', 'watermelon', 'cherr', 'peach', 'plum', 'dried fruit', 'honey', 'agave', 'high.fructose', 'cauliflower', 'mushroom', 'asparagus', 'artichoke', 'cashew', 'pistachio', 'inulin', 'chicory', 'sorbitol', 'mannitol', 'xylitol', 'maltitol', 'isomalt'], 'limit', 'high FODMAP'),
+      [/^(?!.*(?:lactose.free|lactaid|fairlife)).*(?<!(?:almond|oat|soy|rice|coconut|cashew|hemp|pea) )\b(?:milk|ice cream|soft cheese|ricotta|cottage cheese|cream cheese)\b/i, 'limit', 'lactose (high FODMAP)']],
+    ok: [H_W(['rice\\b', 'oats?\\b', 'quinoa', 'potato', 'carrot', 'zucchini', 'cucumber', 'spinach', 'bell pepper', 'eggplant', 'tomato', 'strawberr', 'blueberr', 'orange', 'kiwi', 'pineapple', 'grapes?\\b', 'lactose.free', 'cheddar', 'parmesan', 'eggs?\\b', 'chicken', 'fish', 'tofu', 'peanut', 'maple syrup'], 'ok', 'low FODMAP')],
+    free: /low.?fodmap|fodmap.friendly/i, ai: 'IBS (low-FODMAP): no onion, garlic, wheat-heavy dishes, beans, apples, honey or lactose; use rice, potatoes, oats, carrots, zucchini, spinach, eggs, chicken, fish, garlic-infused oil and green onion tops',
+    guide: {choose: ['Rice, oats, quinoa, potatoes, sourdough spelt bread', 'Carrots, zucchini, cucumber, spinach, bell peppers, green onion tops', 'Strawberries, blueberries, oranges, kiwi, pineapple', 'Eggs, plain meat, fish, firm tofu, hard cheese, lactose-free milk', 'Garlic-infused oil for flavor (the FODMAPs don’t pass into the oil)'],
+      limit: ['Onion and garlic (the big ones)', 'Wheat, rye and barley in large amounts', 'Beans, lentils, chickpeas', 'Apples, pears, mango, watermelon, stone fruit', 'Milk, ice cream, soft cheese', 'Honey, agave, high-fructose corn syrup, sugar alcohols (sorbitol, xylitol)'],
+      know: ['Low-FODMAP is meant as a 2–6 week elimination, then foods are added back one at a time to find your triggers. A dietitian trained in FODMAP makes this much easier.']}},
+  {id: 'celiac', group: 'condition', name: 'Celiac disease', icon: '🌾', aka: 'coeliac gluten free gf wheat', tags: ['gluten'],
+    words: [[H_GLUTEN_RE, 'avoid', 'contains gluten', 'ingr'], H_W(['oats?\\b', 'oatmeal', 'granola'], 'limit', 'only if labeled gluten-free (cross-contact)')], free: /gluten.?free|\bgf\b|certified gluten/i,
+    ok: [H_W(['rice\\b', 'quinoa', 'potato', 'corn tortilla', 'buckwheat', 'millet', 'sorghum'], 'ok', 'naturally gluten-free')],
+    ai: 'celiac disease: strictly gluten-free (no wheat, barley, rye, malt, regular soy sauce or regular oats; use certified gluten-free oats, tamari, rice, corn and potatoes)',
+    guide: {choose: ['Rice, potatoes, corn, quinoa, buckwheat, millet', 'Certified gluten-free oats, bread and pasta', 'Fresh meat, fish, eggs, dairy, fruit and vegetables', 'Tamari or gluten-free soy sauce'], avoid: ['Wheat (including spelt, farro, durum, semolina, couscous, bulgur), barley, rye, malt', 'Regular soy sauce, beer, many sauces and soups thickened with flour', 'Shared toasters, fryers and cutting boards (cross-contact)'],
+      know: ['“Wheat-free” isn’t the same as gluten-free. Look for “gluten-free” on the label.']}},
+  {id: 'gerd', group: 'condition', name: 'Acid reflux / GERD', icon: '🔥', aka: 'heartburn reflux gerd indigestion',
+    words: [H_W(['spicy', 'hot sauce', 'jalape', 'chili', 'curry', 'salsa', 'tomato', 'marinara', 'ketchup', 'orange', 'lemon', 'lime', 'grapefruit', 'citrus', 'chocolate', 'coffee', 'espresso', 'peppermint', 'mint', 'soda', 'cola\\b', 'sparkling', 'onion', 'garlic', ...H_FRIED, 'pizza', ...H_ALCOHOL], 'limit', 'a common reflux trigger')],
+    ok: [H_W(['oatmeal', 'oats?\\b', 'banana', 'melon', 'ginger', 'rice\\b', 'chicken breast', 'fish', 'greens', 'broccoli', 'green beans', 'potato', 'yogh?urt'], 'ok', 'gentle on reflux')],
+    ai: 'acid reflux: mild, not spicy or greasy; little tomato, citrus, chocolate, mint, coffee, onion, garlic, alcohol or carbonation',
+    guide: {choose: ['Oatmeal, bananas, melon, ginger', 'Lean chicken and fish, baked or grilled', 'Green vegetables, potatoes, rice'], limit: ['Spicy food, tomatoes, citrus', 'Chocolate, mint, coffee, soda, alcohol', 'Fried and fatty food', 'Onion and garlic'], know: ['Smaller meals and not eating 2–3 hours before lying down help as much as what you eat.']}},
+  {id: 'lactose', group: 'allergy', name: 'Lactose intolerance', icon: '🥛', aka: 'lactose dairy intolerance',
+    words: [[/^(?!.*(?:lactose.free|lactaid|fairlife)).*(?<!(?:almond|oat|soy|rice|coconut|cashew|hemp|pea) )\b(?:milk(?! chocolate)|ice cream|cream(?! of tartar)|soft cheese|ricotta|cottage cheese|cream cheese|whey|half (?:and|&) half|custard|pudding)\b/i, 'limit', 'contains lactose']],
+    ok: [H_W(['lactose.free', 'lactaid', 'fairlife', 'cheddar', 'parmesan', 'swiss', 'gouda', 'greek yogh?urt', 'kefir', 'butter\\b'], 'ok', 'little or no lactose')], free: /lactose.?free|lactaid|fairlife|dairy.?free|non.?dairy|vegan/i,
+    ai: 'lactose intolerance: lactose-free milk, hard cheeses and yogurt are usually fine; little regular milk, ice cream or soft cheese',
+    guide: {choose: ['Lactose-free milk (Lactaid, Fairlife)', 'Aged hard cheese: cheddar, parmesan, Swiss', 'Yogurt and kefir (the cultures help)', 'Plant milks'], limit: ['Regular milk, ice cream, soft cheese, cream'], know: ['Most people can handle a little lactose with a meal. Lactase pills help when eating out.']}},
+  {id: 'migraine', group: 'condition', name: 'Migraine triggers', icon: '🤕', aka: 'headache migraine tyramine',
+    words: [H_W(['aged cheese', 'blue cheese', 'cheddar', 'parmesan', 'salami', 'pepperoni', 'hot ?dog', 'bacon', 'cured', 'monosodium glutamate', 'msg\\b', 'aspartame', 'red wine', 'wine', 'beer', 'chocolate', 'soy sauce', 'pickled'], 'limit', 'a common migraine trigger')],
+    ai: 'migraine: avoid common triggers (aged cheese, cured meats, MSG, aspartame, red wine), regular meals',
+    guide: {limit: ['Aged cheese, cured and processed meats (tyramine, nitrates)', 'MSG and aspartame', 'Red wine and beer', 'Chocolate and too much caffeine'], know: ['Triggers are personal. A food and headache diary is the best way to find yours. Skipping meals and dehydration are common triggers too.']}},
+  {id: 'histamine', group: 'allergy', name: 'Histamine intolerance', icon: '🧪', aka: 'histamine mast cell mcas dao',
+    words: [H_W(['aged cheese', 'parmesan', 'cheddar', 'blue cheese', 'salami', 'pepperoni', 'prosciutto', 'cured', 'smoked', 'canned tuna', 'tuna', 'mackerel', 'sardine', 'anchov', 'sauerkraut', 'kimchi', 'kombucha', 'pickle', 'vinegar', 'soy sauce', 'miso', 'tempeh', 'spinach', 'tomato', 'eggplant', 'avocado', 'wine', 'beer', 'leftover'], 'limit', 'high in histamine')],
+    ai: 'histamine intolerance: fresh (not aged, cured, smoked, fermented or leftover) foods; no tomatoes, spinach, aged cheese, wine or vinegar',
+    guide: {choose: ['Freshly cooked meat and fish (freeze leftovers instead of keeping them in the fridge)', 'Fresh vegetables except tomato, spinach and eggplant', 'Rice, oats, potatoes', 'Fresh milk, mozzarella, ricotta'], limit: ['Aged cheese, cured and smoked meats', 'Canned or smoked fish', 'Fermented foods: sauerkraut, kimchi, kombucha, soy sauce, vinegar', 'Wine and beer']}},
+  {id: 'anemia', group: 'condition', name: 'Low iron (anemia)', icon: '🩸', aka: 'iron deficiency anemia ferritin',
+    words: [H_W(['coffee', 'black tea', 'green tea'], 'limit', 'drink it between meals: it blocks iron with food')],
+    ok: [H_W(['beef', 'steak', 'liver', 'oyster', 'clam', 'mussel', 'sardine', 'spinach', 'lentil', 'beans', 'chickpea', 'tofu', 'fortified', 'cereal', 'pumpkin seed', 'quinoa', 'eggs?\\b'], 'ok', 'a good source of iron'), H_W(['orange', 'strawberr', 'bell pepper', 'broccoli', 'kiwi', 'tomato'], 'ok', 'vitamin C helps absorb iron')],
+    ai: 'low iron: iron-rich foods (red meat, beans, lentils, spinach, fortified cereal) with vitamin C foods',
+    guide: {choose: ['Red meat, shellfish, sardines (the best-absorbed iron)', 'Beans, lentils, tofu, spinach, fortified cereal', 'Pair plant iron with vitamin C: oranges, peppers, strawberries'], limit: ['Coffee and tea with meals (have them an hour apart)', 'Calcium supplements at the same time as iron']}},
+  {id: 'bones', group: 'condition', name: 'Bone health / osteoporosis', icon: '🦴', aka: 'osteoporosis osteopenia calcium vitamin d',
+    nutr: [['salt', '>', 1.5, 'limit', 'high salt pulls calcium out of bones']], words: [H_W(['cola\\b', 'dark soda'], 'limit', 'cola is linked to lower bone density')],
+    ok: [H_W(['milk', 'yogh?urt', 'cheese', 'sardine', 'salmon', 'tofu', 'kale', 'collard', 'bok choy', 'broccoli', 'almond', 'fortified', 'orange juice'], 'ok', 'calcium or vitamin D for bones')],
+    ai: 'bone health: calcium- and vitamin-D-rich foods (dairy, sardines, salmon, tofu, leafy greens), not too much salt',
+    guide: {choose: ['Milk, yogurt, cheese, or fortified plant milk', 'Sardines and salmon with bones', 'Tofu made with calcium, kale, bok choy, broccoli', 'Eggs and fortified foods for vitamin D'], limit: ['Cola', 'Very salty food', 'Alcohol']}},
+  // ---- medicines and life stages ----
+  {id: 'pregnancy', group: 'med', name: 'Pregnancy', icon: '🤰', aka: 'pregnant expecting prenatal',
+    words: [H_W(['sushi', 'sashimi', 'raw fish', 'raw oyster', 'oysters?', 'poke\\b', 'ceviche', 'tartare', 'crudo', ...H_HIGH_MERCURY], 'avoid', 'raw or high-mercury fish'), H_W(['unpasteurized', 'raw milk'], 'avoid', 'unpasteurized dairy can carry listeria'), H_W(H_ALCOHOL, 'avoid', 'no amount of alcohol is known to be safe in pregnancy'),
+      H_W(['sprouts'], 'avoid', 'raw sprouts can carry bacteria'), H_W(['brie', 'camembert', 'blue cheese', 'queso fresco', 'queso blanco', 'feta'], 'limit', 'only if made with pasteurized milk'), H_W(['deli', 'lunch meat', 'hot ?dog', 'salami', 'pepperoni', 'prosciutto', 'p[aâ]t[eé]', 'smoked salmon', 'lox'], 'limit', 'heat until steaming hot (listeria)'),
+      H_W(['tuna'], 'limit', 'albacore tuna: up to 6 oz a week'), H_W(['coffee', 'espresso', 'energy drink', 'cold brew', 'matcha'], 'limit', 'keep caffeine under 200 mg a day')],
+    ok: [H_W(['salmon', 'sardine', 'eggs?\\b', 'lentil', 'beans', 'spinach', 'fortified', 'yogh?urt', 'milk'], 'ok', 'good for pregnancy (folate, iron, omega-3, calcium)')],
+    ai: 'pregnancy: no raw or undercooked fish, meat or eggs, no high-mercury fish, no unpasteurized cheese, deli meat only heated, no alcohol, limited caffeine',
+    guide: {choose: ['Low-mercury fish 2–3 times a week: salmon, sardines, cod, shrimp', 'Folate and iron: beans, lentils, leafy greens, fortified cereal', 'Pasteurized dairy for calcium', 'Eggs cooked until firm'], limit: ['Caffeine: under 200 mg a day (about one 12-oz coffee)', 'Albacore tuna: up to 6 oz a week', 'Deli meat and hot dogs: only heated until steaming'],
+      avoid: ['Raw or undercooked fish (sushi), meat and eggs', 'Shark, swordfish, king mackerel, tilefish, bigeye tuna, marlin', 'Unpasteurized milk and soft cheese made from it', 'Raw sprouts', 'Alcohol'], know: ['From FDA/EPA fish advice and ACOG. Your OB or midwife may have more for you.']}},
+  {id: 'nursing', group: 'med', name: 'Breastfeeding', icon: '🍼', aka: 'nursing lactation breastfeeding postpartum',
+    words: [H_W(H_HIGH_MERCURY, 'avoid', 'high in mercury'), H_W(H_ALCOHOL, 'limit', 'wait 2+ hours after a drink before nursing'), H_W(['coffee', 'espresso', 'energy drink'], 'limit', 'keep caffeine to about 300 mg a day')],
+    ai: 'breastfeeding: low-mercury fish, limited caffeine and alcohol, plenty of fluids',
+    guide: {choose: ['Low-mercury fish 2–3 times a week', 'Plenty of water', 'Protein, whole grains, fruit and vegetables'], limit: ['Caffeine: about 2–3 cups of coffee a day', 'Alcohol: wait at least 2 hours per drink before nursing'], avoid: ['High-mercury fish: shark, swordfish, king mackerel, tilefish']}},
+  {id: 'warfarin', group: 'med', name: 'Warfarin (blood thinner)', icon: '💊', aka: 'coumadin jantoven anticoagulant vitamin k blood thinner',
+    words: [H_W(['kale', 'spinach', 'collard', 'turnip greens', 'mustard greens', 'swiss chard', 'chard', 'brussels', 'broccoli', 'parsley', 'natto', 'green tea', 'matcha', 'endive', 'romaine'], 'limit', 'high in vitamin K: keep the amount steady day to day'),
+      H_W(['cranberr', 'grapefruit', 'pomegranate'], 'limit', 'can change how warfarin works'), H_W(H_ALCOHOL, 'limit', 'alcohol affects warfarin')],
+    ai: 'on warfarin: keep vitamin K (leafy greens) steady rather than avoiding it; no cranberry or grapefruit juice; little alcohol',
+    guide: {limit: ['Leafy greens high in vitamin K: kale, spinach, collards, chard, Brussels sprouts, broccoli. Don’t cut them out; eat about the same amount each week', 'Cranberry and grapefruit juice', 'Alcohol'], know: ['Tell your anticoagulation clinic before big diet changes (starting a diet, a juice cleanse, lots more salads).']}},
+  {id: 'grapefruit', group: 'med', name: 'Grapefruit-sensitive meds', icon: '🍊', aka: 'statin atorvastatin simvastatin lovastatin calcium channel blocker felodipine nifedipine grapefruit interaction',
+    words: [H_W(['grapefruit', 'pomelo', 'seville orange', 'tangelo', 'bitter orange', 'marmalade'], 'avoid', 'can raise some medicines to unsafe levels')],
+    ai: 'no grapefruit, pomelo or Seville orange (medicine interaction)',
+    guide: {avoid: ['Grapefruit and its juice, pomelo, Seville (bitter) oranges, tangelos', 'Marmalade made with Seville oranges'], know: ['Some statins (simvastatin, lovastatin, atorvastatin), some blood pressure and heart medicines, and others interact. Ask your pharmacist if yours is one of them. Regular oranges are fine.']}},
+  {id: 'maoi', group: 'med', name: 'MAOI medicine (tyramine)', icon: '💊', aka: 'maoi phenelzine tranylcypromine selegiline isocarboxazid tyramine',
+    words: [H_W(['aged cheese', 'blue cheese', 'cheddar', 'parmesan', 'swiss', 'brie', 'salami', 'pepperoni', 'prosciutto', 'summer sausage', 'cured', 'soy sauce', 'miso', 'tempeh', 'natto', 'sauerkraut', 'kimchi', 'fava', 'broad bean', 'yeast extract', 'marmite', 'tap beer', 'draft beer', 'kombucha', 'fish sauce'], 'avoid', 'high in tyramine (can spike blood pressure with an MAOI)')],
+    ai: 'on an MAOI: no aged cheese, cured meats, fermented soy, sauerkraut, kimchi, fava beans, yeast extract or tap beer (tyramine)',
+    guide: {avoid: ['Aged cheese (fresh mozzarella, cottage and cream cheese are fine)', 'Cured, dried or fermented meats: salami, pepperoni, summer sausage', 'Soy sauce, miso, tempeh, natto, sauerkraut, kimchi', 'Fava beans, yeast extracts (Marmite), tap beer', 'Leftovers that have aged several days'], know: ['Keep this up for 2 weeks after stopping the medicine. Your prescriber has the full list.']}},
+  {id: 'glp1', group: 'med', name: 'GLP-1 medicine (Ozempic, Wegovy, Mounjaro)', icon: '💉', aka: 'semaglutide tirzepatide zepbound ozempic wegovy mounjaro saxenda glp-1 weight loss shot',
+    words: [H_W([...H_FRIED, 'greasy', 'pizza', 'burger', 'alfredo', 'creamy', 'cheesecake'], 'limit', 'rich, greasy food can worsen nausea'), H_W(['soda', 'candy', 'cake', 'pastry', 'donut', ...H_ALCOHOL], 'limit', 'empty calories when you’re eating less')],
+    ok: [H_W(['chicken', 'turkey', 'fish', 'salmon', 'tuna', 'eggs?\\b', 'greek yogh?urt', 'cottage cheese', 'tofu', 'beans', 'lentil', 'protein', 'jerky'], 'ok', 'protein helps keep muscle while losing weight')], nutr: [['protein100', '>=', 15, 'ok', 'high in protein']],
+    ai: 'on a GLP-1 medicine: small portions, protein at every meal, plenty of fluids and fiber, little greasy, fried or very sweet food',
+    guide: {choose: ['Protein first at each meal: chicken, fish, eggs, Greek yogurt, cottage cheese, tofu, beans', 'Fiber and fluids (constipation is common)', 'Small, slow meals'], limit: ['Greasy, fried and very rich food (worse nausea)', 'Sweets, soda and alcohol'], know: ['Aim for roughly 60–100 g of protein a day, or what your care team suggests, to keep muscle as you lose weight.']}},
+  // ---- allergies and intolerances ----
+  {id: 'peanuts', group: 'allergy', name: 'Peanuts', icon: '🥜', aka: 'peanut allergy groundnut', tags: ['peanuts'], words: [[/peanut|groundnut|arachis/i, 'avoid', 'contains peanuts', 'ingr']], free: /peanut.?free/i, ai: 'no peanuts'},
+  {id: 'nuts', group: 'allergy', name: 'Tree nuts', icon: '🌰', aka: 'nut allergy almond walnut cashew', tags: ['nuts'], words: [[/almond|walnut|pecan|cashew|pistachio|hazelnut|macadamia|brazil nut|pine nut|praline|marzipan|nutella|\bnuts?\b/i, 'avoid', 'contains tree nuts', 'ingr']], free: /nut.?free/i, ai: 'no tree nuts'},
+  {id: 'milk', group: 'allergy', name: 'Milk / dairy', icon: '🥛', aka: 'dairy allergy milk allergy casein whey dairy free', tags: ['milk'], words: [[H_MILK_RE, 'avoid', 'contains milk', 'ingr']], free: /dairy.?free|non.?dairy|\bvegan\b|plant.?based/i, ai: 'no dairy'},
+  {id: 'eggs', group: 'allergy', name: 'Eggs', icon: '🥚', aka: 'egg allergy', tags: ['eggs'], words: [[H_EGG_RE, 'avoid', 'contains eggs', 'ingr']], free: /egg.?free|\bvegan\b/i, ai: 'no eggs'},
+  {id: 'gluten', group: 'allergy', name: 'Gluten / wheat', icon: '🍞', aka: 'gluten wheat allergy gluten sensitivity', tags: ['gluten'], words: [[H_GLUTEN_RE, 'avoid', 'contains gluten', 'ingr']], free: /gluten.?free|\bgf\b/i, ai: 'gluten-free'},
+  {id: 'soybeans', group: 'allergy', name: 'Soy', icon: '🫛', aka: 'soy allergy soya', tags: ['soybeans'], words: [[/\bsoy|soya|tofu|edamame|tempeh|miso|natto|tamari/i, 'avoid', 'contains soy', 'ingr']], free: /soy.?free/i, ai: 'no soy'},
+  {id: 'fish', group: 'allergy', name: 'Fish', icon: '🐟', aka: 'fish allergy', tags: ['fish'], words: [[/salmon|tuna|\bcod\b|tilapia|halibut|trout|anchov|sardine|mackerel|herring|mahi|snapper|catfish|pollock|haddock|\bfish\b|fish sauce|worcestershire|caesar/i, 'avoid', 'contains fish', 'ingr']], ai: 'no fish'},
+  {id: 'crustaceans', group: 'allergy', name: 'Shellfish', icon: '🦐', aka: 'shellfish allergy shrimp crab lobster mollusc', tags: ['crustaceans', 'molluscs'], words: [[H_SHELL_RE, 'avoid', 'contains shellfish', 'ingr']], ai: 'no shellfish'},
+  {id: 'sesame-seeds', group: 'allergy', name: 'Sesame', icon: '🫓', aka: 'sesame allergy tahini', tags: ['sesame-seeds'], words: [[/sesame|tahini|halva|benne|everything bagel|hummus/i, 'avoid', 'contains sesame', 'ingr']], ai: 'no sesame'},
+  {id: 'mustard', group: 'allergy', name: 'Mustard', icon: '🌭', aka: 'mustard allergy', tags: ['mustard'], words: [[/mustard/i, 'avoid', 'contains mustard', 'ingr']], ai: 'no mustard'},
+  {id: 'celery', group: 'allergy', name: 'Celery', icon: '🥬', aka: 'celery allergy celeriac', tags: ['celery'], words: [[/celery|celeriac/i, 'avoid', 'contains celery', 'ingr']], ai: 'no celery'},
+  {id: 'sulfites', group: 'allergy', name: 'Sulfites', icon: '🍷', aka: 'sulfite sulphite sensitivity', tags: ['sulphur-dioxide-and-sulphites'], words: [[/sulfite|sulphite|sulfur dioxide|metabisulfite|\bwine\b|dried apricot|dried fruit/i, 'avoid', 'may contain sulfites', 'ingr']], ai: 'no sulfites (wine, dried fruit)'},
+  {id: 'corn', group: 'allergy', name: 'Corn', icon: '🌽', aka: 'corn allergy maize', words: [[/\bcorn\b|cornstarch|corn ?syrup|cornmeal|maize|polenta|grits|masa|popcorn|tortilla chips/i, 'avoid', 'contains corn', 'ingr']], ai: 'no corn'},
+  {id: 'alphagal', group: 'allergy', name: 'Alpha-gal (red meat allergy)', icon: '🐄', aka: 'alpha gal tick bite mammal meat allergy', words: [H_W(['beef', 'steak', 'pork', 'lamb', 'veal', 'venison', 'bison', 'goat', 'bacon', 'ham\\b', 'sausage', 'salami', 'pepperoni', 'hot ?dog', 'burger', 'gelatin', 'lard', 'tallow', 'beef broth', 'bone broth'], 'avoid', 'from a mammal (alpha-gal)')], cats: ['Beef', 'Lamb', 'Pork', 'Goat'],
+    ai: 'alpha-gal: no mammal meat (beef, pork, lamb, venison), gelatin or lard; poultry and fish are fine',
+    guide: {choose: ['Chicken, turkey, fish and seafood', 'Beans, tofu, eggs'], avoid: ['Beef, pork, lamb, venison, goat and products made from them', 'Gelatin (gummies, marshmallows), lard, tallow, beef broth'], know: ['Some people also react to dairy. Your allergist will tell you if that applies.']}},
+  {id: 'nightshade', group: 'allergy', name: 'Nightshades', icon: '🍅', aka: 'nightshade tomato pepper potato eggplant', words: [[/tomato|(?<!sweet )potato|bell pepper|\bpeppers?\b|chil[ei]|jalape|paprika|cayenne|eggplant|goji|tomatillo|salsa|ketchup|marinara|pimento|sriracha/i, 'avoid', 'a nightshade', 'ingr']], ai: 'no nightshades (tomato, potato, peppers, eggplant, paprika)'},
+  {id: 'msg', group: 'allergy', name: 'MSG sensitivity', icon: '🧂', aka: 'msg monosodium glutamate', words: [[/monosodium glutamate|\bmsg\b|yeast extract|hydrolyzed|autolyzed|accent seasoning/i, 'avoid', 'contains MSG or free glutamate', 'ingr']], ai: 'no MSG'},
+  {id: 'caffeine', group: 'allergy', name: 'Caffeine', icon: '☕', aka: 'caffeine sensitivity decaf', words: [H_W(['coffee', 'espresso', 'energy drink', 'cola\\b', 'black tea', 'green tea', 'matcha', 'yerba', 'guarana', 'caffeine', 'pre.?workout', 'cold brew'], 'limit', 'has caffeine')], free: /decaf|caffeine.?free/i, ai: 'no caffeine'},
+  {id: 'sweeteners', group: 'allergy', name: 'Artificial sweeteners', icon: '🧃', aka: 'aspartame sucralose splenda stevia diet', words: [[/aspartame|sucralose|saccharin|acesulfame|neotame|advantame|splenda|nutrasweet|diet (?:soda|coke|pepsi)|coke zero|zero sugar/i, 'limit', 'has artificial sweetener', 'ingr']], ai: 'no artificial sweeteners'},
+  {id: 'sugaralc', group: 'allergy', name: 'Sugar alcohols', icon: '🍭', aka: 'sorbitol xylitol erythritol maltitol sugar free', words: [[/sorbitol|mannitol|xylitol|maltitol|erythritol|isomalt|lactitol/i, 'limit', 'has sugar alcohols (can upset the stomach)', 'ingr']], ai: 'no sugar alcohols'},
+  {id: 'dyes', group: 'allergy', name: 'Artificial food dyes', icon: '🌈', aka: 'red 40 yellow 5 food coloring dye adhd', words: [[/red (?:no\.? ?)?40|red (?:no\.? ?)?3\b|yellow (?:no\.? ?)?[56]|blue (?:no\.? ?)?[12]|green (?:no\.? ?)?3|tartrazine|allura|sunset yellow|brilliant blue|erythrosine|artificial colou?rs?/i, 'limit', 'has artificial dyes', 'ingr']], ai: 'no artificial food dyes'},
+  {id: 'fructose', group: 'allergy', name: 'Fructose malabsorption', icon: '🍎', aka: 'fructose intolerance', words: [H_W(['apple', 'pear', 'mango', 'watermelon', 'honey', 'agave', 'high.fructose', 'fruit juice', 'apple juice', 'dried fruit', 'raisin'], 'limit', 'high in fructose')], ai: 'low fructose (no apples, pears, mango, honey, agave, juice)'},
+  // ---- diets and lifestyles ----
+  {id: 'vegetarian', group: 'diet', name: 'Vegetarian', icon: '🥗', aka: 'vegetarian no meat meatless lacto ovo', words: [[new RegExp('\\b(?:' + [...H_MEAT, ...H_FISH].join('|') + ')', 'i'), 'avoid', 'has meat or fish', 'ingr']], free: /vegetarian|\bvegan\b|veggie|plant.?based|meatless|beyond|impossible|morningstar|gardein/i,
+    cats: ['Beef', 'Chicken', 'Lamb', 'Pork', 'Goat', 'Seafood'], ai: 'vegetarian (no meat or fish; eggs and dairy are fine)',
+    guide: {choose: ['Beans, lentils, tofu, tempeh, eggs, dairy for protein', 'Whole grains, nuts and seeds', 'Iron and B12: fortified cereal, eggs, dairy'], avoid: ['Meat, poultry and fish', 'Hidden animal ingredients: gelatin, lard, chicken or beef broth, fish sauce, Worcestershire']}},
+  {id: 'vegan', group: 'diet', name: 'Vegan / plant-based', icon: '🌱', aka: 'vegan plant based no animal products dairy free',
+    words: [[new RegExp('\\b(?:' + [...H_MEAT, ...H_FISH, 'honey', 'ghee', 'whey', 'casein', 'carmine', 'shellac', 'isinglass'].join('|') + ')', 'i'), 'avoid', 'has animal ingredients', 'ingr'], [H_MILK_RE, 'avoid', 'has dairy', 'ingr'], [H_EGG_RE, 'avoid', 'has eggs', 'ingr']], free: /\bvegan\b|plant.?based/i,
+    cats: ['Beef', 'Chicken', 'Lamb', 'Pork', 'Goat', 'Seafood'], ai: 'vegan (no meat, fish, dairy, eggs or honey)',
+    guide: {choose: ['Beans, lentils, tofu, tempeh, seitan', 'Fortified plant milk and cereal (B12, calcium, vitamin D)', 'Nuts, seeds, whole grains'], avoid: ['Meat, fish, dairy, eggs, honey', 'Whey, casein, gelatin, carmine (red dye from insects)'], know: ['Vitamin B12 only comes reliably from fortified foods or a supplement on a vegan diet.']}},
+  {id: 'pescatarian', group: 'diet', name: 'Pescatarian', icon: '🐠', aka: 'pescatarian fish but no meat', words: [[new RegExp('\\b(?:' + H_MEAT.join('|') + ')', 'i'), 'avoid', 'has meat', 'ingr']], free: /vegetarian|\bvegan\b|plant.?based|meatless/i,
+    cats: ['Beef', 'Chicken', 'Lamb', 'Pork', 'Goat'], ai: 'pescatarian (fish and seafood, no meat or poultry)'},
+  {id: 'keto', group: 'diet', name: 'Keto', icon: '🥓', aka: 'ketogenic keto low carb high fat',
+    nutr: [['carbs100', '>', 10, 'limit', 'too many carbs for keto ({v} g/100 g)'], ['sugars', '>', 5, 'limit', 'too much sugar for keto'], ['carbs100', '<=', 5, 'ok', 'keto-friendly']],
+    words: [H_W([...H_STARCH, 'banana', 'grapes', 'mango', 'juice', 'soda', 'sugar', 'honey', 'syrup', 'candy', 'cake', 'cookie', 'ice cream'], 'limit', 'too many carbs for keto')],
+    ok: [H_W(['beef', 'steak', 'chicken', 'pork', 'bacon', 'salmon', 'fish', 'eggs?\\b', 'cheese', 'butter\\b', 'cream\\b', 'avocado', 'olive oil', 'almond', 'walnut', 'pecan', 'spinach', 'greens', 'broccoli', 'cauliflower', 'zucchini'], 'ok', 'keto-friendly')], free: /\bketo\b|zero.?carb|low.?carb/i,
+    cats: ['Dessert', 'Pasta'], ai: 'keto (under about 20–30 g net carbs a day: meat, fish, eggs, cheese, low-carb vegetables, healthy fats; no bread, rice, pasta, potatoes, beans or sugar)',
+    guide: {choose: ['Meat, fish, eggs, cheese', 'Low-carb vegetables: leafy greens, broccoli, cauliflower, zucchini', 'Avocado, olive oil, nuts'], avoid: ['Bread, pasta, rice, potatoes, corn, cereal', 'Beans and lentils', 'Sugar, juice, soda, most fruit (some berries are fine)'], know: ['Keto isn’t right for everyone, especially with kidney disease, type 1 diabetes or some medicines. Check with your doctor.']}},
+  {id: 'lowcarb', group: 'diet', name: 'Low carb', icon: '🥩', aka: 'low carb atkins carb conscious', nutr: [['carbs100', '>', 25, 'limit', 'high in carbs ({v} g/100 g)'], ['carbs100', '<=', 10, 'ok', 'low in carbs']],
+    words: [H_W([...H_REFINED, 'pasta', 'spaghetti', 'rice\\b', 'potato', 'soda', 'juice', 'candy', 'cake'], 'limit', 'high in carbs')], ok: [H_W(['chicken', 'fish', 'eggs?\\b', 'greens', 'broccoli', 'cauliflower', 'nuts?\\b', 'cheese', 'greek yogh?urt'], 'ok', 'low in carbs')], free: /low.?carb|\bketo\b/i,
+    cats: ['Dessert'], ai: 'low carb (about 50–100 g of carbs a day: protein and vegetables, small portions of whole grains, no sugary food)'},
+  {id: 'paleo', group: 'diet', name: 'Paleo', icon: '🦴', aka: 'paleo caveman primal', words: [H_W(['bread', 'pasta', 'rice\\b', 'cereal', 'oats?\\b', 'beans', 'lentil', 'peanut', 'soy', 'tofu', 'milk', 'cheese', 'yogh?urt', 'sugar', 'candy', 'soda', 'chips', 'crackers?', 'corn\\b'], 'limit', 'not paleo (grains, legumes, dairy or refined)')],
+    ok: [H_W(['beef', 'chicken', 'fish', 'salmon', 'eggs?\\b', 'sweet potato', 'greens', 'vegetable', 'berr', 'apple', 'almond', 'walnut', 'avocado', 'olive oil'], 'ok', 'paleo-friendly')], free: /\bpaleo\b/i, ai: 'paleo (meat, fish, eggs, vegetables, fruit, nuts; no grains, legumes, dairy or refined sugar)'},
+  {id: 'whole30', group: 'diet', name: 'Whole30', icon: '3️⃣', aka: 'whole 30 elimination', like: ['paleo'], sugarTop: 'avoid', words: [H_W(H_ALCOHOL, 'avoid', 'no alcohol on Whole30'), H_W(['sugar', 'honey', 'syrup', 'agave', 'stevia', 'splenda', 'aspartame'], 'avoid', 'no added sugar or sweeteners on Whole30')], free: /whole ?30/i,
+    ai: 'Whole30 (no added sugar or sweeteners, alcohol, grains, legumes, soy or dairy)'},
+  {id: 'mediterranean', group: 'diet', name: 'Mediterranean', icon: '🫒', aka: 'mediterranean diet', nutr: [['satfat', '>', 5, 'limit', 'high in saturated fat']],
+    words: [H_W(['bacon', 'sausage', 'salami', 'hot ?dog', 'pepperoni', 'soda', 'candy', 'pastry', 'donut', 'white bread', ...H_FRIED], 'limit', 'not part of a Mediterranean pattern')],
+    ok: [H_W(['olive oil', 'olives', 'fish', 'salmon', 'sardine', 'beans', 'lentil', 'chickpea', 'hummus', 'nuts?\\b', 'almond', 'walnut', 'whole grain', 'whole wheat', 'farro', 'bulgur', 'tomato', 'greens', 'yogh?urt', 'feta', 'berr', 'eggplant'], 'ok', 'Mediterranean-friendly')],
+    ai: 'Mediterranean (vegetables, beans, whole grains, fish, olive oil, nuts; little red or processed meat and sweets)',
+    guide: {choose: ['Olive oil as the main fat', 'Vegetables, beans, lentils, whole grains', 'Fish and seafood twice a week', 'Nuts, yogurt, some cheese, fruit'], limit: ['Red meat (a few times a month)', 'Processed meat, sweets, refined grains']}},
+  {id: 'dash', group: 'diet', name: 'DASH / low sodium', icon: '🧂', aka: 'dash diet low salt low sodium', like: ['bp'], ai: 'DASH low-sodium (lots of vegetables, fruit, low-fat dairy, whole grains; little salt, red meat or sweets)'},
+  {id: 'antiinflam', group: 'diet', name: 'Anti-inflammatory', icon: '🫐', aka: 'anti inflammatory arthritis inflammation autoimmune',
+    words: [H_W([...H_FRIED, 'bacon', 'sausage', 'hot ?dog', 'salami', 'pepperoni', 'soda', 'candy', 'pastry', 'white bread', 'margarine', 'shortening'], 'limit', 'tends to drive inflammation')],
+    ok: [H_W(['salmon', 'sardine', 'mackerel', 'berr', 'cherr', 'spinach', 'kale', 'greens', 'broccoli', 'olive oil', 'walnut', 'almond', 'turmeric', 'ginger', 'tomato', 'green tea', 'beans', 'avocado'], 'ok', 'anti-inflammatory')],
+    ai: 'anti-inflammatory (fatty fish, berries, leafy greens, olive oil, nuts, beans; few fried, processed or sugary foods)'},
+  {id: 'highprotein', group: 'diet', name: 'High protein (fitness)', icon: '💪', aka: 'high protein gym bodybuilding macros muscle', nutr: [['protein100', '>=', 15, 'ok', 'high in protein ({v} g/100 g)']],
+    ok: [H_W(['chicken', 'turkey', 'fish', 'salmon', 'tuna', 'eggs?\\b', 'egg white', 'greek yogh?urt', 'cottage cheese', 'tofu', 'tempeh', 'lentil', 'beans', 'jerky', 'protein'], 'ok', 'a good protein source')], ai: 'high protein (30+ g of protein per meal)'},
+  {id: 'weight', group: 'diet', name: 'Losing weight', icon: '⚖️', aka: 'weight loss calorie deficit diet slimming', nutr: [['kcal', '>', 400, 'limit', 'very calorie-dense ({v} cal/100 g)'], ['sugars', '>', 22.5, 'limit', 'high sugar']],
+    words: [H_W(['soda', 'juice', 'sweet tea', 'candy', 'chips', 'pastry', 'donut', 'ice cream', 'cookie', 'cake', ...H_FRIED, ...H_ALCOHOL], 'limit', 'easy to overdo')],
+    ok: [H_W(['vegetable', 'greens', 'salad', 'broccoli', 'berr', 'apple', 'chicken breast', 'fish', 'egg white', 'greek yogh?urt', 'beans', 'lentil', 'soup', 'popcorn'], 'ok', 'filling for the calories')], ai: 'weight loss (filling, high-protein, high-fiber meals with lots of vegetables; few sugary drinks, fried food or sweets)'},
+  {id: 'halal', group: 'diet', name: 'Halal', icon: '☪️', aka: 'halal muslim no pork', words: [H_W(['pork', 'bacon', 'ham\\b', 'lard', 'prosciutto', 'pancetta', 'chorizo', 'pepperoni', 'salami', 'gelatin', ...H_ALCOHOL, 'vanilla extract'], 'avoid', 'not halal (pork or alcohol)')], free: /\bhalal\b/i,
+    cats: ['Pork'], ai: 'halal (no pork or alcohol; halal-certified meat)', guide: {avoid: ['Pork and pork products: bacon, ham, lard, most gelatin', 'Alcohol, including in sauces and vanilla extract'], know: ['Meat also needs to be halal-slaughtered. Look for halal certification.']}},
+  {id: 'kosher', group: 'diet', name: 'Kosher', icon: '✡️', aka: 'kosher jewish', words: [H_W(['pork', 'bacon', 'ham\\b', 'lard', 'prosciutto', 'pepperoni', 'shrimp', 'crab', 'lobster', 'clam', 'mussel', 'oyster', 'scallop', 'squid', 'catfish', 'gelatin'], 'avoid', 'not kosher')], free: /\bkosher\b/i,
+    cats: ['Pork', 'Seafood'], ai: 'kosher (no pork or shellfish; no meat with dairy in the same dish)', guide: {avoid: ['Pork and shellfish', 'Meat and dairy together'], know: ['Look for a hechsher (kosher symbol) on packaged food; the app can’t check meat-and-dairy rules.']}},
+];
+const HBYID = Object.fromEntries(HDEFS.map(d => [d.id, d]));
+const HGROUPS = [['condition', 'Medical conditions'], ['allergy', 'Allergies & intolerances'], ['med', 'Medicines & life stages'], ['diet', 'Diets & lifestyles']];
+const LEGACY_H = ['gout', 'chol', 'bp', 'sugar'];
+/* a filter the person made: a list of words to avoid or limit, written by them or by the AI */
+const wordsRe = ws => ws && ws.length ? new RegExp('\\b(?:' + ws.map(w => reEsc(lc(w).trim())).filter(Boolean).join('|') + ')', 'i') : null;
+function customDef(c) {
+  const words = [], ok = [];
+  const a = wordsRe(c.avoid), l = wordsRe(c.limit), o = wordsRe(c.ok);
+  if (a) words.push([a, 'avoid', c.whyAvoid || `you avoid this (${c.name})`, 'ingr']); if (l) words.push([l, 'limit', c.whyLimit || `limit for ${c.name}`, 'ingr']); if (o) ok.push([o, 'ok', c.whyOk || `good for ${c.name}`]);
+  const nutr = (c.nutr || []).filter(r => Array.isArray(r) && r.length >= 5);
+  return {id: c.id, group: c.group || 'custom', name: c.name, icon: c.icon || '⭐', words, ok, nutr, ai: c.ai || `${c.name}${c.avoid?.length ? ': avoid ' + c.avoid.slice(0, 8).join(', ') : ''}`, guide: c.guide || null, custom: true, src: c.src};
 }
+const hdef = id => HBYID[id] || ((S.health?.custom || []).find(c => c.id === id) ? customDef((S.health.custom || []).find(c => c.id === id)) : null);
+/* what this person has turned on (older versions stored gout/chol/bp/sugar as true/false and allergies as a list) */
+function hActive() {
+  const h = S.health || {}, ids = new Set(h.on || []);
+  for (const k of LEGACY_H) if (h[k]) ids.add(k);
+  for (const a of h.allergies || []) ids.add(a);
+  for (const c of h.custom || []) if (c.on !== false) ids.add(c.id);
+  return [...ids].filter(id => hdef(id));
+}
+const healthOn = () => hActive().filter(id => hdef(id).group !== 'allergy');
+const allergiesOn = () => hActive().filter(id => hdef(id).group === 'allergy');
+/* rules for a filter, including the ones it borrows ("like") */
+function hRules(d) {
+  const r = {words: [...(d.words || [])], ok: [...(d.ok || [])], nutr: [...(d.nutr || [])], tags: [...(d.tags || [])], sugarTop: d.sugarTop || null, free: d.free || null, dish: {...(d.dish || {})}};
+  for (const id of d.like || []) { const o = HBYID[id]; if (!o) continue; const x = hRules(o); r.words.push(...x.words); r.ok.push(...x.ok); r.nutr.push(...x.nutr); r.tags.push(...x.tags); r.sugarTop ||= x.sugarTop; r.free ||= x.free; for (const [k, v] of Object.entries(x.dish)) r.dish[k] ??= v; }
+  return r;
+}
+const HRANK = {ok: 1, limit: 2, avoid: 3};
+function healthFlags(it, opts = {}) {
+  const ids = hActive(); if (!ids.length) return [];
+  const pr = it.code || it.name ? (prodOf(it) || {}) : {}, n = {...(pr.nutr || it.nutr || {})}, f = pr.facts || it.facts || null;
+  // per-100 g carbs and protein from the label, when the serving weight is known
+  if (f && f.g > 0) { if (f.carbs != null) n.carbs100 = Math.round(f.carbs / f.g * 1000) / 10; if (f.protein != null) n.protein100 = Math.round(f.protein / f.g * 1000) / 10; if (n.kcal == null && f.kcal != null) n.kcal = Math.round(f.kcal / f.g * 100); }
+  const ingr = lc(pr.ingr || it.ingr || f?.ingr || ''), text = lc(`${it.name || ''} ${typeOf(it).kind || ''}`), tags = pr.allergens || [], out = [];
+  for (const id of ids) {
+    const d = hdef(id), r = hRules(d);
+    if (r.free && r.free.test(text)) continue;
+    let best = null; const hit = (lv, why) => { if (!best || HRANK[lv] > HRANK[best[0]]) best = [lv, why]; };
+    for (const [k, op, v, lv, why] of r.nutr) { const x = n[k]; if (x == null) continue; if (op === '>' ? x > v : op === '>=' ? x >= v : x <= v) hit(lv, String(why).replace('{v}', x)); }
+    if (r.tags.length && tags.some(t => r.tags.includes(t))) hit('avoid', `contains ${lc(d.name)}`);
+    if (r.sugarTop && ingr && ADDED_SUGAR.test(ingr.split(',').slice(0, 3).join(',').replace(/caramel colou?r/g, ''))) hit(r.sugarTop, 'sugar is a main ingredient');
+    for (const [re, lv, why, where] of r.words) if (re.test(text) || (where === 'ingr' && ingr && re.test(ingr))) hit(lv, why);
+    if (!best || best[0] === 'ok') for (const [re, , why] of r.ok) if (re.test(text)) { hit('ok', why); break; }
+    if (best && (best[0] !== 'ok' || opts.good)) out.push({key: id, level: best[0], why: best[1]});
+  }
+  return out.sort((a, b) => HRANK[b.level] - HRANK[a.level]);
+}
+const hIsAllergy = key => hdef(key)?.group === 'allergy';
 function flagHtml(it, max = 2, link = true) {
   const f = healthFlags(it).filter(x => x.level !== 'ok'); if (!f.length) return '';
-  return f.slice(0, max).map(x => `<span class="hflag ${x.level}" title="${esc(x.why)}"${link ? ` data-act="go" data-to="guide" data-arg="${x.key.startsWith('al:') ? '' : x.key}" role="button" tabindex="0"` : ''}>${x.key.startsWith('al:') ? '⚠ ' + esc(x.why[0].toUpperCase() + x.why.slice(1)) : `${HEALTH[x.key].icon} ${esc(x.level === 'avoid' ? 'Avoid' : 'Limit')}: ${esc(x.why)}`}</span>`).join('');
+  return f.slice(0, max).map(x => { const d = hdef(x.key) || {icon: '⚠', name: ''};
+    return `<span class="hflag ${x.level}" title="${esc(d.name + ': ' + x.why)}"${link ? ` data-act="go" data-to="guide" data-arg="${esc(x.key)}" role="button" tabindex="0"` : ''}>${hIsAllergy(x.key) ? '⚠ ' + esc(x.why[0].toUpperCase() + x.why.slice(1)) : `${d.icon} ${esc(x.level === 'avoid' ? 'Avoid' : 'Limit')}: ${esc(x.why)}`}</span>`; }).join('');
 }
+
 /* fill in nutrition for barcodes saved before 3.2, a few at a time, only when someone has a filter on */
 let nutrBusy = false, nutrTries = 0;
 async function backfillNutrition() {
@@ -5809,52 +6070,99 @@ async function backfillNutrition() {
   nutrBusy = false;
   if (todo.length) render();
 }
-const GUIDES = {
-  gout: {choose: ['Low-fat milk, yogurt and cheese', 'Vegetables (even spinach and mushrooms are fine)', 'Whole grains, beans, lentils, tofu', 'Eggs', 'Cherries and other fruit', 'Coffee and plenty of water'],
-    limit: ['Red meat: beef, pork, lamb', 'Shrimp, lobster, crab, tuna', 'Sugary drinks and fruit juice', 'Foods with high-fructose corn syrup', 'Wine and liquor'],
-    avoid: ['Organ meats: liver, kidney, sweetbreads', 'Anchovies, sardines, herring, mussels, scallops, trout', 'Beer', 'Gravies and meat extracts']},
-  chol: {choose: ['Oats, barley and other whole grains', 'Beans, lentils, chickpeas', 'Nuts and seeds (unsalted)', 'Fatty fish like salmon, twice a week', 'Olive or canola oil', 'Fruits and vegetables'],
-    limit: ['Fatty and processed meats: bacon, sausage, salami', 'Butter, cream, full-fat cheese, ice cream', 'Coconut and palm oil', 'Fried foods and pastries'],
-    avoid: ['Anything with “partially hydrogenated” oil (trans fat)', 'Shortening and lard']},
-  bp: {choose: ['Fruits and vegetables, especially bananas, potatoes, spinach and beans (potassium)', 'Low-fat dairy', 'Whole grains', 'Unsalted nuts', 'Fresh chicken, fish and eggs', 'Herbs, spices and citrus instead of salt'],
-    limit: ['Deli, cured and processed meats', 'Canned soups, broth and frozen dinners', 'Chips, pretzels, salted snacks', 'Pickles, olives, soy sauce', 'Cheese and bread add up too'],
-    avoid: ['Aim for under 2,300 mg of sodium a day (1,500 mg if your doctor says so). On labels, 5% daily value or less is low and 20% or more is high.']},
-  sugar: {choose: ['Water, sparkling water, unsweetened tea and coffee', 'Whole fruit instead of juice', 'Plain yogurt (add your own fruit)', 'Eggs, nuts, cheese, vegetables', 'Unsweetened cereal or oatmeal'],
-    limit: ['Soda, juice, sweet tea, energy drinks', 'Candy, cookies, cakes and pastries', 'Sweetened cereal, granola bars, flavored yogurt', 'Syrups, jam, ketchup, BBQ sauce'],
-    avoid: ['Added sugar hides under many names: corn syrup, dextrose, sucrose, maltose, cane juice, honey, agave', 'The American Heart Association suggests no more than about 25 g (women) or 36 g (men) of added sugar a day']},
-};
+const hSummary = d => { const t = String(d.ai || '').replace(/^[^:]*:\s*/, ''); return t.length > 110 ? t.slice(0, 108) + '…' : t; };
 function healthSheet() {
-  let h = {...(S.health || {}), allergies: [...allergiesOn()]};
-  const draw = () => `<h3>Health filters</h3>
-    <p class="hint">For you only. Turn on what applies, and the app labels foods in stock, on the list, in recipes and when you scan. Saved to your account. General guidance, not medical advice: follow your doctor’s or dietitian’s plan.</p>
-    <div class="hgrid">${Object.entries(HEALTH).map(([k, d]) => `<button type="button" class="hopt" data-h="${k}" aria-pressed="${!!h[k]}"><span>${d.icon}</span><b>${esc(d.name)}</b></button>`).join('')}</div>
-    <div class="lbl">Allergies and things you avoid<div class="expchips">${ALLERGENS.map(([k, n]) => `<button type="button" data-al="${k}" aria-pressed="${h.allergies.includes(k)}">${esc(n)}</button>`).join('')}</div></div>
+  const h = {on: hActive(), custom: (S.health?.custom || []).map(c => ({...c}))};
+  let q = '', busy = false, msg = '';
+  const isOn = id => h.on.includes(id), defOf = id => HBYID[id] || (h.custom.find(c => c.id === id) ? customDef(h.custom.find(c => c.id === id)) : null);
+  const row = d => `<button type="button" class="hrow" data-hid="${esc(d.id)}" aria-pressed="${isOn(d.id)}"><span class="hic">${d.icon}</span><span class="htx"><b>${esc(d.name)}</b><small>${esc(hSummary(d))}</small></span><span class="hck">${isOn(d.id) ? '✓' : '+'}</span></button>`;
+  const match = (d, words) => { const hay = lc(`${d.name} ${d.aka || ''} ${d.group}`); return words.every(w => hay.includes(w)); };
+  const results = () => {
+    const words = lc(q).split(/\s+/).filter(Boolean);
+    const all = [...HDEFS, ...h.custom.map(customDef)];
+    if (!words.length) return HGROUPS.map(([g, n], i) => { const ds = HDEFS.filter(d => d.group === g); return `<details class="hgroup" ${i === 0 && !h.on.length ? 'open' : ''}><summary>${esc(n)} <span class="hint">${ds.length}</span></summary><div class="hrows">${ds.map(row).join('')}</div></details>`; }).join('')
+      + (h.custom.length ? `<details class="hgroup" open><summary>Yours <span class="hint">${h.custom.length}</span></summary><div class="hrows">${h.custom.map(customDef).map(row).join('')}</div></details>` : '');
+    const hits = all.filter(d => match(d, words));
+    return `<div class="hrows">${hits.map(row).join('')}</div>
+      <div class="hmake">${hits.length ? `<p class="hint">Not what you meant?</p>` : `<p class="hint">Nothing called “${esc(q)}” in the list yet.</p>`}
+        ${aiShow() ? `<button type="button" class="btn aibtn" id="hAI"${busy ? ' disabled' : ''}>${busy ? '<span class="spinner"></span> Building it…' : `✨ Make a “${esc(q)}” filter with AI`}</button>` : ''}
+        <button type="button" class="btn" id="hAvoid">🚫 Avoid foods with “${esc(q)}”</button>${msg ? `<p class="err">${esc(msg)}</p>` : ''}</div>`;
+  };
+  const mine = () => h.on.length ? h.on.map(id => { const d = defOf(id); return d ? `<span class="hchip">${d.icon} ${esc(d.name)}<button type="button" data-hoff="${esc(id)}" aria-label="Turn off ${esc(d.name)}">✕</button></span>` : ''; }).join('') : '<span class="hint">Nothing on yet. Search or browse below.</span>';
+  sheet(`<h3>Health filters</h3>
+    <p class="hint">For you only. Pick what applies to you: conditions, allergies, medicines, diets. The app labels foods in stock, on the list, in recipes and when you scan, and recipe ideas and meal plans follow them. General guidance, not medical advice: your doctor’s or dietitian’s plan comes first.</p>
+    <div class="hmine" id="hMine">${mine()}</div>
+    <input class="field" id="hQ" type="search" placeholder="🔎 Search: diabetes, shellfish, keto, pregnancy, Ozempic…" autocomplete="off" enterkeyhint="search">
+    <div id="hRes">${results()}</div>
     <div class="actions"><button class="btn primary" id="hSave">Save</button><button class="btn" id="hGuide">Food guide</button></div>
-    <div class="actions col"><button class="btn ghost" data-act="closeSheet">Close</button></div>`;
-  sheet(draw(), el => {
-    const wire = () => {
-      el.querySelectorAll('[data-h]').forEach(b => b.onclick = () => { h[b.dataset.h] = !h[b.dataset.h]; b.setAttribute('aria-pressed', String(!!h[b.dataset.h])); });
-      el.querySelectorAll('[data-al]').forEach(b => b.onclick = () => { const a = b.dataset.al; h.allergies = h.allergies.includes(a) ? h.allergies.filter(x => x !== a) : [...h.allergies, a]; b.setAttribute('aria-pressed', String(h.allergies.includes(a))); });
-      el.querySelector('#hSave').onclick = async () => {
-        S.health = h; await setDoc(doc(fs, 'users', S.uid), {health: h}, {merge: true}).catch(() => {});
-        closeSheet(); render(); backfillNutrition(); toast(healthOn().length || allergiesOn().length ? 'Health filters on' : 'Health filters off');
-      };
-      el.querySelector('#hGuide').onclick = () => { S.health = h; guideSheet(); };
-    };
-    wire();
+    <div class="actions col"><button class="btn ghost" data-act="closeSheet">Close</button></div>`, el => {
+    const redraw = () => { el.querySelector('#hMine').innerHTML = mine(); el.querySelector('#hRes').innerHTML = results(); };
+    const toggle = id => { h.on = isOn(id) ? h.on.filter(x => x !== id) : [...h.on, id]; redraw(); };
+    el.querySelector('#hQ').addEventListener('input', e => { q = e.target.value.trim(); msg = ''; el.querySelector('#hRes').innerHTML = results(); });
+    el.addEventListener('click', async e => {
+      const b = e.target.closest('button'); if (!b || !el.contains(b)) return;
+      if (b.dataset.hid) return toggle(b.dataset.hid);
+      if (b.dataset.hoff) { const id = b.dataset.hoff; h.on = h.on.filter(x => x !== id); if (id.startsWith('c:')) h.custom = h.custom.filter(c => c.id !== id); return redraw(); }
+      if (b.id === 'hAvoid') { const w = q.replace(/^(no|avoid|without)\s+/i, '').trim(); if (!w) return; const id = 'c:avoid-' + slug(w);
+        if (!h.custom.some(c => c.id === id)) h.custom.push({id, name: `Avoid: ${w}`, icon: '🚫', group: 'allergy', avoid: w.split(/\s*,\s*|\s+and\s+/).filter(Boolean), whyAvoid: `has ${w}`, ai: `no ${w}`, src: 'you'});
+        if (!isOn(id)) h.on.push(id); q = ''; el.querySelector('#hQ').value = ''; return redraw(); }
+      if (b.id === 'hAI') {
+        busy = true; msg = ''; el.querySelector('#hRes').innerHTML = results();
+        try { const c = await aiHealthFilter(q); if (!h.custom.some(x => x.id === c.id)) h.custom.push(c); else h.custom = h.custom.map(x => x.id === c.id ? c : x); if (!isOn(c.id)) h.on.push(c.id); q = ''; el.querySelector('#hQ').value = ''; }
+        catch (err) { msg = err.message; }
+        busy = false; return redraw();
+      }
+      if (b.id === 'hSave' || b.id === 'hGuide') {
+        const out = {on: h.on.filter(id => HBYID[id]), custom: h.custom.map(c => ({...c, on: h.on.includes(c.id)})), allergies: h.on.filter(id => ['peanuts', 'nuts', 'milk', 'eggs', 'gluten', 'soybeans', 'fish', 'crustaceans', 'sesame-seeds'].includes(id))};
+        for (const k of LEGACY_H) out[k] = h.on.includes(k);   // older versions on other phones still understand these
+        S.health = out; await setDoc(doc(fs, 'users', S.uid), {health: out}, {merge: true}).catch(() => {});
+        if (b.id === 'hGuide') return guideSheet();
+        closeSheet(); render(); backfillNutrition(); toast(hActive().length ? `${hActive().length} health filter${hActive().length === 1 ? '' : 's'} on` : 'Health filters off');
+      }
+    });
   });
 }
+/* a filter for something not in the list, written by the AI the way a dietitian would, and kept on the account */
+async function aiHealthFilter(what) {
+  const out = await askAI(`You are a registered dietitian. A person wants a food filter in their kitchen app for: "${what}".
+It may be a medical condition, an allergy or intolerance, a medicine with food interactions, a life stage, or a diet. Base it on mainstream clinical guidance (AND, AHA, ADA, NIH, FDA, specialist societies). If it isn't food-related, set "food": false.
+Return only JSON: {"food": true, "name": a short clear name (e.g. "Diverticulitis", "Low histamine", "Lithium"), "icon": one emoji, "group": "condition" | "allergy" | "med" | "diet",
+"avoid": [up to 25 lowercase food words or ingredient names to avoid, as they'd appear on a grocery product or ingredient list],
+"limit": [up to 25 lowercase food words to limit], "ok": [up to 20 lowercase food words that are good choices],
+"nutr": {"sugars_max": grams per 100 g or null, "salt_max": g per 100 g or null, "satfat_max": g per 100 g or null, "kcal_max": per 100 g or null, "carbs_max": g per 100 g or null, "protein_min": g per 100 g or null},
+"why_avoid": "a few words, e.g. 'high in oxalate'", "why_limit": "a few words", "why_ok": "a few words",
+"choose": [3–5 short tips], "limit_list": [2–5 short tips], "avoid_list": [0–4 short tips], "know": "one sentence, including when to ask their doctor",
+"plan": "one line telling a recipe planner what to do, e.g. 'low oxalate: little spinach, nuts, beets or chocolate'"}`, [], 'health');
+  if (out?.food === false || !out?.name) throw new Error(`That doesn’t seem to be about food. Try another word, or use “Avoid foods with…”.`);
+  const arr = v => (Array.isArray(v) ? v : []).map(x => String(x).toLowerCase().trim()).filter(x => x && x.length < 40).slice(0, 25);
+  const nu = out.nutr || {}, nutr = [];
+  const num = v => Number(v) > 0 ? Number(v) : null;
+  if (num(nu.sugars_max)) nutr.push(['sugars', '>', num(nu.sugars_max), 'limit', 'high sugar ({v} g/100 g)']);
+  if (num(nu.salt_max)) nutr.push(['salt', '>', num(nu.salt_max), 'limit', 'high salt ({v} g/100 g)']);
+  if (num(nu.satfat_max)) nutr.push(['satfat', '>', num(nu.satfat_max), 'limit', 'high saturated fat ({v} g/100 g)']);
+  if (num(nu.kcal_max)) nutr.push(['kcal', '>', num(nu.kcal_max), 'limit', 'calorie-dense ({v} cal/100 g)']);
+  if (num(nu.carbs_max)) nutr.push(['carbs100', '>', num(nu.carbs_max), 'limit', 'high in carbs ({v} g/100 g)']);
+  if (num(nu.protein_min)) nutr.push(['protein100', '>=', num(nu.protein_min), 'ok', 'high in protein']);
+  const name = String(out.name).slice(0, 50);
+  return {id: 'c:' + slug(name), name, icon: [...String(out.icon || '⭐')].slice(0, 2).join(''), group: ['condition', 'allergy', 'med', 'diet'].includes(out.group) ? out.group : 'condition',
+    avoid: arr(out.avoid), limit: arr(out.limit), ok: arr(out.ok).slice(0, 20), nutr, whyAvoid: String(out.why_avoid || '').slice(0, 60) || `avoid for ${name}`, whyLimit: String(out.why_limit || '').slice(0, 60) || `limit for ${name}`, whyOk: String(out.why_ok || '').slice(0, 60) || `good for ${name}`,
+    guide: {choose: arr2(out.choose), limit: arr2(out.limit_list), avoid: arr2(out.avoid_list), know: out.know ? [String(out.know).slice(0, 300)] : []}, ai: String(out.plan || name).slice(0, 200), src: 'ai', at: Date.now()};
+}
+const arr2 = v => (Array.isArray(v) ? v : []).map(x => String(x).slice(0, 160)).filter(Boolean).slice(0, 6);
 function guideSheet(focus) {
-  const on = focus && GUIDES[focus] ? [focus, ...Object.keys(GUIDES).filter(k => k !== focus)] : healthOn().length ? [...healthOn(), ...Object.keys(GUIDES).filter(k => !healthOn().includes(k))] : Object.keys(GUIDES), good = [], watch = [];
+  const ids = [...new Set([...(focus && hdef(focus) ? [focus] : []), ...hActive()])].filter(id => hdef(id)?.guide || hdef(id)?.like);
+  const good = [], watch = [];
   for (const k of visK().filter(k => (k.qty || 0) > 0)) for (const f of healthFlags(k, {good: true})) (f.level === 'ok' ? good : watch).push([k, f]);
-  const li = arr => arr.map(x => `<li>${esc(x)}</li>`).join('');
-  sheet(`<h3>Food guide</h3><p class="hint">General guidance from the American Heart Association, the DASH eating plan, the Arthritis Foundation and the FDA. Your doctor or dietitian knows your situation best.</p>
+  const li = arr => (arr || []).map(x => `<li>${esc(x)}</li>`).join('');
+  const guideOf = d => d.guide || (d.like || []).map(x => HBYID[x]?.guide).find(Boolean) || {};
+  sheet(`<h3>Food guide</h3><p class="hint">For what you’ve turned on in Health filters. General guidance from the AHA, ADA, NKF, the DASH plan, Monash University (FODMAP), the FDA and others. Your doctor or dietitian knows your situation best.</p>
     ${watch.length || good.length ? `<details class="help" ${focus ? '' : 'open'}><summary>In your kitchen now</summary>
-      ${watch.length ? `<p><b>Go easy on:</b></p><ul>${[...new Map(watch.map(([k, f]) => [k.name + f.key, `${typeOf(k).kind} (${k.name}): ${f.why}`])).values()].slice(0, 15).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
-      ${good.length ? `<p><b>Good choices you have:</b></p><ul>${[...new Map(good.map(([k, f]) => [k.name, `${typeOf(k).kind}: ${f.why}`])).values()].slice(0, 12).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}</details>` : ''}
-    ${on.map(k => `<details class="help" ${(focus ? k === focus : healthOn().includes(k)) ? 'open' : ''}><summary>${HEALTH[k].icon} ${esc(HEALTH[k].name)}</summary>
-      <p><b>Choose more often</b></p><ul>${li(GUIDES[k].choose)}</ul><p><b>Limit</b></p><ul>${li(GUIDES[k].limit)}</ul><p><b>${k === 'bp' || k === 'sugar' ? 'Good to know' : 'Avoid or keep rare'}</b></p><ul>${li(GUIDES[k].avoid)}</ul></details>`).join('')}
-    <div class="actions col"><button class="btn" id="gBack">${healthOn().length || allergiesOn().length ? 'Change my health filters' : 'Turn on health filters for me'}</button><button class="btn ghost" data-act="closeSheet">Close</button></div>`, el => { el.querySelector('#gBack').onclick = () => healthSheet(); });
+      ${watch.length ? `<p><b>Go easy on:</b></p><ul>${[...new Map(watch.map(([k, f]) => [k.name + f.key, `${typeOf(k).kind} (${k.name}): ${f.why} · ${hdef(f.key)?.name || ''}`])).values()].slice(0, 20).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+      ${good.length ? `<p><b>Good choices you have:</b></p><ul>${[...new Map(good.map(([k, f]) => [k.name, `${typeOf(k).kind}: ${f.why}`])).values()].slice(0, 15).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}</details>` : ''}
+    ${ids.length ? ids.map(id => { const d = hdef(id), g = guideOf(d); return `<details class="help" ${id === focus || (!focus && ids.length <= 2) ? 'open' : ''}><summary>${d.icon} ${esc(d.name)}</summary>
+      ${g.choose?.length ? `<p><b>Choose more often</b></p><ul>${li(g.choose)}</ul>` : ''}${g.limit?.length ? `<p><b>Limit</b></p><ul>${li(g.limit)}</ul>` : ''}${g.avoid?.length ? `<p><b>Avoid</b></p><ul>${li(g.avoid)}</ul>` : ''}${g.know?.length ? `<p><b>Good to know</b></p><ul>${li(g.know)}</ul>` : ''}
+      ${d.custom ? `<p class="hint">${d.src === 'ai' ? 'Made with AI from mainstream guidance. Check it with your care team.' : 'Your own filter.'}</p>` : ''}</details>`; }).join('') : '<div class="empty"><b>No guides yet</b>Turn on what applies to you in Health filters and its guide shows here.</div>'}
+    <div class="actions col"><button class="btn" id="gBack">${hActive().length ? 'Change my health filters' : 'Turn on health filters for me'}</button><button class="btn ghost" data-act="closeSheet">Close</button></div>`, el => { el.querySelector('#gBack').onclick = () => healthSheet(); });
 }
 
 /* ================= food and water log =================
@@ -5904,11 +6212,10 @@ function nutrOut(o) {
 const nutrLine = n => n ? NKEYS.filter(([k]) => n[k] != null && k !== 'satfat').map(([k, l, u]) => `${l} ${n[k]}${u}`).join(' · ') + (n.hi?.length ? ` · good for ${n.hi.join(', ')}` : '') : '';
 /* per-serving checks against this person's health filters (FDA daily values: sodium 2,300 mg, added sugar 50 g, saturated fat 20 g) */
 function dishFlags(d) {
-  const n = d.n || {}, out = [];
-  if (S.health?.bp && n.sodium >= 1000) out.push(['limit', `🩺 ${n.sodium.toLocaleString()} mg sodium, ${Math.round(n.sodium / 23)}% of a day`]);
-  if (S.health?.sugar && n.sugar >= 20) out.push(['limit', `🍬 ${n.sugar} g sugar`]);
-  if (S.health?.chol && n.satfat >= 8) out.push(['limit', `❤️ ${n.satfat} g saturated fat, ${Math.round(n.satfat / 20 * 100)}% of a day`]);
-  for (const f of healthFlags({name: d.name})) if (f.level !== 'ok' && !(f.key === 'bp' && n.sodium != null) && !(f.key === 'sugar' && n.sugar != null)) out.push([f.level, f.key.startsWith('al:') ? '⚠ ' + f.why : `${HEALTH[f.key].icon} ${f.why}`]);
+  const n = d.n || {}, out = [], seen = new Set();
+  const lim = {sodium: [n.sodium, v => `${v.toLocaleString()} mg sodium, ${Math.round(v / 23)}% of a day`], sugar: [n.sugar, v => `${v} g sugar`], satfat: [n.satfat, v => `${v} g saturated fat, ${Math.round(v / 20 * 100)}% of a day`], carbs: [n.carbs, v => `${v} g carbs`]};
+  for (const id of hActive()) { const dd = hdef(id), r = hRules(dd); for (const [k, max] of Object.entries(r.dish)) { const [v, txt] = lim[k] || []; if (v != null && v >= max && !seen.has(k)) { seen.add(k); out.push(['limit', `${dd.icon} ${txt(v)}`]); } } }
+  for (const f of healthFlags({name: d.name})) if (f.level !== 'ok') out.push([f.level, hIsAllergy(f.key) ? '⚠ ' + f.why : `${hdef(f.key).icon} ${f.why}`]);
   return out;
 }
 const dishFlagHtml = d => dishFlags(d).map(([lv, t]) => `<span class="hflag ${lv}">${esc(t)}</span>`).join('');
@@ -6040,7 +6347,7 @@ Return only JSON: {"kcal": number, ${NUTR_JSON}}`, [], 'dish');
   return {kcal: Number(out?.kcal) ? Math.round(out.kcal / 5) * 5 : null, n: nutrOut(out)};
 }
 async function aiDishRecipe(d, place) {
-  const out = await askAI(`Write a home recipe that recreates "${d.name}"${place ? ' from ' + place : ''}${d.note ? '. Notes from the person who ate it: ' + d.note : ''}. Keep it practical for a family kitchen${healthOn().length ? '; make it friendlier for ' + healthOn().map(k => HEALTH[k].short).join(' and ') + ' without losing the flavor' : ''}.
+  const out = await askAI(`Write a home recipe that recreates "${d.name}"${place ? ' from ' + place : ''}${d.note ? '. Notes from the person who ate it: ' + d.note : ''}. Keep it practical for a family kitchen${healthOn().length ? '; make it friendlier for ' + healthOn().map(k => lc(hdef(k).name)).join(' and ') + ' without losing the flavor' : ''}.
 Return only JSON: {"title": string, "minutes": number, ${TIME_JSON}, "serves": number, "ingredients":[{"name": string, "amount": string, ${ING_JSON}}], "steps": [short strings]}`, [], 'recipe');
   if (!out?.title) throw new Error('Couldn’t write that recipe. Try again.');
   return cleanRecipe({...out, source: `Inspired by ${place || 'eating out'}`, link: ''});
@@ -6320,11 +6627,7 @@ function factsPanel(f, mult = 1) {
 /* the ingredient list, with anything your health filters or allergies care about highlighted */
 function ingrHtml(t) {
   const marks = [];
-  for (const a of allergiesOn()) { const d = ALLERGENS.find(x => x[0] === a); if (d) marks.push(d[2]); }
-  if (healthOn().includes('sugar')) marks.push(/(?:high.fructose )?corn syrup|cane sugar|\bsugar\b|dextrose|sucrose|fructose|maltodextrin|honey|molasses/i);
-  if (healthOn().includes('chol')) marks.push(/partially hydrogenated[^,;)]*|palm oil|coconut oil|lard|shortening/i);
-  if (healthOn().includes('gout')) marks.push(/high.fructose corn syrup|yeast extract|anchov[a-z]*/i);
-  if (healthOn().includes('bp')) marks.push(/\bsalt\b|sodium [a-z]+|monosodium glutamate|soy sauce/i);
+  for (const id of hActive()) { const r = hRules(hdef(id)); for (const [re, lv] of r.words) if (lv !== 'ok') marks.push(re); if (r.sugarTop) marks.push(ADDED_SUGAR); }
   let h = esc(t);
   for (const re of marks) h = h.replace(new RegExp(re.source, 'gi'), m => `<mark>${m}</mark>`);
   return h;
@@ -6337,13 +6640,13 @@ function factsSheet(k, mult = 1) {
       ${(() => { const fl = healthFlags(k).filter(x => x.level !== 'ok'); return fl.length ? `<div class="note">${flagHtml(k, 3)}</div>` : ''; })()}`
       : '<div class="empty"><b>No nutrition facts yet</b>Snap the Nutrition Facts panel on the package, look it up online, or type it in.</div>'}
     <div class="minor">${aiShow() ? `<label class="btn small aibtn filebtn">📷 ${f ? 'Update nutrition facts from a photo' : 'Add nutrition facts from a photo'}<input type="file" accept="image/*" capture="environment" id="nfPic" aria-label="Photo of the Nutrition Facts label"></label>` : ''}
-      ${code ? '<button class="btn small" id="nfOff">🌐 Look up nutrition online</button>' : ''}<button class="btn small" id="nfType">✏️ ${f ? 'Edit nutrition facts' : 'Type nutrition facts'}</button>
+      ${!code ? '<button class="btn small" id="nfUsda">🌐 Typical values (USDA)</button>' : ''}${code ? '<button class="btn small" id="nfOff">🌐 Look up nutrition online</button>' : ''}<button class="btn small" id="nfType">✏️ ${f ? 'Edit nutrition facts' : 'Type nutrition facts'}</button>
       ${f ? '<button class="btn small ghost danger" id="nfDel">Remove nutrition facts</button>' : ''}</div><span class="aistatus" id="nfBusy"></span>
     ${(() => { const pr = prodOf(k) || {}, ingr = pr.ingr || '', al = (pr.allergens || []).filter(Boolean);
       const words = healthOn().length || allergiesOn().length ? healthFlags(k).filter(x => x.level !== 'ok') : [];
       return `<div class="group ingbox"><h2>Ingredients</h2>
         ${ingr ? `<p class="ingtext">${ingrHtml(ingr)}</p>` : '<p class="hint">No ingredient list yet. Snap the ingredients on the package (usually right under the Nutrition Facts), or type them in.</p>'}
-        ${al.length ? `<div class="note"><b>Contains:</b> ${esc(al.map(a => ALLERGENS.find(x => x[0] === a)?.[1] || a).join(', '))}</div>` : ''}
+        ${al.length ? `<div class="note"><b>Contains:</b> ${esc(al.map(a => ({peanuts: 'peanuts', nuts: 'tree nuts', milk: 'milk', eggs: 'eggs', gluten: 'gluten', soybeans: 'soy', fish: 'fish', crustaceans: 'shellfish', molluscs: 'molluscs', 'sesame-seeds': 'sesame', mustard: 'mustard', celery: 'celery', lupin: 'lupin', 'sulphur-dioxide-and-sulphites': 'sulfites'}[a] || a.replace(/-/g, ' '))).join(', '))}</div>` : ''}
 
         <div class="minor">${aiShow() ? `<label class="btn small aibtn filebtn">📷 ${ingr ? 'Update ingredients from a photo' : 'Add ingredients from a photo'}<input type="file" accept="image/*" capture="environment" id="igPic" aria-label="Photo of the ingredient list"></label>` : ''}<button class="btn small" id="igType">✏️ ${ingr ? 'Edit ingredients' : 'Type ingredients'}</button></div><span class="aistatus" id="igBusy"></span></div>`; })()}
     <div class="actions col"><button class="btn ghost" data-act="closeSheet">Close</button></div>`, el => {
@@ -6383,6 +6686,11 @@ Return only JSON: {"ingredients": the full ingredient list as one line of text, 
       const c = await cropPhoto(file, {title: 'Crop to the Nutrition Facts'}).catch(() => null); if (!c) return;
       busy(`<span class="spinner"></span> Reading the label… ${aiWait('label')}`);
       try { const nf = await aiReadLabel(c); await saveFacts(k, nf); factsSheet(k); toast('Nutrition facts saved'); } catch (err) { if (!/cancel/i.test(err.message)) busy(esc(err.message)); else busy(''); }
+    });
+    el.querySelector('#nfUsda')?.addEventListener('click', async () => {
+      busy('<span class="spinner"></span> Looking it up at USDA FoodData Central…');
+      try { const nf = await usdaFacts(k.name); if (!nf) { busy('USDA doesn’t have a plain food by that name. Snap the label or type it in.'); return; } await saveFacts(k, nf); factsSheet(k); toast('Typical nutrition saved (per 100 g)'); }
+      catch (err) { busy(esc(err.message)); }
     });
     el.querySelector('#nfOff')?.addEventListener('click', async () => {
       busy('<span class="spinner"></span> Looking it up…');
@@ -6524,7 +6832,12 @@ function noteFinished(k) {
 }
 const buyEvery = pr => { const b = (pr?.buys || []).filter(Number.isFinite); if (b.length < 3) return null; const gaps = b.slice(1).map((x, i) => (x - b[i]) / 864e5).filter(g => g >= 1); const g = gaps.length >= 2 ? med(gaps) : null; return g && g <= 90 ? g : null; };
 function predictOf(k) {
-  if (!(k.qty > 0)) return null;
+  if (!(k.qty > 0) || k.noPredict) return null;
+  const set = k.lastsDays || prodOf(k)?.lastsDays;
+  if (trackOf(k) === 'count' && k.perWeek > 0) return {days: remainingOf(k) / (k.perWeek / 7), how: 'set', per: k.perWeek};
+  if (set > 0) { const start0 = k.bought ? dateAt(k.bought) : k.at, age0 = start0 ? (Date.now() - start0) / 864e5 : 0;
+    const days = trackOf(k) === 'level' ? remainingOf(k) * set : Math.max(0, (k.qty || 0) * set - Math.min(age0, set * .95));
+    return {days, how: 'set', lasts: set}; }
   const st = usageStats(k); if (st?.daysLeft != null) return {days: st.daysLeft, how: 'use'};
   const pr = prodOf(k), start = k.bought ? dateAt(k.bought) : k.at, age = start ? (Date.now() - start) / 864e5 : null;
   if (age == null || trackOf(k) !== 'pkg' || (k.qty || 0) > 1) return null;
@@ -6532,6 +6845,81 @@ function predictOf(k) {
   if (life) return {days: life - age, how: 'life', life};
   const every = buyEvery(pr); if (every) return {days: every - age, how: 'buys', every};
   return null;
+}
+/* fix how fast something gets used: what you set beats what was learned, and wrong taps can be removed */
+function usageSheet(k0, back = null) {
+  const k = S.kitchen.find(x => x.id === k0.id) || k0, t = trackOf(k), pr = prodOf(k) || {};
+  let usage = [...(k.usage || [])], clearLife = false, armed = false;
+  const unit = t === 'count' ? (unitLabel(k, 2) || 'items') : t === 'level' ? 'container' : 'package';
+  const now = () => { const p = predictOf({...k, usage}); return p ? `Right now: runs out ${daysWord(p.days)} (${p.how === 'set' ? 'what you set' : p.how === 'use' ? 'from your “used” taps' : p.how === 'life' ? `one usually lasts ${Math.round(p.life)} days` : `bought about every ${Math.round(p.every)} days`}).` : 'Not enough history to guess yet.'; };
+  const draw = () => `<h3>How fast we use: ${esc(k.name)}</h3>
+    <div class="estnote" id="uNow">${esc(now())}</div>
+    ${t === 'count' ? `<label class="lbl">We use about … a week<input class="field" id="uPer" type="number" min="0" step="0.5" inputmode="decimal" value="${esc(k.perWeek ?? '')}" placeholder="e.g. 6 (${esc(unit)})"></label>`
+      : `<label class="lbl">One ${unit} lasts about … days<input class="field" id="uLasts" type="number" min="0" step="1" inputmode="numeric" value="${esc(k.lastsDays ?? pr.lastsDays ?? '')}" placeholder="e.g. 30"></label>`}
+    <p class="hint">Leave it empty to let the app learn from your taps. What you set is used for this item and the next ones you buy.</p>
+    <div class="lbl">“Used” taps in the last 2 months${usage.length ? ` · ${usage.length}` : ''}<div class="rows" id="uRows">${usage.length ? usage.slice().reverse().map((u, ri) => { const i = usage.length - 1 - ri;
+      return `<div class="row"><div class="meta"><div class="name" style="font-weight:600">${esc(new Date(u.t).toLocaleDateString([], {weekday: 'short', month: 'short', day: 'numeric'}))}</div><div class="note"><span>${t === 'level' ? `${Math.round(u.u * 100)}% of a container` : `${u.u} ${esc(unit)}`}</span></div></div><button type="button" class="iconbtn" data-udel="${i}" aria-label="Remove this tap">✕</button></div>`; }).join('') : '<div class="row"><span class="note">No taps yet.</span></div>'}</div></div>
+    ${usage.length || (pr.life || []).length ? `<button type="button" class="btn ghost" id="uClear">Forget all of its history${(pr.life || []).length ? ' (taps and how long one lasted)' : ''}</button>` : ''}
+    <label class="checkrow"><input type="checkbox" id="uOff" ${k.noPredict ? 'checked' : ''}> Don’t predict this one (never suggest it as running out)</label>
+    <div class="actions"><button class="btn primary" id="uSave">Save</button><button class="btn" data-act="closeSheet">Cancel</button></div>`;
+  sheet(draw(), el => {
+    const rewire = () => { el.innerHTML = draw(); };
+    el.addEventListener('click', async e => {
+      const d = e.target.closest('[data-udel]'); if (d) { usage.splice(+d.dataset.udel, 1); return rewire(); }
+      if (e.target.closest('#uClear')) { if (!armed) { armed = true; e.target.textContent = 'Tap again to forget it all'; return; } usage = []; clearLife = true; return rewire(); }
+      if (e.target.closest('#uSave')) {
+        const lasts = parseFloat(el.querySelector('#uLasts')?.value), per = parseFloat(el.querySelector('#uPer')?.value), off = el.querySelector('#uOff').checked;
+        const cur = S.kitchen.find(x => x.id === k.id) || k;
+        const upd = {...strip(cur), usage, noPredict: off || null, ...(t === 'count' ? {perWeek: per > 0 ? per : null} : {lastsDays: lasts > 0 ? lasts : null})};
+        closeSheet(); await put('kitchen', k.id, upd).catch(() => {});
+        if (t !== 'count' || clearLife || off !== !!pr.noPredict) updateProduct(cur, {...(t !== 'count' ? {lastsDays: lasts > 0 ? lasts : null} : {}), ...(clearLife ? {life: [], buys: []} : {}), noPredict: off || null}).catch(() => {});
+        render(); toast(off ? `${k.name} won’t be predicted` : 'Saved'); if (back) setTimeout(back, 120);
+      }
+      if (back && e.target.closest('[data-act="closeSheet"]')) setTimeout(back, 60);
+    });
+  });
+}
+/* typical nutrition for a plain food from USDA FoodData Central (free; a free key from api.data.gov raises the limit) */
+const usdaKey = () => (CFG.usdaKey && !/^PASTE/.test(CFG.usdaKey)) ? CFG.usdaKey : 'DEMO_KEY';
+async function usdaFacts(name) {
+  const q = (typeOf({name}).kind || name).replace(/\b(organic|fresh|great value|marketside|publix|kirkland|365)\b/gi, '').trim() || name;
+  let r;
+  try { r = await fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${encodeURIComponent(usdaKey())}&query=${encodeURIComponent(q)}&dataType=Foundation,SR%20Legacy&pageSize=6`); }
+  catch (e) { throw new Error('Couldn’t reach USDA FoodData Central.'); }
+  if (r.status === 429 || r.status === 403) throw new Error('USDA’s free lookup limit is used up for now. Try again in an hour, or put your own free key in firebase-config.js (usdaKey).');
+  if (!r.ok) throw new Error('USDA FoodData Central didn’t answer.');
+  const foods = (await r.json()).foods || []; if (!foods.length) return null;
+  const words = lc(q).split(/\s+/), score = f => { const d = lc(f.description); return words.filter(w => d.includes(w.replace(/s$/, ''))).length * 3 + (/\braw\b/.test(d) ? 2 : 0) - (/(dried|powder|frozen|canned|dehydrated|baby food)/.test(d) ? 3 : 0) - d.length / 80; };
+  const pick = foods.slice().sort((a, b) => score(b) - score(a))[0];
+  const nv = (...ids) => { for (const id of ids) { const x = (pick.foodNutrients || []).find(n => String(n.nutrientNumber) === id); if (x && x.value != null) return +x.value; } return null; };
+  const r1 = x => x == null ? null : Math.round(x * 10) / 10, kcal = nv('208', '957', '958');
+  if (kcal == null && nv('203') == null) return null;
+  return {serving: '100 g', g: 100, kcal: kcal != null ? Math.round(kcal) : null, protein: r1(nv('203')), carbs: r1(nv('205')), fat: r1(nv('204')), satfat: r1(nv('606')), fiber: r1(nv('291')), sugar: r1(nv('269', '269.3')),
+    sodium: nv('307') != null ? Math.round(nv('307')) : null, chol: nv('601') != null ? Math.round(nv('601')) : null, src: `USDA FoodData Central: ${pick.description}`, est: true};
+}
+/* emoji for things with no picture: matched from names first (free), the AI only for what's left */
+function noPicItems() {
+  const seen = new Set(), out = [];
+  for (const it of [...visK(), ...S.list.filter(l => !l.done)]) { const key = pkey(it); if (seen.has(key)) continue; seen.add(key);
+    if (imgOf(it) || it.emoji || prodOf(it)?.emoji) continue;
+    const cur = String(emojiFor(it)), guess = emojiGuess(`${it.name} ${typeOf(it).kind || ''}`, 1)[0];
+    if (cur.includes('phl') || (guess && guess !== cur && !NAME_EMOJI.some(([re]) => re.test(lc(it.name))))) out.push(it); }
+  return out;
+}
+async function emojiBatch(items, onStep) {
+  let local = 0, ai = 0; const left = [];
+  for (const it of items) { const e = emojiGuess(`${it.name} ${typeOf(it).kind || ''}`, 1)[0]; if (e) { await updateProduct(it, {emoji: e}).catch(() => {}); local++; } else left.push(it); }
+  if (left.length && aiShow()) {
+    onStep?.(`Asking the AI about ${left.length}…`);
+    for (let o = 0; o < left.length; o += 60) {
+      const part = left.slice(o, o + 60);
+      const out = await askAI(`Pick the single best emoji for each household item (food, cleaning, toiletries, pets, tools). Use a specific emoji when one exists (🧽 sponge, 🧴 lotion, 🍝 pasta); otherwise the closest object.
+Items: ${JSON.stringify(part.map((it, i) => ({i, name: it.name, category: it.category || ''})))}
+Return only JSON: {"items":[{"i": index, "emoji": "one emoji"}]}`, [], 'sort');
+      for (const x of out?.items || []) { const it = part[x.i], e = String(x.emoji || '').trim(); if (it && e && [...e].length <= 4 && !/[a-z0-9]/i.test(e)) { await updateProduct(it, {emoji: e}).catch(() => {}); ai++; } }
+    }
+  }
+  return {local, ai, left: left.length - ai};
 }
 const daysWord = d => d <= .5 ? 'any day now' : d < 1.5 ? 'in about a day' : `in about ${Math.round(d)} days`;
 function predText(k) {
@@ -6543,10 +6931,10 @@ function dueItems() {
   const out = [], seen = new Set(), onList = p => lFind(p) || S.list.some(l => !l.done && sameType(l, p));
   for (const k of visK()) {
     const p = runoutOf(k); if (!p || onList(k) || (k.minByType && S.list.some(l => !l.done && sameType(l, k)))) continue;
-    seen.add(pkey(k)); out.push({it: k, days: p.days, why: p.how === 'use' ? 'At the rate you use it' : p.how === 'life' ? `One usually lasts ${Math.round(p.life)} days` : `Bought about every ${Math.round(p.every)} days`, stock: true});
+    seen.add(pkey(k)); out.push({it: k, days: p.days, why: p.how === 'set' ? (p.per ? `You set about ${p.per} a week` : `You set: one lasts about ${p.lasts} days`) : p.how === 'use' ? 'At the rate you use it' : p.how === 'life' ? `One usually lasts ${Math.round(p.life)} days` : `Bought about every ${Math.round(p.every)} days`, stock: true});
   }
   for (const [key, pr] of Object.entries(S.products)) {
-    if (seen.has(key) || !pr.name) continue;
+    if (seen.has(key) || !pr.name || pr.noPredict) continue;
     const every = buyEvery(pr); if (!every) continue;
     const last = Math.max(...pr.buys), since = (Date.now() - last) / 864e5;
     if (since < every * .85 || since > every * 3) continue;
@@ -6570,7 +6958,7 @@ function runoutSheet() {
     <p class="hint">Learned from your own history: every − tap, how long one lasts before it’s finished, and how often you buy it. The more you scan and tap −, the better it gets.</p>
     ${due.length ? `<div class="lbl">Soon or due now<div class="rows">${due.map((d, i) => `<div class="row">${thumbHtml(d.it)}<div class="meta"><div class="name">${esc(d.it.name)}</div><div class="note"><span class="${d.stock ? 'runout' : ''}">${d.stock ? 'Runs out ' + esc(daysWord(d.days)) : 'Not in stock'}</span><span class="bought">${esc(d.why)}</span></div></div><button class="btn small" data-act="dueAdd" data-i="${i}">Add to list</button></div>`).join('')}</div></div>
       <button class="btn primary" data-act="dueAll">Add all ${due.length} to the list</button>` : '<div class="empty"><b>Nothing due</b>Nothing looks like it’s about to run out.</div>'}
-    ${stock.length ? `<div class="lbl">Later<div class="rows">${stock.map(({k, p}) => `<div class="row">${thumbHtml(k)}<div class="meta"><div class="name">${esc(k.name)}</div><div class="note"><span class="bought">Runs out ${esc(daysWord(p.days))}</span></div></div></div>`).join('')}</div></div>` : ''}
+    ${stock.length ? `<div class="lbl">Later<div class="rows">${stock.map(({k, p}) => `<div class="row">${thumbHtml(k)}<div class="meta"><div class="name">${esc(k.name)}</div><div class="note"><span class="bought">Runs out ${esc(daysWord(p.days))}</span></div></div><button class="btn small ghost" data-act="usage" data-id="${esc(k.id)}">Fix</button></div>`).join('')}</div></div>` : ''}
     <div class="actions col"><button class="btn ghost" data-act="closeSheet">Close</button></div>`);
 }
 async function dueAdd(list) {
@@ -7299,7 +7687,7 @@ function editKitchen(k) {
     ${shown() ? '<button type="button" class="btn small ghost danger" id="ePhotoDel">Remove photo</button>' : ''}<span class="hint" id="ePhotoMsg"></span></div>`;
   sheet(`<form id="kEdit" style="display:contents" autocomplete="off">
     <h3 style="min-width:0">${esc(k.name)}</h3>
-    <div class="photoedit" id="ePhoto">${photoHtml()}</div>
+    <div class="photoedit" id="ePhoto"></div>
     <label class="lbl">Name<input class="field" id="eName" value="${esc(k.name)}" required></label>
     <div class="formgrid"><label class="lbl">Type (groups it with similar items)<input class="field" id="eKind" value="${esc(k.kind || prodOf(k)?.kind || '')}" placeholder="${esc(typeOf({...k, kind: null}).kind)}" list="kindList"></label>
     <label class="lbl">Brand<input class="field" id="eBrand" value="${esc(k.brand ?? prodOf(k)?.brand ?? '')}" placeholder="${esc(guessBrand(k.name) || 'None')}"></label></div>
@@ -7317,7 +7705,7 @@ function editKitchen(k) {
     <div class="lbl">Track it by<div class="expchips">${[['pkg', 'Packages'], ['count', 'Counting each one (eggs)'], ['level', 'How full (milk, juice, oil)']].map(([v, n]) => `<button type="button" data-etrack="${v}" aria-pressed="${trackOf(k) === v}">${n}</button>`).join('')}</div></div>
     <div id="eTrackOpts"></div>
     ${trackOf(k) === 'pkg' && packGuess(k) ? `<div class="estnote" id="ePackHint">This looks like a pack of ${packGuess(k).size}. <button type="button" class="linkbtn" data-etrack="count">Count each ${esc(packGuess(k).unit || 'one')} instead</button> so − takes away one at a time.</div>` : ''}
-    ${usageText(k) || predText(k) ? `<div class="estnote">${esc(usageText(k) || predText(k))}</div>` : ''}
+    ${!NON_FOOD.includes(k.category) || usageText(k) || predText(k) ? `<div class="estnote">${usageText(k) || predText(k) ? esc(usageText(k) || predText(k)) + ' ' : ''}<button type="button" class="linkbtn" id="eUsage">${usageText(k) || predText(k) ? 'Not right? Fix it' : 'How fast do you use it?'}</button></div>` : ''}
     <div id="eMinL" ${trackOf(k) === 'level' ? 'hidden' : ''} style="display:contents"><label class="lbl">Keep at least (adds to the list when it runs low)<input class="field" id="eMin" type="number" min="0" inputmode="numeric" value="${k.min || ''}" placeholder="Off"></label>
     <label class="checkline"><input type="checkbox" id="eMinType" ${k.minByType ? 'checked' : ''}> Count every <b>${esc(lc(typeOf(k).kind))}</b> together, any brand</label></div>
     ${priceInfo(k) ? `<div class="lbl">Prices paid<div class="rows">${(prodOf(k)?.prices || []).filter(x => x.p > 0).slice().reverse().slice(0, 6).map(x => `<div class="row" style="min-height:40px"><div class="meta"><div class="name" style="font-size:14px">${money(x.p)}${unitPrice(x.p, k.name) ? ` <small class="hint">${fmtUnit(unitPrice(x.p, k.name))}</small>` : ''}</div><div class="note">${esc(x.store || 'No store')} · ${esc(new Date(x.at).toLocaleDateString(undefined, {month: 'short', day: 'numeric'}))}</div></div></div>`).join('')}</div></div>` : ''}
@@ -7328,6 +7716,8 @@ function editKitchen(k) {
     <div class="actions"><button class="btn primary" type="submit">Save</button><button class="btn" type="button" data-act="closeSheet">Cancel</button></div>
     <button class="btn danger ghost" type="button" id="eDel">Remove…</button>
   </form>`, el => {
+    const ph = photoEditor(el.querySelector('#ePhoto'), k, () => el.querySelector('#eName').value.trim());
+    el.querySelector('#eUsage')?.addEventListener('click', () => usageSheet(k, () => { const kk = S.kitchen.find(x => x.id === k.id); if (kk) editKitchen(kk); }));
     const drawTrack = () => {
       const box = el.querySelector('#eTrackOpts');
       box.innerHTML = track === 'count' ? `<div class="formgrid"><label class="lbl">How many in one pack (a carton of eggs is 12 or 18)<input class="field" id="ePack" type="number" min="1" inputmode="numeric" value="${k.packSize || prodOf(k)?.packSize || pg?.size || ''}" placeholder="e.g. 12"></label>
@@ -7394,8 +7784,9 @@ function editKitchen(k) {
     el.querySelector('#kEdit').onsubmit = async ev => {
       ev.preventDefault();
       const name = el.querySelector('#eName').value.trim() || k.name;
+      if (ph.changed) { thumb = ph.thumb; photoChanged = true; }
       const qty = Math.max(0, parseInt(el.querySelector('#eQty').value, 10) || 0);
-      const next = {...strip(k), name, note: el.querySelector('#eNote').value.trim(), category: el.querySelector('#eCat').value, qty, location: loc, thumb: photoChanged ? thumb : (k.thumb || null), exp: el.querySelector('#eExp').value || null, bought: el.querySelector('#eBought').value || null, place: place || null,
+      const next = {...strip(k), ...(ph.emoji !== undefined ? {emoji: ph.emoji} : {}), name, note: el.querySelector('#eNote').value.trim(), category: el.querySelector('#eCat').value, qty, location: loc, thumb: photoChanged ? thumb : (k.thumb || null), exp: el.querySelector('#eExp').value || null, bought: el.querySelector('#eBought').value || null, place: place || null,
         track, packSize: track === 'count' ? (parseInt(el.querySelector('#ePack')?.value, 10) || null) : null, unit: track === 'count' ? (el.querySelector('#eUnit')?.value.trim() || null) : null,
         level: track === 'level' ? Math.min(100, Math.max(0, parseInt(el.querySelector('#eLevel')?.value, 10) || 0)) : null, lowPct: track === 'level' ? Math.min(100, Math.max(0, parseInt(el.querySelector('#eLow')?.value, 10) || 0)) : null,
         minByType: el.querySelector('#eMinType').checked,
@@ -7425,6 +7816,7 @@ function editKitchen(k) {
           else await put('kitchen', k.code ? `c${k.code}-${place ? place + '-' : ''}${loc}` : uid(), next);
           await del('kitchen', k.id);
         } else await put('kitchen', k.id, next);
+        if (ph.emoji !== undefined || (photoChanged && !k.code)) savePhotoEverywhere({...next, id: k.id}, photoChanged ? thumb : (k.thumb || null), ph.emoji);
         if (k.code && S.products[k.code]) {
           const prod = strip(S.products[k.code]), upd = {...prod, name};
           if (photoChanged) { upd.thumb = thumb; if (!thumb) upd.image = null; }
@@ -7439,44 +7831,115 @@ function editKitchen(k) {
     };
   });
 }
-/* the same picture tools as In stock: camera, gallery, find one online, AI picture, remove */
+/* ================= free pictures: photos from open databases, and emoji =================
+   AI pictures need a paid Google plan, so items get a real photo from free sources (Open Food Facts for
+   products, TheMealDB and Wikipedia / Wikimedia Commons for plain foods and things) or an emoji. */
+const EMOJI_LIST = [
+  ['🍎', 'apple red apple fuji gala honeycrisp'], ['🍏', 'green apple granny smith'], ['🍐', 'pear'], ['🍊', 'orange tangerine clementine mandarin citrus cuties'], ['🍋', 'lemon'], ['🍋‍🟩', 'lime'], ['🍌', 'banana plantain'], ['🍉', 'watermelon'], ['🍇', 'grapes grape raisin'], ['🍓', 'strawberry strawberries berries'], ['🫐', 'blueberry blueberries'], ['🍈', 'melon cantaloupe honeydew'], ['🍒', 'cherry cherries'], ['🍑', 'peach nectarine apricot'], ['🥭', 'mango papaya'], ['🍍', 'pineapple'], ['🥥', 'coconut coconut water'], ['🥝', 'kiwi'],
+  ['🍅', 'tomato tomatoes marinara tomato sauce'], ['🍆', 'eggplant aubergine'], ['🥑', 'avocado guacamole'], ['🫛', 'peas edamame snap peas pea pod'], ['🥦', 'broccoli broccolini'], ['🥬', 'lettuce greens kale spinach cabbage bok choy chard salad greens romaine'], ['🥒', 'cucumber pickle pickles zucchini'], ['🌶️', 'chili hot pepper jalapeno habanero hot sauce sriracha'], ['🫑', 'bell pepper peppers'], ['🌽', 'corn maize'], ['🥕', 'carrot carrots'], ['🫒', 'olive olives olive oil'], ['🧄', 'garlic'], ['🧅', 'onion onions shallot'], ['🥔', 'potato potatoes'], ['🍠', 'sweet potato yam'], ['🫚', 'ginger root'], ['🍄', 'mushroom mushrooms'], ['🥜', 'peanut peanuts peanut butter'], ['🌰', 'chestnut nuts almond walnut pecan cashew'], ['🫘', 'beans black beans kidney beans lentils chickpeas'], ['🌿', 'herbs cilantro parsley basil mint dill thyme rosemary'],
+  ['🍞', 'bread loaf toast sandwich bread'], ['🥐', 'croissant'], ['🥖', 'baguette french bread'], ['🫓', 'pita naan flatbread tortilla wrap'], ['🥨', 'pretzel pretzels'], ['🥯', 'bagel'], ['🥞', 'pancake pancakes pancake mix'], ['🧇', 'waffle waffles'], ['🧀', 'cheese cheddar mozzarella parmesan swiss'], ['🥚', 'egg eggs'], ['🍳', 'fried egg breakfast'], ['🧈', 'butter margarine'], ['🥛', 'milk cream half and half'], ['🍼', 'baby formula baby bottle'],
+  ['🍖', 'meat ribs'], ['🍗', 'chicken drumstick wings chicken thighs'], ['🥩', 'steak beef pork chop ground beef meat'], ['🥓', 'bacon'], ['🌭', 'hot dog sausage frank'], ['🍔', 'burger hamburger patty'], ['🍟', 'fries french fries'], ['🍕', 'pizza'], ['🥪', 'sandwich deli lunch meat'], ['🌮', 'taco tacos'], ['🌯', 'burrito wrap'], ['🫔', 'tamale'], ['🥙', 'gyro falafel'], ['🧆', 'falafel'], ['🥘', 'paella stew'], ['🍲', 'soup stew chili leftovers'], ['🥣', 'cereal oatmeal granola bowl'], ['🥗', 'salad salad kit'], ['🍿', 'popcorn'], ['🧂', 'salt seasoning spice spices'], ['🥫', 'canned can soup canned beans canned tomatoes'],
+  ['🍱', 'bento lunch box'], ['🍘', 'rice cracker'], ['🍙', 'rice ball onigiri'], ['🍚', 'rice white rice brown rice'], ['🍛', 'curry'], ['🍜', 'ramen noodles noodle soup pho'], ['🍝', 'pasta spaghetti penne linguine macaroni noodles'], ['🍣', 'sushi'], ['🍤', 'shrimp prawns tempura'], ['🥟', 'dumplings potstickers empanada'], ['🦪', 'oyster oysters'], ['🍥', 'fish cake'], ['🥮', 'mooncake'], ['🍢', 'skewer kebab'], ['🐟', 'fish tilapia cod'], ['🐠', 'salmon trout'], ['🦀', 'crab'], ['🦞', 'lobster'], ['🦑', 'squid calamari'], ['🐙', 'octopus'],
+  ['🍦', 'ice cream soft serve'], ['🍧', 'shaved ice'], ['🍨', 'ice cream gelato'], ['🍩', 'donut doughnut'], ['🍪', 'cookie cookies'], ['🎂', 'cake birthday cake'], ['🍰', 'cake slice cheesecake'], ['🧁', 'cupcake muffin'], ['🥧', 'pie'], ['🍫', 'chocolate'], ['🍬', 'candy'], ['🍭', 'lollipop'], ['🍮', 'flan pudding custard'], ['🍯', 'honey'], ['🥜', 'nut butter'],
+  ['☕', 'coffee espresso coffee beans'], ['🫖', 'tea teapot'], ['🍵', 'green tea matcha kombucha'], ['🧃', 'juice box juice'], ['🥤', 'soda drink cola'], ['🧋', 'boba bubble tea'], ['🍶', 'sake'], ['🍺', 'beer'], ['🍷', 'wine red wine'], ['🥂', 'champagne'], ['🥃', 'whiskey liquor'], ['🍹', 'cocktail'], ['🧉', 'mate yerba'], ['🧊', 'ice'], ['💧', 'water drink mix electrolytes hydration'], ['🥥', 'coconut milk'],
+  ['🧻', 'paper towels toilet paper tissue napkins'], ['🧼', 'soap hand soap bar soap'], ['🧽', 'sponge dish soap scrub'], ['🧴', 'lotion shampoo conditioner body wash sunscreen'], ['🪥', 'toothbrush toothpaste'], ['🪒', 'razor'], ['🧹', 'broom cleaning'], ['🧺', 'laundry basket detergent'], ['🪣', 'bucket mop bleach'], ['🗑️', 'trash bags garbage bags'], ['🧤', 'gloves'], ['💊', 'medicine pills vitamins tylenol advil acetaminophen ibuprofen'], ['🩹', 'bandage band aid'], ['🌡️', 'thermometer'], ['🧷', 'safety pin'], ['🕯️', 'candle'], ['🔋', 'batteries battery'], ['💡', 'light bulb bulbs'], ['🪫', 'low battery'],
+  ['🐶', 'dog food dog treats'], ['🐱', 'cat food cat litter'], ['🐟', 'fish food'], ['🌱', 'plant seeds hemp seeds chia seeds garden'], ['🌸', 'flowers'], ['🧸', 'toys'], ['👶', 'baby diapers wipes'], ['🧷', 'diapers'], ['🫙', 'jar sauce jam jelly salsa'], ['🥡', 'takeout foil plastic wrap containers ziploc bags'], ['🍽️', 'plates dishwasher pods'], ['🥄', 'spoon cutlery utensils'], ['🔪', 'knife'], ['🪵', 'firewood charcoal'], ['🛁', 'bath epsom salt bath salts'], ['🦶', 'foot bath foot cream'], ['💅', 'nail polish'], ['💄', 'makeup lipstick'], ['🧦', 'socks'],
+];
+const EMOJI_PALETTE = ['🍎', '🍌', '🥬', '🥕', '🧀', '🥛', '🥚', '🍞', '🍗', '🥩', '🐟', '🍝', '🍚', '🥫', '🧂', '🍪', '🥤', '☕', '🧻', '🧼', '🧴', '🧽', '🧺', '💊', '🐶', '🐱', '👶', '🕯️', '🔋', '📦'];
+const EMOJI_IDX = EMOJI_LIST.map(([e, k]) => [e, k.split(' ')]);
+/* best emoji for a name using whole words (and simple plurals), no AI */
+function emojiGuess(name, n = 8) {
+  const ws = lc(name).replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w.length > 1), sing = w => w.replace(/(ies)$/, 'y').replace(/(oes|ses|xes)$/, m => m.slice(0, -2)).replace(/s$/, '');
+  const scored = [];
+  for (const [e, ks] of EMOJI_IDX) {
+    let sc = 0; const phrase = ks.join(' ');
+    for (let i = 0; i < ws.length; i++) { const two = ws[i] + ' ' + (ws[i + 1] || ''); if (ws[i + 1] && (' ' + phrase + ' ').includes(' ' + two + ' ')) sc += 3; if (ks.includes(ws[i]) || ks.includes(sing(ws[i]))) sc += 2; }
+    if (sc) scored.push([e, sc]);
+  }
+  return [...new Map(scored.sort((a, b) => b[1] - a[1]).map(x => [x[0], x])).keys()].slice(0, n);
+}
+const EMOJI_SEARCH = q => { const w = lc(q).trim(); if (!w) return []; return EMOJI_LIST.filter(([, k]) => k.includes(w)).map(([e]) => e).filter((e, i, a) => a.indexOf(e) === i).slice(0, 24); };
+/* photo ideas for an item from free sources, best first */
+async function photoCandidates(it, name) {
+  const kind = typeOf({...it, name}).kind || name, out = [], seen = new Set();
+  const add = (src, from) => { if (src && !seen.has(src) && out.length < 12) { seen.add(src); out.push({src, from}); } };
+  const tc = s => s.replace(/\b\w/g, c => c.toUpperCase());
+  const jobs = [
+    it.code ? lookupOnline(it.code).then(h => h?.image && [[h.image, 'Open Food Facts']]).catch(() => null) : null,
+    onlineMatches(name).then(ms => ms.filter(m => m.image).slice(0, 5).map(m => [m.image, typeof m.source === 'string' ? m.source : 'Store products'])).catch(() => null),
+    mdbIngredients().then(list => { const k = lc(kind), hit = list.find(x => x === k) || list.find(x => x === k.replace(/s$/, '')) || list.find(x => k.includes(x) && x.length > 3);
+      return hit ? [[`https://www.themealdb.com/images/ingredients/${encodeURIComponent(tc(hit))}.png`, 'TheMealDB']] : null; }).catch(() => null),
+    fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(tc(kind))}`).then(r => r.ok ? r.json() : null).then(w => w && w.type !== 'disambiguation' && w.thumbnail?.source ? [[w.thumbnail.source, 'Wikipedia']] : null).catch(() => null),
+    fetch(`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrlimit=6&gsrsearch=${encodeURIComponent(kind + ' -logo -map filetype:bitmap')}&prop=imageinfo&iiprop=url|mime&iiurlwidth=320&format=json&origin=*`)
+      .then(r => r.ok ? r.json() : null).then(j => Object.values(j?.query?.pages || {}).sort((a, b) => (a.index || 0) - (b.index || 0)).map(p => p.imageinfo?.[0]).filter(i => i && /jpe?g|png|webp/.test(i.mime || '') && i.thumburl).map(i => [i.thumburl, 'Wikimedia Commons'])).catch(() => null),
+  ].filter(Boolean);
+  for (const r of await Promise.all(jobs)) for (const [src, from] of r || []) add(src, from);
+  return out;
+}
+/* a photo URL into a small saved picture; if the site doesn't allow copying, keep the link instead */
+async function thumbFromUrl(src) {
+  try { return await makeThumb(await loadUrl(src)); } catch (e) { return src; }
+}
+
+/* the picture tools for an item: camera, gallery, photos from free databases, an emoji, an AI picture, remove */
 function photoEditor(box, it, nameOf) {
-  const st = {thumb: it.thumb || null, changed: false};
+  const pr = prodOf(it) || {};
+  const st = {thumb: it.thumb || null, changed: false, emoji: undefined};
+  let panel = '';
   const shown = () => st.thumb || (st.changed ? null : imgOf(it));
-  const draw = (msgText = '') => { box.innerHTML = `${shown() ? `<img class="preview" src="${esc(shown())}" alt="">` : `<div class="preview none" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h1.5l1.5-2h6l1.5 2H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg></div>`}
+  const curEmoji = () => st.emoji !== undefined ? st.emoji : (it.emoji || pr.emoji || null);
+  const preview = () => shown() ? `<img class="preview" src="${esc(shown())}" alt="">` : `<div class="preview none pemoji" aria-hidden="true">${curEmoji() || emojiFor({...it, name: nameOf() || it.name, emoji: null})}</div>`;
+  const draw = (msgText = '') => { box.innerHTML = `${preview()}
     <div class="btns"><label class="btn small filebtn">Take photo<input type="file" class="pePhotoIn" accept="image/*" capture="environment" aria-label="Take a photo with the camera"></label>
     <label class="btn small filebtn">Choose photo<input type="file" class="pePhotoIn" accept="image/*" aria-label="Choose a photo from your gallery"></label>
-    <button type="button" class="btn small ghost" data-pe="find">🔎 Find one</button>${picsOk() ? '<button type="button" class="btn small ghost" data-pe="gen">🎨 AI picture</button>' : ''}
-    ${shown() ? '<button type="button" class="btn small ghost danger" data-pe="del">Remove photo</button>' : ''}<span class="hint pemsg">${esc(msgText)}</span></div>`; };
+    <button type="button" class="btn small ghost" data-pe="find">🔎 Find photos</button><button type="button" class="btn small ghost" data-pe="emoji">😀 Emoji</button>${picsOk() ? '<button type="button" class="btn small ghost" data-pe="gen">🎨 AI picture</button>' : ''}
+    ${shown() ? '<button type="button" class="btn small ghost danger" data-pe="del">Remove photo</button>' : ''}<span class="hint pemsg">${esc(msgText)}</span></div>
+    <div class="pepanel">${panel}</div>`; };
   const msg = t => { const m = box.querySelector('.pemsg'); if (m) m.textContent = t; };
-  const set = async src => { st.thumb = src ? await makeThumb(src) : null; st.changed = true; draw(src ? 'Save to keep it.' : ''); };
+  const setThumb = async (src, isUrl = false) => { st.thumb = src ? (isUrl ? await thumbFromUrl(src) : await makeThumb(src)) : null; st.changed = true; if (src) st.emoji = st.emoji ?? undefined; panel = ''; draw(src ? 'Save to keep it.' : ''); };
+  const emojiPanel = q => { const name = nameOf() || it.name, sug = [...new Set([...(q ? EMOJI_SEARCH(q) : []), ...emojiGuess(`${name} ${typeOf({...it, name}).kind || ''}`, 10), ...(q ? [] : EMOJI_LIST.slice(0, 0).map(x => x[0]))])];
+    return `<div class="epick"><input class="field" data-pe-q placeholder="Search emoji, e.g. soap, pasta, dog" value="${esc(q || '')}" autocomplete="off">
+      <div class="egrid">${[...new Set([...sug, ...(q ? [] : EMOJI_PALETTE)])].slice(0, 30).map(e => `<button type="button" data-pe-e="${esc(e)}" aria-label="Use ${esc(e)}">${e}</button>`).join('')}</div>
+      <div class="hint">Or type any emoji: <input class="field small" data-pe-own maxlength="8" style="width:80px;display:inline-block" aria-label="Your own emoji"> <button type="button" class="btn small" data-pe="own">Use it</button>${curEmoji() ? ' <button type="button" class="linkbtn" data-pe="noemoji">Back to automatic</button>' : ''}</div></div>`; };
   box.addEventListener('click', async e => {
+    const em = e.target.closest('[data-pe-e]'); if (em) { st.emoji = em.dataset.peE; st.thumb = null; st.changed = true; panel = ''; return draw('Save to keep it.'); }
+    const pick = e.target.closest('[data-pe-src]'); if (pick) { msg('Saving…'); return setThumb(pick.dataset.peSrc, true); }
     const b = e.target.closest('[data-pe]'); if (!b) return;
-    if (b.dataset.pe === 'del') return set(null);
-    const name = nameOf() || it.name; b.disabled = true; msg(b.dataset.pe === 'gen' ? 'Drawing…' : 'Looking…');
-    try {
-      let src = null;
-      if (b.dataset.pe === 'gen') src = await aiPicture(`A clean, realistic product photo of ${name} (${typeOf({...it, name}).kind}), one item on a plain light background, soft studio light. No text, no labels, no logos.`, 400);
-      else { const hits = it.code ? [await lookupOnline(it.code).catch(() => null)].filter(Boolean) : []; const more = hits.some(h => h.image) ? [] : await onlineMatches(name).catch(() => []); src = [...hits, ...more].find(h => h.image)?.image || null; }
-      if (!src) { msg('No photo found. Try the camera' + (picsOk() ? ' or an AI picture.' : '.')); b.disabled = false; return; }
-      await set(await loadUrl(src).catch(() => { throw new Error('That photo couldn’t be copied. Try another way.'); }));
-    } catch (err) { msg(err.message || 'Couldn’t get a picture.'); b.disabled = false; }
+    const k = b.dataset.pe, name = nameOf() || it.name;
+    if (k === 'del') return setThumb(null);
+    if (k === 'emoji') { panel = panel.includes('epick') ? '' : emojiPanel(''); draw(); box.querySelector('[data-pe-q]')?.focus(); return; }
+    if (k === 'own') { const v = box.querySelector('[data-pe-own]')?.value.trim(); if (v) { st.emoji = v; st.thumb = null; st.changed = true; panel = ''; draw('Save to keep it.'); } return; }
+    if (k === 'noemoji') { st.emoji = null; panel = ''; return draw('Save to keep it.'); }
+    if (k === 'find') {
+      panel = '<div class="pgrid"><span class="hint"><span class="spinner"></span> Looking in Open Food Facts, TheMealDB and Wikipedia…</span></div>'; draw();
+      const c = await photoCandidates(it, name);
+      panel = c.length ? `<div class="pgrid">${c.map(x => `<button type="button" data-pe-src="${esc(x.src)}" title="${esc(x.from)}"><img src="${esc(x.src)}" alt="" loading="lazy" onerror="this.parentNode.remove()"><small>${esc(x.from)}</small></button>`).join('')}</div><p class="hint">Tap one to use it. Photos from Wikipedia and Wikimedia Commons are free to use.</p>`
+        : `<p class="hint">No photos found for “${esc(name)}”. Try a simpler name, the camera, or an emoji.</p>`;
+      return draw();
+    }
+    if (k === 'gen') {
+      b.disabled = true; msg('Drawing…');
+      try { const src = await aiPicture(`A clean, realistic product photo of ${name} (${typeOf({...it, name}).kind}), one item on a plain light background, soft studio light. No text, no labels, no logos.`, 400); await setThumb(await loadUrl(src)); }
+      catch (err) { msg(err.message || 'Couldn’t get a picture.'); draw(err.message || ''); }
+    }
   });
+  box.addEventListener('input', e => { if (e.target.matches('[data-pe-q]')) { const q = e.target.value; const g = box.querySelector('.egrid'); const tmp = document.createElement('div'); tmp.innerHTML = emojiPanel(q); g.innerHTML = tmp.querySelector('.egrid').innerHTML; } });
   box.addEventListener('change', async e => {
     if (!e.target.classList.contains('pePhotoIn')) return;
     const f = e.target.files && e.target.files[0]; if (!f) return;
-    try { const c = await cropPhoto(f, {square: true, title: 'Frame the item'}); if (c) await set(c); } catch (err) { toast('Couldn’t open that photo. Try another one.'); }
+    try { const c = await cropPhoto(f, {square: true, title: 'Frame the item'}); if (c) await setThumb(c); } catch (err) { toast('Couldn’t open that photo. Try another one.'); }
   });
   draw();
   return st;
 }
-/* a new picture on a list item also goes to the product, and to the same thing in stock */
-async function savePhotoEverywhere(it, thumb) {
-  await updateProduct(it, {thumb, ...(thumb ? {} : {image: null})}).catch(() => {});
+/* a new picture (or emoji) for an item also goes to the product, and to the same thing in stock and on the list */
+async function savePhotoEverywhere(it, thumb, emoji) {
+  await updateProduct(it, {thumb, ...(thumb ? {} : {image: null}), ...(emoji !== undefined ? {emoji} : {})}).catch(() => {});
   const same = o => it.code ? o.code === it.code : !o.code && lc(o.name) === lc(it.name);
-  for (const k of S.kitchen.filter(same)) put('kitchen', k.id, {...strip(k), thumb}).catch(() => {});
-  for (const l of S.list.filter(o => same(o) && o.id !== it.id)) put('list', l.id, {...strip(l), thumb}).catch(() => {});
+  for (const k of S.kitchen.filter(same)) if (k.id !== it.id || !it.id) put('kitchen', k.id, {...strip(k), thumb, ...(emoji !== undefined ? {emoji} : {})}).catch(() => {});
+  for (const l of S.list.filter(o => same(o) && o.id !== it.id)) put('list', l.id, {...strip(l), thumb, ...(emoji !== undefined ? {emoji} : {})}).catch(() => {});
 }
+
 function editList(l) {
   let place = l.place || '';
   const placeChips = () => multiPlace() ? `<div class="lbl">Location (which home it’s for)<div class="expchips" id="lPlace">${[['', 'Any location'], ...places().map(x => [x.id, x.name])].map(([v, n]) => `<button type="button" data-lpl="${esc(v)}" aria-pressed="${place === v}">${esc(n)}</button>`).join('')}</div></div>` : '';
@@ -7501,9 +7964,9 @@ function editList(l) {
       ev.preventDefault(); closeSheet();
       const store = el.querySelector('#lStore').value.trim();
       const price = parseFloat(el.querySelector('#lPrice').value) || 0;
-      const next = {...strip(l), name: el.querySelector('#lName').value.trim() || l.name, category: el.querySelector('#lCat').value, qty: Math.max(1, parseInt(el.querySelector('#lQty').value, 10) || 1), store, price: price || null, place, ...(ph.changed ? {thumb: ph.thumb, ...(ph.thumb ? {} : {image: null})} : {})};
+      const next = {...strip(l), name: el.querySelector('#lName').value.trim() || l.name, category: el.querySelector('#lCat').value, qty: Math.max(1, parseInt(el.querySelector('#lQty').value, 10) || 1), store, price: price || null, place, ...(ph.changed ? {thumb: ph.thumb, ...(ph.thumb ? {} : {image: null})} : {}), ...(ph.emoji !== undefined ? {emoji: ph.emoji} : {})};
       await put('list', l.id, next).catch(() => {});
-      if (ph.changed) savePhotoEverywhere({...next, id: l.id}, ph.thumb);
+      if (ph.changed || ph.emoji !== undefined) savePhotoEverywhere({...next, id: l.id}, ph.thumb, ph.emoji);
       if (store && store !== (prodOf(next)?.store || '')) await updateProduct(next, {store});
       if ((price || 0) !== (l.price || 0)) await recordPrice({...next, id: l.id}, price, store);
     };
@@ -7819,6 +8282,7 @@ document.addEventListener('click', async e => {
       case 'dueAll': if ((S._due || []).length) await dueAdd(S._due); break;
       case 'hideToday': ls.set('today:' + (S.hid || '') + ':' + todayYmd(), 1); renderList(); break;
       case 'goExp': S.tab = 'kitchen'; S.zone = 'exp'; render(); scrollTo(0, 0); break;
+      case 'usage': { const k = S.kitchen.find(x => x.id === t.dataset.id); if (k) usageSheet(k); break; }
       case 'chDone': { const c = (S.chores || []).find(x => x.id === t.dataset.id); if (c && !c.done) { t.classList.add('pop'); await completeChore(c); } break; }
       case 'chEdit': { const c = (S.chores || []).find(x => x.id === t.dataset.id); if (c) choreSheet(c); break; }
       case 'goChores': S.tab = 'chores'; render(); scrollTo(0, 0); break;

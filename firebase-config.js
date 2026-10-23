@@ -50,3 +50,7 @@ export const aiModels = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-3.1-fla
 // Paste the reCAPTCHA site key here (the public "key ID", not a secret). Leave it empty to skip App Check.
 // provider: "enterprise" for a reCAPTCHA Enterprise key (recommended), "v3" for a classic reCAPTCHA v3 key.
 export const appCheck = { provider: "enterprise", siteKey: "6LcpTPctAAAAAIYvNpSX_4qZYODnpYGRIvhh3X8n" };
+
+// USDA FoodData Central: typical nutrition for fresh food (bananas, chicken thighs). "DEMO_KEY" works for a few lookups an hour;
+// a free personal key from https://api.data.gov/signup/ allows 1,000 an hour. It is a public key, fine to keep here.
+export const usdaKey = "DEMO_KEY";
