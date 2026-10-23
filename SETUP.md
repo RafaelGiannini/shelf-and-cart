@@ -1,5 +1,9 @@
 # Shelf & Cart — setup
 
+## Upgrading to 3.18 (Chores)
+
+Chores are saved in a new place in the database, so the rules need one more word. **Firebase console → Firestore Database → Rules → paste the whole new `firestore.rules` → Publish.** Until you do, adding a chore fails with a permission error.
+
 ## Keeping emails off GitHub (3.15.3)
 
 Your GitHub Pages repo is public, so nobody's email address is written in it anymore. In `firebase-config.js` and `firestore.rules` each address is replaced by a **fingerprint** (`sha256:` plus 64 letters and numbers). The app works out the same fingerprint from the signed-in email and compares the two, so admins and family names still work, but nobody can read the address back out of the fingerprint.
@@ -15,7 +19,7 @@ Put it in as `"sha256:<the result>"`. A plain email still works too, but it woul
 **Clearing the old history.** Earlier commits still have the addresses in them. To start the repo clean while keeping the same web address:
 1. On GitHub, open the repo → **Settings** → at the bottom, **Delete this repository**.
 2. Create a new repo with the **same name**, `shelf-and-cart`, and make it **Public**.
-3. **Add file → Upload files**, drag in every file of 3.17.6 (`index.html`, `sw.js`, `firebase-config.js`, `firestore.rules`, `SETUP.md`, `manifest.webmanifest`, `plu.json` and the three icons), then commit.
+3. **Add file → Upload files**, drag in every file of 3.18.0 (`index.html`, `sw.js`, `firebase-config.js`, `firestore.rules`, `SETUP.md`, `manifest.webmanifest`, `plu.json` and the three icons), then commit.
 4. **Settings → Pages →** Source: *Deploy from a branch*, Branch: `main`, folder `/ (root)` → Save. Within a few minutes it's back at the same address.
 
 Firebase, App Check and your saved data don't depend on the repo, so nothing else changes and nobody has to sign in again. One more setting stops future commits from showing your own address: GitHub → your photo → **Settings → Emails →** turn on **Keep my email addresses private**.
@@ -36,7 +40,7 @@ reCAPTCHA has a free monthly allowance that a family app stays well inside (a ch
 
 1. **Publish the new rules.** Firebase → **Firestore** → **Rules** → replace everything with `firestore.rules` → **Publish**. (Your own categories won't save until you do; Spices & Seasonings works right away.)
 2. **Upload to GitHub:** `index.html` and `sw.js`.
-3. Menu (☰) → Help & what’s new should say **Shelf & Cart 3.17.6**.
+3. Menu (☰) → Help & what’s new should say **Shelf & Cart 3.18.0**.
 
 ## Upgrading to 3.11 (cleaner menus, search everywhere, ideas, deals, tip calculator)
 

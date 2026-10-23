@@ -285,7 +285,7 @@ html[data-theme="dark"] .pht{--ps:.08} html[data-theme="dark"] .pht[data-cat="Pr
   :root:not([data-theme="light"]) .pht[data-cat="Bakery"],:root:not([data-theme="light"]) .pht[data-cat="Pantry"]{--pa:#45361e;--pb:#2c2112} :root:not([data-theme="light"]) .pht[data-cat="Frozen"]{--pa:#2f2f55;--pb:#1c1c36} :root:not([data-theme="light"]) .pht[data-cat="Snacks"],:root:not([data-theme="light"]) .pht[data-cat="Drinks"]{--pa:#3d2e4a;--pb:#25192e}
   :root:not([data-theme="light"]) .pht[data-cat="Leftovers"]{--pa:#4a3a1e;--pb:#2e2412} :root:not([data-theme="light"]) .pht[data-cat="Cleaning"],:root:not([data-theme="light"]) .pht[data-cat="Bathroom"],:root:not([data-theme="light"]) .pht[data-cat="Laundry"],:root:not([data-theme="light"]) .pht[data-cat="Paper & Household"]{--pa:#1f3d3b;--pb:#142826} :root:not([data-theme="light"]) .pht:not([data-cat]),:root:not([data-theme="light"]) .pht[data-cat="Other"]{--pa:#26322d;--pb:#1a231f}}
 .qchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
-.qchips.wrap{flex-wrap:wrap;overflow:visible}
+.qchips.qwrap{flex-wrap:wrap;overflow:visible;flex-direction:row}
 .dishes{display:flex;flex-direction:column;gap:8px}
 .dish{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
 .dtop{display:flex;gap:6px;align-items:center} .dname{flex:1;min-width:0;height:40px;font-weight:650} .dprice{width:86px;flex:none;height:40px}
@@ -416,6 +416,16 @@ select.field.small{height:34px;padding:0 8px;font-size:13.5px;width:auto}
 .shutter{width:76px;height:76px;border-radius:50%;border:5px solid #fff;background:rgba(255,255,255,.85);box-shadow:0 0 0 3px rgba(0,0,0,.3)}
 .shutter:active{transform:scale(.94)}
 .snapnow{display:flex;flex-direction:column;gap:6px;margin:4px 0 8px}.snapnow .btn{width:100%}
+.chpreview{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--muted);min-height:0}.chpreview:empty{display:none}.chpreview b{color:var(--ink)}
+.chrow{align-items:center}.chrow .chk{width:30px;height:30px;flex:none;border-radius:50%;border:2px solid var(--muted);background:transparent;color:var(--green-ink);display:grid;place-items:center;font-weight:800;font-size:15px;cursor:pointer}
+.chrow .chk:hover{border-color:var(--green)}.chrow .chk.pop,.chrow .chk.on,.chrow.done .chk{background:var(--green);border-color:var(--green);color:var(--green-ink)}.chrow.done .name{color:var(--muted)}
+.chrow.late .chk{border-color:var(--danger)}.chlate{color:var(--danger);font-weight:650}.chover h2{color:var(--danger)}
+.chlabel{display:inline-block;font-size:11.5px;font-weight:650;padding:1px 7px;border-radius:99px;background:var(--line)}
+.prio{font-weight:800}.prio.p1{color:var(--danger)}.prio.p2{color:#d9822b}.prio.p3{color:#c9a227}
+.chav{flex:none;min-width:30px;height:26px;padding:0 9px;border-radius:99px;display:inline-grid;place-items:center;font-weight:700;font-size:12.5px;color:#fff;background:hsl(var(--h) 45% 40%);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chav.sm{min-width:22px;width:22px;height:22px;padding:0;font-size:11px;margin-right:2px;border-radius:50%}
+.chrepbox{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+.chevery{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}.chevery .field{width:72px;flex:none;height:38px}
+.chsubs{display:flex;flex-direction:column;gap:6px}.chsub{display:flex;gap:8px;align-items:center}.chsub input[type=checkbox]{width:20px;height:20px;flex:none}.chsub .field{height:40px}
 .fdlist{display:flex;flex-direction:column;gap:2px;max-height:55vh;overflow:auto;margin:4px 0 8px}
 .fdrow{display:flex;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line)}
 .fdrow input{width:20px;height:20px;flex:none}
@@ -733,7 +743,7 @@ label.lbl,div.lbl{display:flex;flex-direction:column;gap:5px;font-size:12px;font
 
 /* bottom bar */
 nav.bar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-nav.bar .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 84px 1fr 1fr;align-items:end;height:64px}
+nav.bar .in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 76px 1fr 1fr 1fr;align-items:end;height:64px}
 .tab{height:64px;border:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11.5px;line-height:1.15;font-weight:600;color:var(--muted);position:relative;text-align:center;padding:0 2px}
 .tab[aria-current="true"]{color:var(--ink)}
 .tab .badge{position:absolute;top:8px;left:calc(50% + 6px);background:var(--sticker);color:var(--sticker-ink);font-size:11px;font-weight:700;min-width:19px;height:19px;border-radius:10px;display:grid;place-items:center;padding:0 5px;font-variant-numeric:tabular-nums}
@@ -859,6 +869,17 @@ html[data-layout="desktop"] .shop .body>*{max-width:900px}
       </div>
     </section>
 
+    <section id="v-chores" hidden>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <form class="addrow" id="chAddForm" autocomplete="off"><input class="field" id="chAdd" placeholder="Add a chore… e.g. trash every Tuesday @Raquel" enterkeyhint="done">
+          <button class="btn micbtn" type="button" data-mic="#chAdd" aria-label="Say a chore" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+          <button class="btn primary" type="submit">Add</button></form>
+        <div class="chpreview" id="chPreview"></div>
+        <div id="chFilters" style="display:flex;flex-direction:column;gap:6px"></div>
+        <div id="chBody" style="display:flex;flex-direction:column;gap:12px"></div>
+      </div>
+    </section>
+
     <section id="v-recipes" hidden>
       <div style="display:flex;flex-direction:column;gap:12px">
         <div class="rcptop"><div class="seg" id="rcpSeg" role="group" aria-label="Show"></div><button class="btn primary small" data-act="rcpAddMenu" aria-haspopup="menu">+ Add ▾</button></div>
@@ -920,6 +941,10 @@ html[data-layout="desktop"] .shop .body>*{max-width:900px}
     <button class="tab" data-tab="recipes">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 13.5V20h12v-6.5"/><path d="M6 13.5a4 4 0 0 1-1.2-7.6A4.5 4.5 0 0 1 12 4a4.5 4.5 0 0 1 7.2 1.9A4 4 0 0 1 18 13.5z"/><path d="M6 17h12"/></svg>
       Recipes<span class="badge" id="rcpBadge" hidden>0</span>
+    </button>
+    <button class="tab" data-tab="chores">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l2 2 4-4"/><rect x="4" y="4" width="16" height="16" rx="4"/></svg>
+      Chores<span class="badge" id="chBadge" hidden>0</span>
     </button>
   </div>
 </nav>
@@ -1038,7 +1063,7 @@ const ADMINS = Array.isArray(CFG.admins) ? CFG.admins : [];
 const isMainAdmin = email => ADMINS.some(x => emailIs(x, email));
 const familyName = email => { const g = familyOf(email); if (!g) return ''; const k = Object.keys(g.people).find(e => emailIs(e, email)); return g.people[k] || ''; };
 
-const VERSION = "3.17.6";
+const VERSION = "3.18.0";
 const BASE_CATS = ['Leftovers','Produce','Dairy & Eggs','Meat & Seafood','Bakery','Pantry','Spices & Seasonings','Frozen','Snacks','Drinks','Cleaning','Bathroom','Laundry','Paper & Household','Other'];
 /* the household can add its own categories (Baby, Pets, Garden…); they sit before Other */
 let CATS = BASE_CATS.slice(), _catsKey = '';
@@ -1287,7 +1312,7 @@ function watchMyHouseholds() {
 }
 function switchTo(hid, save = true) {
   stopHouseData();
-  Object.assign(S, {hid, hh: S.households[hid], wantHid: hid, list: [], kitchen: [], products: {}, receipts: [], recipes: [], plan: [], waste: [], ready: {list: false, kitchen: false, products: false, receipts: false, recipes: false, plan: false, waste: false},
+  Object.assign(S, {hid, hh: S.households[hid], wantHid: hid, list: [], kitchen: [], products: {}, receipts: [], recipes: [], plan: [], waste: [], chores: [], ready: {list: false, kitchen: false, products: false, receipts: false, recipes: false, plan: false, waste: false, chores: false},
     store: 'all', zone: 'all', q: '', add: {state: 'idle'}, last: null, recent: []});
   ls.set('hid:' + S.uid, hid);
   S.place = ls.get('place:' + hid) || 'all'; S.stockPlace = ls.get('stockPlace:' + hid) || '';
@@ -1298,7 +1323,7 @@ function switchTo(hid, save = true) {
 function startData() {
   S.dataOn = true;
   const hid = S.hid;
-  for (const [coll, key] of [['list', 'list'], ['kitchen', 'kitchen'], ['hprods', 'products'], ['receipts', 'receipts'], ['recipes', 'recipes'], ['plan', 'plan'], ['waste', 'waste']]) {
+  for (const [coll, key] of [['list', 'list'], ['kitchen', 'kitchen'], ['hprods', 'products'], ['receipts', 'receipts'], ['recipes', 'recipes'], ['plan', 'plan'], ['waste', 'waste'], ['chores', 'chores']]) {
     dataUnsubs.push(onSnapshot(collection(fs, 'households', hid, coll), {includeMetadataChanges: true}, snap => {
       if (S.hid !== hid) return;
       // only the "synced" state changed: no need to redraw anything
@@ -1411,7 +1436,7 @@ async function restoreHousehold(h) {
 }
 async function purgeHousehold(h) {
   if (h.inviteCode) await deleteDoc(doc(fs, 'invites', h.inviteCode)).catch(() => {});
-  for (const coll of ['list', 'kitchen', 'hprods', 'receipts', 'recipes', 'rphotos', 'activity', 'plan', 'waste']) {
+  for (const coll of ['list', 'kitchen', 'hprods', 'receipts', 'recipes', 'rphotos', 'activity', 'plan', 'waste', 'chores']) {
     const snap = await getDocs(collection(fs, 'households', h.id, coll)).catch(() => null);
     if (!snap) continue;
     for (let i = 0; i < snap.docs.length; i += 400) { const b = writeBatch(fs); snap.docs.slice(i, i + 400).forEach(d => b.delete(d.ref)); await b.commit().catch(() => {}); }
@@ -1447,7 +1472,7 @@ async function adminHousekeeping() {
 }
 const A = {tab: 'people', users: [], hs: [], st: null};
 /* ---- storage: the free Firebase plan holds 1 GiB. Everything is measured by reading it, so it runs only when asked. ---- */
-const ST_COLLS = [['rphotos', 'Receipt photos'], ['receipts', 'Receipts'], ['hprods', 'Product notes and prices'], ['kitchen', 'In stock'], ['recipes', 'Recipes'], ['list', 'List'], ['activity', 'Activity'], ['plan', 'Meal plan'], ['waste', 'Waste log']];
+const ST_COLLS = [['rphotos', 'Receipt photos'], ['receipts', 'Receipts'], ['hprods', 'Product notes and prices'], ['kitchen', 'In stock'], ['recipes', 'Recipes'], ['list', 'List'], ['activity', 'Activity'], ['plan', 'Meal plan'], ['waste', 'Waste log'], ['chores', 'Chores']];
 const ST_LIMIT = 1024 ** 3;
 const docBytes = (id, d) => { try { return id.length + JSON.stringify(d).length + 40; } catch (e) { return 0; } };
 const fmtBytes = b => b >= 1e9 ? (b / 1e9).toFixed(2) + ' GB' : b >= 1e6 ? (b / 1e6).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1e3)) + ' KB';
@@ -1641,7 +1666,7 @@ addEventListener('online', () => setSync(true));
 addEventListener('offline', () => setSync(false));
 
 /* ================= storage ================= */
-const HCOLL = {list: 'list', kitchen: 'kitchen', products: 'hprods', receipts: 'receipts', recipes: 'recipes', rphotos: 'rphotos', activity: 'activity', plan: 'plan', waste: 'waste'};
+const HCOLL = {list: 'list', kitchen: 'kitchen', products: 'hprods', receipts: 'receipts', recipes: 'recipes', rphotos: 'rphotos', activity: 'activity', plan: 'plan', waste: 'waste', chores: 'chores'};
 const href = (coll, id) => doc(fs, 'households', S.hid, HCOLL[coll], id);
 async function put(coll, id, data) {
   if (!S.hid) throw new Error('no household');
@@ -2162,6 +2187,243 @@ document.addEventListener('input', e => {
   clearTimeout(nameT); nameT = setTimeout(() => runNameSearch(f, {quick: true}), 350);
 });
 
+/* ================= chores =================
+   Household chores that repeat: who does it, when it's next due, taking turns. Each chore is one document in
+   households/{hid}/chores with its schedule, the people who share it and a short history of who did it when. */
+const CH = {who: 'all', label: '', showDone: false};
+const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], DOW_LONG = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const PRIOS = [[0, 'None'], [4, 'Low'], [3, 'Medium'], [2, 'High'], [1, 'Urgent']];
+const ROTATE = [['none', 'Stays with them'], ['round', 'Take turns'], ['fewest', 'Whoever’s done it least'], ['random', 'Random']];
+const ymdOf = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const dOf = y => { const [a, b, c] = String(y).split('-').map(Number); return new Date(a, b - 1, c, 12); };
+const ord = n => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
+const members = () => S.hh?.members || [];
+const choreList = () => (S.chores || []).filter(c => !c.deleted && (!multiPlace() || !curPlace() || !c.place || c.place === curPlace()));
+/* the next due date after `base` for a repeat rule; null for a one-time chore */
+function stepDue(rep, base) {
+  if (!rep || rep.type === 'once') return null;
+  const d = dOf(base), n = Math.max(1, rep.every || 1);
+  if (rep.type === 'daily') d.setDate(d.getDate() + n);
+  else if (rep.type === 'weekly') {
+    const days = (rep.days || []).length ? [...rep.days].sort() : null;
+    if (!days) d.setDate(d.getDate() + 7 * n);
+    else { const start = d.getDay(); let k = 1; while (k < 15 && !days.includes((start + k) % 7)) k++;
+      d.setDate(d.getDate() + k); if (n > 1 && (start + k) % 7 <= start) d.setDate(d.getDate() + 7 * (n - 1)); }
+  } else if (rep.type === 'monthly') {
+    const want = rep.dom === 'last' ? 31 : (rep.dom || dOf(base).getDate());
+    d.setDate(1); d.setMonth(d.getMonth() + n); const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(); d.setDate(Math.min(want, last));
+  } else if (rep.type === 'yearly') d.setFullYear(d.getFullYear() + n);
+  return ymdOf(d);
+}
+/* the first due date for a new chore that repeats on set days */
+function firstDue(rep, from = todayYmd()) {
+  if (!rep || rep.type === 'once' || rep.type === 'daily' || rep.type === 'yearly') return from;
+  if (rep.type === 'weekly' && (rep.days || []).length) { const d = dOf(from); for (let k = 0; k < 7; k++) { if (rep.days.includes((d.getDay() + k) % 7)) { d.setDate(d.getDate() + k); return ymdOf(d); } } }
+  if (rep.type === 'monthly' && rep.dom) { const d = dOf(from), last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(), want = rep.dom === 'last' ? last : Math.min(rep.dom, last);
+    if (d.getDate() <= want) { d.setDate(want); return ymdOf(d); } return stepDue({...rep, every: 1}, ymdOf(new Date(d.getFullYear(), d.getMonth(), want, 12))); }
+  return from;
+}
+function repeatText(rep) {
+  if (!rep || rep.type === 'once') return 'Once';
+  const n = rep.every || 1;
+  if (rep.type === 'daily') return n === 1 ? 'Every day' : n === 2 ? 'Every other day' : `Every ${n} days`;
+  if (rep.type === 'weekly') { const ds = (rep.days || []).slice().sort(), w = n === 1 ? 'Every' : n === 2 ? 'Every other' : `Every ${n} weeks on`;
+    if (!ds.length) return n === 1 ? 'Every week' : n === 2 ? 'Every other week' : `Every ${n} weeks`;
+    if (ds.join() === '1,2,3,4,5' && n === 1) return 'Weekdays'; if (ds.join() === '0,6' && n === 1) return 'Weekends';
+    return `${w} ${ds.map(x => DOW[x]).join(ds.length === 2 ? ' & ' : ', ')}`; }
+  if (rep.type === 'monthly') { const on = rep.dom === 'last' ? ' on the last day' : rep.dom ? ` on the ${ord(rep.dom)}` : ''; return (n === 1 ? 'Monthly' : `Every ${n} months`) + on; }
+  if (rep.type === 'yearly') return n === 1 ? 'Every year' : `Every ${n} years`;
+  return '';
+}
+function dueWord(due) {
+  if (!due) return 'No date';
+  const n = daysUntil(due);
+  if (n < -1) return `${-n} days late`; if (n === -1) return 'Yesterday'; if (n === 0) return 'Today'; if (n === 1) return 'Tomorrow';
+  if (n < 7) return DOW[dOf(due).getDay()]; return fmtDate(due);
+}
+/* "take out the trash every tuesday @raquel" → title, schedule, first due date, who */
+function parseChore(text) {
+  let t = ' ' + String(text || '').trim() + ' ', rep = {type: 'once'}, due = null, time = null, who = null;
+  const cut = re => { const m = t.match(re); if (m) t = t.replace(m[0], ' '); return m; };
+  let m;
+  const dayRe = '(sun|mon|tues?|wed(?:nes)?|thu(?:rs?)?|fri|sat(?:ur)?)(?:day)?s?';
+  const dayIdx = w => { const x = lc(w).slice(0, 2); return {su: 0, mo: 1, tu: 2, we: 3, th: 4, fr: 5, sa: 6}[x]; };
+  if ((m = cut(/\s(?:at|@)\s*(\d{1,2})(?::(\d\d))?\s*(am|pm)?(?=\s)/i)) && (m[3] || m[2])) { let h = +m[1] % 12 + (lc(m[3] || '') === 'pm' ? 12 : 0); if (!m[3] && +m[1] >= 1 && +m[1] <= 6) h += 12; time = `${String(h).padStart(2, '0')}:${m[2] || '00'}`; }
+  else if (m) t = t.replace(/\s\s+/, ' ' + m[0].trim() + ' ');
+  if ((m = cut(/\s@(\w+)/))) who = m[1];
+  else if ((m = cut(new RegExp('\\s(?:for|by)\\s+(' + members().map(u => reEsc(who_(u))).filter(Boolean).join('|') + ')(?=\\s)', 'i'))) && members().length) who = m[1];
+  if (cut(/\s(?:every\s+)?week\s?days(?=\s)/i)) rep = {type: 'weekly', every: 1, days: [1, 2, 3, 4, 5]};
+  else if (cut(/\s(?:every\s+)?week\s?ends(?=\s)/i)) rep = {type: 'weekly', every: 1, days: [0, 6]};
+  else if ((m = cut(new RegExp(`\\s(?:every\\s+(other\\s+)?|on\\s+)((?:${dayRe})(?:\\s*(?:,|and|&)\\s*(?:${dayRe}))*)(?=\\s)`, 'i')))) {
+    const days = [...new Set(m[2].split(/\s*(?:,|and|&)\s*/i).map(dayIdx).filter(x => x != null))];
+    if (days.length && (m[1] || /every/i.test(m[0]) || /s\b/i.test(m[2]))) rep = {type: 'weekly', every: m[1] ? 2 : 1, days}; else if (days.length) due = firstDue({type: 'weekly', days});
+  } else if ((m = cut(/\s(?:every\s+(other\s+)?day|daily)(?=\s)/i))) rep = {type: 'daily', every: m[1] ? 2 : 1};
+  else if ((m = cut(/\severy\s+(\d+)\s+(day|week|month|year)s?(?=\s)/i))) rep = {type: {day: 'daily', week: 'weekly', month: 'monthly', year: 'yearly'}[lc(m[2])], every: +m[1]};
+  else if ((m = cut(/\s(?:every\s+other\s+week|biweekly|fortnightly)(?=\s)/i))) rep = {type: 'weekly', every: 2};
+  else if ((m = cut(/\s(?:every\s+week|weekly)(?=\s)/i))) rep = {type: 'weekly', every: 1};
+  else if ((m = cut(/\s(?:every\s+(other\s+)?month|monthly)(?=\s)/i))) rep = {type: 'monthly', every: m[1] ? 2 : 1};
+  else if ((m = cut(/\s(?:every\s+year|yearly|annually)(?=\s)/i))) rep = {type: 'yearly', every: 1};
+  if ((m = cut(/\s(?:on\s+)?the\s+last\s+day(?:\s+of\s+(?:the|every)\s+month)?(?=\s)/i))) rep = {type: 'monthly', every: rep.type === 'monthly' ? rep.every : 1, dom: 'last'};
+  else if ((m = cut(/\s(?:on\s+)?(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)(?:\s+of\s+(?:the|every)\s+month)?(?=\s)/i))) rep = {type: 'monthly', every: rep.type === 'monthly' ? rep.every : 1, dom: Math.min(31, +m[1])};
+  if (cut(/\s(?:today|tonight)(?=\s)/i)) due = todayYmd();
+  else if (cut(/\syesterday(?=\s)/i)) due = plusDays(-1);
+  else if (cut(/\stomorrow(?=\s)/i)) due = plusDays(1);
+  else if ((m = cut(/\sin\s+(\d+)\s+(day|week)s?(?=\s)/i))) due = plusDays(+m[1] * (lc(m[2]) === 'week' ? 7 : 1));
+  else if (cut(/\snext\s+week(?=\s)/i)) due = plusDays(7);
+  else if ((m = cut(/\s(?:on\s+)?(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?(?=\s)/))) { const y = m[3] ? (m[3].length === 2 ? 2000 + +m[3] : +m[3]) : new Date().getFullYear(); const d = new Date(y, +m[1] - 1, +m[2], 12); if (!m[3] && ymdOf(d) < todayYmd()) d.setFullYear(y + 1); due = ymdOf(d); }
+  else if ((m = cut(new RegExp(`\\s(?:on\\s+|this\\s+|next\\s+)?(${dayRe})(?=\\s)`, 'i'))) && rep.type !== 'weekly') { const di = dayIdx(m[1]); if (di != null) due = firstDue({type: 'weekly', days: [di]}, /next/i.test(m[0]) ? plusDays(1) : todayYmd()); }
+  const title = t.replace(/\s+/g, ' ').replace(/^\s*(?:to\s+)?/i, '').replace(/[\s,.-]+$/, '').trim();
+  if (!due) due = firstDue(rep);
+  const uid = who ? members().find(u => lc(who_(u)).startsWith(lc(who)) || lc(who_(u)) === lc(who)) : null;
+  return {title: title ? title[0].toUpperCase() + title.slice(1) : '', rep, due, time, who: uid || null};
+}
+const who_ = u => u === S.uid ? (S.myName || 'Me') : who(u);
+const firstName = u => String(who_(u) || '').split(/\s+/)[0];
+const avatar = (u, cls = '') => u ? `<span class="chav ${cls}" style="--h:${[...String(u)].reduce((a, c) => a + c.charCodeAt(0), 0) % 360}" title="${esc(who_(u))}">${esc(cls === 'sm' ? firstName(u).slice(0, 1).toUpperCase() : firstName(u))}</span>` : '';
+/* who does it next time */
+function nextPerson(ch) {
+  const ppl = (ch.people || []).filter(u => members().includes(u)); if (!ppl.length) return ch.assignTo || null;
+  const cur = ch.assignTo && ppl.includes(ch.assignTo) ? ch.assignTo : ppl[0];
+  if (ch.rotate === 'round') return ppl[(ppl.indexOf(cur) + 1) % ppl.length];
+  if (ch.rotate === 'fewest') { const n = {}; for (const u of ppl) n[u] = 0; for (const h of ch.history || []) if (h.who in n && !h.skip) n[h.who]++; return ppl.slice().sort((a, b) => n[a] - n[b] || (a === cur) - (b === cur))[0]; }
+  if (ch.rotate === 'random') return ppl[Math.floor(Math.random() * ppl.length)];
+  return cur;
+}
+async function completeChore(ch, {skip = false} = {}) {
+  const prev = strip(ch), now = Date.now(), today = todayYmd();
+  const hist = [{at: now, by: S.uid, who: skip ? null : (ch.assignTo || S.uid), due: ch.due || null, late: !!(ch.due && ch.due < today), ...(skip ? {skip: true} : {})}, ...(ch.history || [])].slice(0, 60);
+  let due = null;
+  if (ch.rep && ch.rep.type !== 'once') { due = stepDue(ch.rep, ch.from === 'done' ? today : (ch.due || today)); if (ch.from !== 'done') { let g = 0; while (due && due <= today && g++ < 400) due = stepDue(ch.rep, due); } }
+  const next = {...prev, history: hist, lastDone: skip ? (ch.lastDone || null) : now, subtasks: (ch.subtasks || []).map(s => ({...s, done: false})), at: now};
+  if (due) Object.assign(next, {due, assignTo: nextPerson({...ch, history: hist})}); else Object.assign(next, {done: true, doneAt: now});
+  await put('chores', ch.id, next).catch(() => {});
+  if (!skip) logAct(`did “${ch.title}”`);
+  const msg = skip ? `Skipped · next ${dueWord(due)}` : due ? `Done · next ${dueWord(due)}${next.assignTo && (ch.people || []).length > 1 ? ` (${firstName(next.assignTo)}’s turn)` : ''}` : 'Done';
+  toast(msg, 'Undo', () => put('chores', ch.id, prev));
+}
+function choreRow(ch) {
+  const late = ch.due && ch.due < todayYmd(), sub = ch.subtasks || [], sd = sub.filter(s => s.done).length;
+  const pr = PRIOS.find(([v]) => v === (ch.prio || 0));
+  return `<div class="row chrow${late ? ' late' : ''}${ch.done ? ' done' : ''}">
+    <button class="chk" data-act="chDone" data-id="${esc(ch.id)}" aria-label="${ch.done ? 'Done' : 'Mark done'}: ${esc(ch.title)}">${ch.done ? '✓' : ''}</button>
+    <div class="meta tap" data-act="chEdit" data-id="${esc(ch.id)}"><div class="name">${ch.prio && ch.prio < 4 ? `<span class="prio p${ch.prio}" title="${esc(pr[1])} priority">${'!'.repeat(4 - ch.prio)}</span> ` : ''}${esc(ch.title)}</div>
+      <div class="note"><span class="${late ? 'chlate' : ''}">${ch.done ? 'Done ' + esc(fmtDate(ymdOf(new Date(ch.doneAt || ch.at)))) : esc(dueWord(ch.due))}${ch.time && !ch.done ? ' · ' + esc(fmtTime(ch.time)) : ''}</span>
+        ${ch.rep && ch.rep.type !== 'once' ? `<span>↻ ${esc(repeatText(ch.rep))}</span>` : ''}${sub.length ? `<span>☑ ${sd}/${sub.length}</span>` : ''}${(ch.labels || []).map(l => `<span class="chlabel">${esc(l)}</span>`).join('')}${ch.place && multiPlace() && !curPlace() ? placeTag(ch.place) : ''}</div></div>
+    ${avatar(ch.assignTo)}</div>`;
+}
+const fmtTime = t => { const [h, m] = String(t).split(':').map(Number); return `${h % 12 || 12}${m ? ':' + String(m).padStart(2, '0') : ''} ${h < 12 ? 'am' : 'pm'}`; };
+function renderChores() {
+  const body = $('#chBody'); if (!body) return;
+  const all = choreList(), labels = [...new Set(all.flatMap(c => c.labels || []))].sort();
+  const mine = c => c.assignTo === S.uid || (!c.assignTo && !(c.people || []).length);
+  const vis = all.filter(c => (CH.who === 'all' || (CH.who === 'mine' ? mine(c) : c.assignTo === CH.who)) && (!CH.label || (c.labels || []).includes(CH.label)));
+  const open = vis.filter(c => !c.done), t = todayYmd();
+  const groups = [['Overdue', c => c.due && c.due < t], ['Today', c => c.due === t], ['Tomorrow', c => c.due === plusDays(1)], ['This week', c => c.due && daysUntil(c.due) <= 7], ['Later', c => !!c.due], ['Any time', () => true]];
+  const used = new Set(), byG = groups.map(([n, f]) => [n, open.filter(c => !used.has(c) && f(c) && used.add(c)).sort((a, b) => (a.due || '').localeCompare(b.due || '') || (a.time || '').localeCompare(b.time || '') || (a.prio || 9) - (b.prio || 9) || a.title.localeCompare(b.title))]);
+  const doneToday = vis.filter(c => (c.history || []).some(h => !h.skip && ymdOf(new Date(h.at)) === t) || (c.done && c.doneAt && ymdOf(new Date(c.doneAt)) === t));
+  const chip = (attr, v, n, on) => `<button type="button" class="qchip" ${attr}="${esc(v)}" aria-pressed="${on}">${n}</button>`;
+  $('#chFilters').innerHTML = `<div class="qchips qwrap">${chip('data-chwho', 'all', 'Everyone', CH.who === 'all')}${chip('data-chwho', 'mine', 'Mine', CH.who === 'mine')}${members().length > 1 ? members().filter(u => u !== S.uid).map(u => chip('data-chwho', u, esc(firstName(u)), CH.who === u)).join('') : ''}</div>
+    ${labels.length ? `<div class="qchips qwrap">${chip('data-chlabel', '', 'All labels', !CH.label)}${labels.map(l => chip('data-chlabel', l, '🏷 ' + esc(l), CH.label === l)).join('')}</div>` : ''}`;
+  body.innerHTML = !all.length ? `<div class="empty"><b>No chores yet</b>Type one above the way you’d say it: <i>“take out the trash every Tuesday”</i>, <i>“water the plants every 3 days @Raquel”</i>, <i>“pay rent on the 1st”</i>, <i>“change the AC filter every 3 months”</i>.</div>`
+    : (byG.filter(([, l]) => l.length).map(([n, l]) => `<div class="group${n === 'Overdue' ? ' chover' : ''}"><h2>${n} <span class="hint" style="text-transform:none;letter-spacing:0">· ${l.length}</span></h2><div class="rows">${l.map(choreRow).join('')}</div></div>`).join('') || '<div class="empty"><b>Nothing to do here</b>Nice. Try another filter.</div>')
+      + (doneToday.length ? `<div class="group"><h2>Done today · ${doneToday.length}</h2><div class="rows">${doneToday.map(c => `<div class="row chrow done"><span class="chk on">✓</span><div class="meta tap" data-act="chEdit" data-id="${esc(c.id)}"><div class="name">${esc(c.title)}</div><div class="note"><span>${esc(firstName((c.history || [])[0]?.who || c.assignTo || S.uid))}</span>${c.done ? '' : `<span>next ${esc(dueWord(c.due))}</span>`}</div></div></div>`).join('')}</div></div>` : '');
+}
+/* the add box: type it the way you'd say it, see how it was understood, then Add */
+function chorePreview() {
+  const v = $('#chAdd')?.value.trim(), out = $('#chPreview'); if (!out) return;
+  if (!v) { out.innerHTML = ''; return; }
+  const p = parseChore(v);
+  out.innerHTML = `<span><b>${esc(p.title || '…')}</b></span><span>📅 ${esc(dueWord(p.due))}${p.time ? ' ' + esc(fmtTime(p.time)) : ''}</span><span>↻ ${esc(repeatText(p.rep))}</span>${p.who ? `<span>👤 ${esc(firstName(p.who))}</span>` : ''}`;
+}
+async function addChore() {
+  const inp = $('#chAdd'), v = inp.value.trim(); if (!v) { inp.focus(); return; }
+  const p = parseChore(v); if (!p.title) { toast('What’s the chore? e.g. “vacuum the living room every Saturday”'); return; }
+  const id = uid(), who = p.who || S.uid;
+  await put('chores', id, {title: p.title, notes: '', rep: p.rep, from: 'due', due: p.due, time: p.time, people: [who], assignTo: who, rotate: 'none', prio: 0, labels: [], subtasks: [], history: [], place: curPlace() || null, by: S.uid, at: Date.now()}).catch(() => {});
+  inp.value = ''; chorePreview(); logAct(`added the chore “${p.title}”`);
+  toast(`Added “${p.title}” · ${dueWord(p.due)}${p.rep.type !== 'once' ? ' · ' + repeatText(p.rep) : ''}`, 'Edit', () => { const c = S.chores.find(x => x.id === id); if (c) choreSheet(c); });
+}
+function choreSheet(ch0) {
+  const ch = {notes: '', rep: {type: 'once'}, from: 'due', people: [], rotate: 'none', prio: 0, labels: [], subtasks: [], history: [], ...strip(ch0), id: ch0.id};
+  ch.rep = {...ch.rep}; ch.people = [...(ch.people || [])]; ch.subtasks = (ch.subtasks || []).map(s => ({...s}));
+  let armed = false, rotPicked = false;
+  const draw = () => {
+    const r = ch.rep, ppl = members();
+    const counts = {}; for (const h of ch.history || []) if (!h.skip && h.who) counts[h.who] = (counts[h.who] || 0) + 1;
+    return `<form id="chForm" style="display:contents" autocomplete="off"><h3>${ch.id ? 'Chore' : 'New chore'}</h3>
+      <label class="lbl">What<input class="field" id="chTitle" value="${esc(ch.title || '')}" required placeholder="e.g. Clean the bathroom"></label>
+      <div class="formgrid"><label class="lbl">Due<input class="field" id="chDue" type="date" value="${esc(ch.due || '')}"></label>
+        <label class="lbl">Time (optional)<input class="field" id="chTime" type="time" value="${esc(ch.time || '')}"></label></div>
+      <div class="lbl">Repeats<div class="expchips">${[['once', 'Once'], ['daily', 'Daily'], ['weekly', 'Weekly'], ['monthly', 'Monthly'], ['yearly', 'Yearly']].map(([v, n]) => `<button type="button" data-chrep="${v}" aria-pressed="${r.type === v}">${n}</button>`).join('')}</div></div>
+      ${r.type !== 'once' ? `<div class="chrepbox">
+        <label class="chevery">Every <input class="field" id="chEvery" type="number" min="1" max="99" inputmode="numeric" value="${r.every || 1}"> ${{daily: 'day(s)', weekly: 'week(s)', monthly: 'month(s)', yearly: 'year(s)'}[r.type]}</label>
+        ${r.type === 'weekly' ? `<div class="expchips chdays">${DOW.map((d, i) => `<button type="button" data-chday="${i}" aria-pressed="${(r.days || []).includes(i)}">${d}</button>`).join('')}</div>` : ''}
+        ${r.type === 'monthly' ? `<div class="expchips">${[['', 'Same day as due'], ['1', 'The 1st'], ['15', 'The 15th'], ['last', 'Last day']].map(([v, n]) => `<button type="button" data-chdom="${v}" aria-pressed="${String(r.dom || '') === v}">${n}</button>`).join('')}<label class="chevery">or day <input class="field" id="chDom" type="number" min="1" max="31" inputmode="numeric" value="${typeof r.dom === 'number' && ![1, 15].includes(r.dom) ? r.dom : ''}"></label></div>` : ''}
+        <div class="lbl">Next due counts from<div class="expchips">${[['due', 'The due date (keeps the rhythm)'], ['done', 'When it’s actually done']].map(([v, n]) => `<button type="button" data-chfrom="${v}" aria-pressed="${(ch.from || 'due') === v}">${n}</button>`).join('')}</div></div>
+        <div class="note">${esc(repeatText(r))}${ch.due ? ` · after ${esc(fmtDate(ch.due))} comes ${esc(fmtDate(stepDue(r, ch.due) || ch.due))}` : ''}</div></div>` : ''}
+      ${ppl.length > 1 ? `<div class="lbl">Who does it<div class="expchips">${ppl.map(u => `<button type="button" data-chppl="${esc(u)}" aria-pressed="${ch.people.includes(u)}">${avatar(u, 'sm')} ${esc(firstName(u))}</button>`).join('')}</div></div>
+        ${ch.people.length > 1 ? `<div class="lbl">When it’s done<div class="expchips">${ROTATE.map(([v, n]) => `<button type="button" data-chrot="${v}" aria-pressed="${(ch.rotate || 'none') === v}">${n}</button>`).join('')}</div></div>
+          <div class="lbl">Up next<div class="expchips">${ch.people.map(u => `<button type="button" data-chnext="${esc(u)}" aria-pressed="${ch.assignTo === u}">${esc(firstName(u))}</button>`).join('')}</div></div>` : ''}` : ''}
+      <div class="lbl">Priority<div class="expchips">${PRIOS.map(([v, n]) => `<button type="button" data-chprio="${v}" aria-pressed="${(ch.prio || 0) === v}">${n}</button>`).join('')}</div></div>
+      <label class="lbl">Labels (comma between)<input class="field" id="chLabels" value="${esc((ch.labels || []).join(', '))}" placeholder="e.g. Kitchen, Outside, Weekly reset" list="chLabelList"></label>
+      <datalist id="chLabelList">${[...new Set((S.chores || []).flatMap(c => c.labels || []))].map(l => `<option value="${esc(l)}">`).join('')}</datalist>
+      <div class="lbl">Steps<div class="chsubs">${ch.subtasks.map((s, i) => `<div class="chsub"><input type="checkbox" data-chsubdone="${i}" ${s.done ? 'checked' : ''} aria-label="Done"><input class="field" data-chsub="${i}" value="${esc(s.t)}"><button type="button" class="iconbtn" data-chsubdel="${i}" aria-label="Remove">✕</button></div>`).join('')}
+        <div class="addrow"><input class="field" id="chSubNew" placeholder="Add a step, e.g. Wipe the mirror"><button type="button" class="btn" id="chSubAdd">Add</button></div></div></div>
+      <label class="lbl">Notes<input class="field" id="chNotes" value="${esc(ch.notes || '')}" placeholder="Optional"></label>
+      ${multiPlace() ? `<div class="lbl">Location<div class="expchips">${[['', 'Any'], ...places().map(x => [x.id, x.name])].map(([v, n]) => `<button type="button" data-chplace="${esc(v)}" aria-pressed="${(ch.place || '') === v}">${esc(n)}</button>`).join('')}</div></div>` : ''}
+      ${(ch.history || []).length ? `<div class="group"><h2>History · done ${(ch.history || []).filter(h => !h.skip).length} times${Object.keys(counts).length > 1 ? ' · ' + Object.entries(counts).map(([u, n]) => `${esc(firstName(u))} ${n}`).join(' · ') : ''}</h2>
+        <div class="rows">${ch.history.slice(0, 10).map(h => `<div class="row"><div class="meta"><div class="name" style="font-weight:600">${h.skip ? 'Skipped' : esc(firstName(h.who || h.by))}</div><div class="note"><span>${esc(new Date(h.at).toLocaleDateString([], {weekday: 'short', month: 'short', day: 'numeric'}))}</span>${h.late && !h.skip ? `<span class="chlate">${h.due ? Math.max(1, Math.round((dOf(ymdOf(new Date(h.at))) - dOf(h.due)) / 864e5)) + ' day(s) late' : 'late'}</span>` : ''}</div></div></div>`).join('')}</div></div>` : ''}
+      <div class="actions"><button class="btn primary" type="submit">Save</button><button class="btn" type="button" data-act="closeSheet">Cancel</button></div>
+      ${ch.id && !ch.done && ch.rep.type !== 'once' ? '<button class="btn ghost" type="button" id="chSkip">Skip this time</button>' : ''}
+      ${ch.done ? '<button class="btn ghost" type="button" id="chReopen">Not done after all</button>' : ''}
+      ${ch.id ? '<button class="btn danger ghost" type="button" id="chDel">Delete chore</button>' : ''}</form>`;
+  };
+  const keep = el => {
+    ch.title = el.querySelector('#chTitle').value.trim(); ch.due = el.querySelector('#chDue').value || null; ch.time = el.querySelector('#chTime').value || null;
+    const ev = el.querySelector('#chEvery'); if (ev) ch.rep.every = Math.max(1, parseInt(ev.value, 10) || 1);
+    const dm = el.querySelector('#chDom'); if (dm && dm.value) ch.rep.dom = Math.min(31, Math.max(1, parseInt(dm.value, 10) || 1));
+    ch.labels = el.querySelector('#chLabels').value.split(',').map(x => x.trim()).filter(Boolean).slice(0, 8);
+    ch.notes = el.querySelector('#chNotes').value.trim();
+    el.querySelectorAll('[data-chsub]').forEach(x => { ch.subtasks[+x.dataset.chsub].t = x.value.trim(); });
+    el.querySelectorAll('[data-chsubdone]').forEach(x => { ch.subtasks[+x.dataset.chsubdone].done = x.checked; });
+  };
+  const redraw = el => { keep(el); const top = el.scrollTop; el.innerHTML = draw(); el.scrollTop = top; };
+  sheet(draw(), el => {
+    el.addEventListener('click', async e => {
+      const b = e.target.closest('button'); if (!b || !el.contains(b)) return;
+      const d = b.dataset;
+      if (d.chrep) { keep(el); ch.rep = {type: d.chrep, every: ch.rep.every || 1, ...(d.chrep === 'weekly' ? {days: ch.rep.days || (ch.due ? [dOf(ch.due).getDay()] : [])} : {}), ...(d.chrep === 'monthly' ? {dom: ch.rep.dom || null} : {})}; if (!ch.due && d.chrep !== 'once') ch.due = firstDue(ch.rep); return redraw(el); }
+      if (d.chday != null) { keep(el); const i = +d.chday, ds = new Set(ch.rep.days || []); ds.has(i) ? ds.delete(i) : ds.add(i); ch.rep.days = [...ds].sort(); return redraw(el); }
+      if (d.chdom != null) { keep(el); ch.rep.dom = d.chdom === '' ? null : d.chdom === 'last' ? 'last' : +d.chdom; return redraw(el); }
+      if (d.chfrom) { keep(el); ch.from = d.chfrom; return redraw(el); }
+      if (d.chppl) { keep(el); const u = d.chppl; ch.people = ch.people.includes(u) ? ch.people.filter(x => x !== u) : [...ch.people, u]; if (!ch.people.includes(ch.assignTo)) ch.assignTo = ch.people[0] || null; if (ch.people.length < 2) ch.rotate = 'none'; else if (ch.rotate === 'none' && !rotPicked) ch.rotate = 'round'; return redraw(el); }
+      if (d.chrot) { keep(el); ch.rotate = d.chrot; rotPicked = true; return redraw(el); }
+      if (d.chnext) { keep(el); ch.assignTo = d.chnext; return redraw(el); }
+      if (d.chprio != null) { keep(el); ch.prio = +d.chprio; return redraw(el); }
+      if (d.chplace != null) { keep(el); ch.place = d.chplace || null; return redraw(el); }
+      if (d.chsubdel != null) { keep(el); ch.subtasks.splice(+d.chsubdel, 1); return redraw(el); }
+      if (b.id === 'chSubAdd') { keep(el); const v = el.querySelector('#chSubNew').value.trim(); if (v) ch.subtasks.push({t: v, done: false}); redraw(el); el.querySelector('#chSubNew')?.focus(); return; }
+      if (b.id === 'chSkip') { closeSheet(); return completeChore(S.chores.find(x => x.id === ch.id) || ch0, {skip: true}); }
+      if (b.id === 'chReopen') { closeSheet(); await put('chores', ch.id, {...strip(ch0), done: false, doneAt: null, due: todayYmd(), history: (ch0.history || []).slice(1)}).catch(() => {}); return; }
+      if (b.id === 'chDel') { if (!armed) { armed = true; b.textContent = 'Tap again to delete'; return; } closeSheet(); const prev = strip(ch0); await del('chores', ch.id).catch(() => {}); toast(`Deleted “${ch0.title}”`, 'Undo', () => put('chores', ch.id, prev)); return; }
+    });
+    el.addEventListener('keydown', e => { if (e.target.id === 'chSubNew' && e.key === 'Enter') { e.preventDefault(); el.querySelector('#chSubAdd').click(); } });
+    el.addEventListener('submit', async e => {
+      e.preventDefault(); keep(el); if (!ch.title) { el.querySelector('#chTitle').focus(); return; }
+      if (ch.rep.type === 'once') ch.rep = {type: 'once'};
+      if (!ch.people.length) { ch.people = [ch.assignTo || S.uid]; }
+      if (!ch.assignTo || !ch.people.includes(ch.assignTo)) ch.assignTo = ch.people[0];
+      const id = ch.id || uid(), {id: _x, ...data} = ch;
+      closeSheet(); await put('chores', id, {...data, by: ch.by || S.uid, at: Date.now()}).catch(() => {}); toast('Saved');
+    });
+  });
+}
+/* chores on the Today card: what's due today or late */
+function choresToday() { const t = todayYmd(); return choreList().filter(c => !c.done && c.due && c.due <= t && (!c.assignTo || c.assignTo === S.uid || !(c.people || []).length)); }
+
+$('#chAddForm').addEventListener('submit', e => { e.preventDefault(); addChore(); });
+$('#chAdd').addEventListener('input', chorePreview);
+$('#chFilters').addEventListener('click', e => { const w = e.target.closest('[data-chwho]'), l = e.target.closest('[data-chlabel]'); if (w) CH.who = w.dataset.chwho; else if (l) CH.label = l.dataset.chlabel; else return; renderChores(); });
 /* ================= rendering ================= */
 /* several collections arrive at once when the app opens: draw once per frame instead of once per collection */
 let _rq = 0;
@@ -2169,7 +2431,7 @@ function renderSoon() { if (_rq) return; _rq = requestAnimationFrame(() => { _rq
 function render() {
   if (_rq) { cancelAnimationFrame(_rq); _rq = 0; }
   applyCats();
-  for (const v of ['list', 'kitchen', 'add', 'receipts', 'recipes']) $('#v-' + v).hidden = S.tab !== v;
+  for (const v of ['list', 'kitchen', 'add', 'receipts', 'recipes', 'chores']) $('#v-' + v).hidden = S.tab !== v;
   showSearchTools();
   document.querySelectorAll('nav [data-tab]').forEach(b => b.setAttribute('aria-current', String(b.dataset.tab === S.tab)));
   const open = S.list.filter(l => !l.done && listPlaceOk(l)).length;
@@ -2190,7 +2452,9 @@ function render() {
     if (S.tab === 'add') renderAdd();
     if (S.tab === 'receipts') renderReceipts();
     if (S.tab === 'recipes') renderRecipes();
+    if (S.tab === 'chores') renderChores();
   }
+  const chN = choresToday().length, chb = $('#chBadge'); chb.hidden = !chN; chb.textContent = chN;
   const ready = (S.recipes || []).filter(r => (r.ingredients || []).length && !readiness(r).missing).length;
   const cb = $('#rcpBadge'); cb.hidden = !ready; cb.textContent = ready;
   const owed = myBalances().filter(x => x.amt > 0.004).length;
@@ -4324,12 +4588,12 @@ function shareRecipe(r, others) {
 }
 
 /* ================= backup ================= */
-const BK_COLLS = [['list', 'list'], ['kitchen', 'kitchen'], ['products', 'hprods'], ['receipts', 'receipts'], ['recipes', 'recipes']];
+const BK_COLLS = [['list', 'list'], ['kitchen', 'kitchen'], ['products', 'hprods'], ['receipts', 'receipts'], ['recipes', 'recipes'], ['chores', 'chores']];
 async function downloadBackup(photos) {
   const h = S.hh, pack = arr => arr.map(x => ({...x}));
   if (photos) { toast('Gathering receipt photos…'); for (const r of S.receipts || []) if (r.hasImg && !r.img) await receiptImg(r); }
   const data = {app: 'shelf-and-cart', version: VERSION, exportedAt: new Date().toISOString(), household: {name: h.name, places: h.places || [], zones: h.zones || null},
-    list: pack(S.list), kitchen: pack(S.kitchen), hprods: pack(Object.values(S.products)), recipes: pack(S.recipes || []),
+    list: pack(S.list), kitchen: pack(S.kitchen), hprods: pack(Object.values(S.products)), recipes: pack(S.recipes || []), chores: pack(S.chores || []),
     receipts: pack(S.receipts || []).map(r => { const img = r.img || RIMG.get(r.id) || null; return photos ? {...r, img} : {...r, img: null}; })};
   const blob = new Blob([JSON.stringify(data, null, 1)], {type: 'application/json'}), a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = `shelf-and-cart-${slug(h.name)}-${todayYmd()}.json`;
@@ -4378,6 +4642,7 @@ function todayCard() {
   const canMake = (S.recipes || []).filter(r => (r.ingredients || []).length && readiness(r).missing === 0);
   const useUp = (S.recipes || []).filter(r => readiness(r).soon.length).slice(0, 2);
   const lines = [];
+  { const cs = choresToday(); if (cs.length) { const late = cs.filter(c => c.due < todayYmd()).length; lines.push(`<button class="todo" data-act="goChores"><span class="dot ${late ? 'red' : 'amber'}"></span><span><b>Chores:</b> ${cs.slice(0, 3).map(c => esc(c.title)).join(', ')}${cs.length > 3 ? ` and ${cs.length - 3} more` : ''}${late ? ` · ${late} late` : ''}</span></button>`); } }
   const lg = LOG.get(todayYmd());
   if (S.diet?.used && lg) { const kc = lg.meals.reduce((a, m) => a + (Number(m.kcal) || 0), 0), g = S.diet.waterGoal || 8;
     lines.push(`<div class="todo"><span class="dot" style="background:#3b9ad9"></span><span class="tap" data-act="go" data-to="food"><b>Water</b> ${lg.water || 0} of ${g} cups · <b>Food</b> ${fmtKcal(kc)} cal</span><button class="btn small" data-act="water1">+1 cup</button></div>`); }
@@ -4907,7 +5172,9 @@ function kTile(k) {
 
 /* ================= help and what's new ================= */
 const WHATS_NEW = [
-  ['3.17', 'October 2026', ['Scanned a barcode nobody knows? 📸 Snap it takes the photo straight from the scanner’s camera (no switching apps), saves it with the item, and the AI names it.',
+  ['3.18', 'October 2026', ['New Chores tab: type a chore the way you’d say it (“trash every Tuesday @Raquel”, “water plants every 3 days”, “pay rent on the 1st”), check it off and the next one is scheduled. Share a chore and take turns (in order, whoever’s done it least, or random), add steps that reset each time, labels, priority, a time, and see who did it when. Due and late chores show on the Today card and the tab badge.']],
+  ['3.17', 'October 2026', ['Tap a list item to move it to another location (Davie, Plantation…) or make it “Any location”.',
+    'Scanned a barcode nobody knows? 📸 Snap it takes the photo straight from the scanner’s camera (no switching apps), saves it with the item, and the AI names it.',
     'Tidy up → All names shows how every item looks grouped (the Quick add tile and fridge label) and ungrouped (the full name), with filters for In stock, On the list, Quick add and Hidden, and A–Z by name or by tile label. Edits save a moment after you stop typing, and closing the sheet by accident saves anything still waiting.',
     'We ate out → Bringing leftovers home? Tick 🥡 on the dishes you’re taking (or Yes, all of it) and they go in the fridge as leftovers with a use-by date for that food: 3–4 days for most cooked food, 1–2 for salads, a day for sushi.',
     'Tidy up saves as you go (no Save button to forget), lists items A to Z, keeps unsaved AI suggestions if the sheet closes by accident, and has an All names tab: every name in stock, on the list and on Quick add, with the label each Quick add tile uses and a search box.',
@@ -4980,6 +5247,7 @@ const HELP = [
   ['Food and water log', 'Menu → <b>Food & water</b>, or the water line on the Today card. Tap <b>+1 cup</b> as you drink. Type what you ate (“2 eggs and toast”) and the app estimates the calories from typical portions, or type the exact number. With AI on, <b>Estimate with AI</b> or a <b>photo of the meal</b> works for anything. Picking something from stock can take it out of stock too. <b>This week</b> shows calories and water by day and a few tips. Your log is private to you.'],
   ['Finding things', 'Every search box autocompletes as you type: your own items first, then the grocery catalog and produce codes, then store products online (they load on their own when there’s little to show; tap <b>More</b> for more). Tap 🎤 to say it. In stock, the search shows what you have and, below it, things to add to the list or stock; 📷 finds an item from a photo.'],
   ['Reading a recipe', 'Open a recipe: <b>Start cooking</b> is at the top, then <b>Ingredients</b> and <b>Steps</b> tabs (the app remembers which you used last). Ingredients are grouped like a kitchen: meat and seafood, produce, dairy and eggs, sauces and liquids, spices, dry and pantry. Tap a group to fold it, or <b>Collapse all</b>. No picture? <b>Make a picture</b> asks the AI to draw it (some Google plans don’t include this), <b>Find a photo</b> looks for a real one. Items have the same two buttons when you edit them.'],
+  ['Chores', 'Type a chore in the box the way you’d say it: <i>every day</i>, <i>every other week</i>, <i>every Mon and Thu</i>, <i>weekdays</i>, <i>every 3 months</i>, <i>on the 1st</i>, <i>last day of the month</i>, <i>tomorrow</i>, <i>at 7pm</i>, and <i>@Name</i> for who does it. The line under the box shows how it was understood. Tap the circle when it’s done: a repeating chore moves to its next date (counted from the due date, or from when it was done, your choice) and passes to the next person if you share it. Tap a chore to change the schedule, people, steps, labels or priority, skip it once, or see its history.'],
   ['Recipe ideas, meal plan and deals', 'Recipes → <b>Ideas from what we have</b>: pick a mood and a cuisine, then <b>Suggest with AI</b> or <b>From the recipe database</b>; <b>Show different ones</b> brings new ones each time. Type any dish in the search box to find recipes for it. <b>This week</b> → <b>Suggest dinners</b> fills the open days to fit your health filters; Swap any you don’t like. Menu → <b>Sales & deals</b> finds this week’s sales at your stores on what you buy, or reads a weekly ad photo.'],
   ['Categories', 'Menu → Household settings → <b>Categories</b>. The built-in ones include <b>Spices & Seasonings</b>; add your own with an emoji and where they’re usually kept. Removing one moves its items to Other. To move one item, tap it and pick a category; Tidy up items finds seasonings that are still filed under Pantry.'],
   ['Spending details and tidying up', 'Spending → tap a category (like Other) to see every receipt line in it, the item it’s linked to, and change its category. <b>Sort with AI</b> files the Other lines. Menu → <b>Tidy up items</b> lists barcodes with no name and things in Other: rename, pick a category, look them up again, or hide them from Quick add.'],
@@ -5802,7 +6070,7 @@ function tipCalcHtml(r) {
   const c = checkOf(r), pct = r.tipPct, custom = pct != null && !TIPS.includes(pct);
   const line = p => { const t = round2(c.base * p / 100); return {t, tot: round2(c.before + t)}; };
   const showFees = delivered(r) || c.fees > 0;
-  return `<div class="qchips wrap">${VIAS.map(([v, ic]) => `<button type="button" class="qchip" data-via="${esc(v)}" aria-pressed="${r.via === v}">${ic} ${esc(v)}</button>`).join('')}</div>
+  return `<div class="qchips qwrap">${VIAS.map(([v, ic]) => `<button type="button" class="qchip" data-via="${esc(v)}" aria-pressed="${r.via === v}">${ic} ${esc(v)}</button>`).join('')}</div>
     <div class="whead"><b>💵 The check</b>${c.sub ? `<span class="hint">${c.n > 1 ? `split ${c.n} ways` : ''}</span>` : ''}</div>
     <div class="formgrid"><label class="lbl">Food & drinks (before tax)<input class="field money" id="tpSub" type="number" min="0" step="0.01" inputmode="decimal" value="${c.sub ? esc(String(c.sub)) : ''}" placeholder="0.00"></label>
     <label class="lbl">Sales tax<span class="taxrow"><input class="field" id="tpTaxPct" type="number" min="0" max="20" step="0.1" inputmode="decimal" value="${esc(String(c.pct))}" aria-label="Sales tax percent"><span>%</span><input class="field money" id="tpTax" type="number" min="0" step="0.01" inputmode="decimal" value="${c.sub ? esc(c.tax.toFixed(2)) : ''}" placeholder="0.00" aria-label="Sales tax amount"></span></label>
@@ -7210,10 +7478,13 @@ async function savePhotoEverywhere(it, thumb) {
   for (const l of S.list.filter(o => same(o) && o.id !== it.id)) put('list', l.id, {...strip(l), thumb}).catch(() => {});
 }
 function editList(l) {
+  let place = l.place || '';
+  const placeChips = () => multiPlace() ? `<div class="lbl">Location (which home it’s for)<div class="expchips" id="lPlace">${[['', 'Any location'], ...places().map(x => [x.id, x.name])].map(([v, n]) => `<button type="button" data-lpl="${esc(v)}" aria-pressed="${place === v}">${esc(n)}</button>`).join('')}</div></div>` : '';
   sheet(`<form id="lEdit" style="display:contents" autocomplete="off">
     <h3>${esc(l.name)}</h3>
     <div class="photoedit" id="lPhoto"></div>
     <label class="lbl">Name<input class="field" id="lName" value="${esc(l.name)}" required></label>
+    ${placeChips()}
     <div class="formgrid"><label class="lbl">Aisle${catSelect('lCat', l.category || 'Other')}</label>
     <label class="lbl">How many<input class="field" id="lQty" type="number" min="1" inputmode="numeric" value="${l.qty || 1}"></label>
     <label class="lbl">Store<input class="field" id="lStore" list="storeList" value="${esc(l.store || '')}" placeholder="Any store"></label>
@@ -7224,14 +7495,15 @@ function editList(l) {
     <button class="btn danger ghost" type="button" id="lDel">Remove from list</button>
   </form>`, el => {
     const ph = photoEditor(el.querySelector('#lPhoto'), l, () => el.querySelector('#lName').value.trim());
+    el.querySelector('#lPlace')?.addEventListener('click', e => { const b = e.target.closest('[data-lpl]'); if (!b) return; place = b.dataset.lpl; el.querySelectorAll('[data-lpl]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); });
     el.querySelector('#lDel').onclick = async () => { const prev = strip(l); closeSheet(); await del('list', l.id).catch(() => {}); toast(`Removed ${l.name}`, 'Undo', () => restore([{coll: 'list', id: l.id, prev}])); };
     el.querySelector('#lEdit').onsubmit = async ev => {
       ev.preventDefault(); closeSheet();
       const store = el.querySelector('#lStore').value.trim();
       const price = parseFloat(el.querySelector('#lPrice').value) || 0;
-      const next = {...strip(l), name: el.querySelector('#lName').value.trim() || l.name, category: el.querySelector('#lCat').value, qty: Math.max(1, parseInt(el.querySelector('#lQty').value, 10) || 1), store, price: price || null, ...(ph.changed ? {thumb: ph.thumb, ...(ph.thumb ? {} : {image: null})} : {})};
+      const next = {...strip(l), name: el.querySelector('#lName').value.trim() || l.name, category: el.querySelector('#lCat').value, qty: Math.max(1, parseInt(el.querySelector('#lQty').value, 10) || 1), store, price: price || null, place, ...(ph.changed ? {thumb: ph.thumb, ...(ph.thumb ? {} : {image: null})} : {})};
       await put('list', l.id, next).catch(() => {});
-      if (ph.changed) savePhotoEverywhere(next, ph.thumb);
+      if (ph.changed) savePhotoEverywhere({...next, id: l.id}, ph.thumb);
       if (store && store !== (prodOf(next)?.store || '')) await updateProduct(next, {store});
       if ((price || 0) !== (l.price || 0)) await recordPrice({...next, id: l.id}, price, store);
     };
@@ -7547,6 +7819,9 @@ document.addEventListener('click', async e => {
       case 'dueAll': if ((S._due || []).length) await dueAdd(S._due); break;
       case 'hideToday': ls.set('today:' + (S.hid || '') + ':' + todayYmd(), 1); renderList(); break;
       case 'goExp': S.tab = 'kitchen'; S.zone = 'exp'; render(); scrollTo(0, 0); break;
+      case 'chDone': { const c = (S.chores || []).find(x => x.id === t.dataset.id); if (c && !c.done) { t.classList.add('pop'); await completeChore(c); } break; }
+      case 'chEdit': { const c = (S.chores || []).find(x => x.id === t.dataset.id); if (c) choreSheet(c); break; }
+      case 'goChores': S.tab = 'chores'; render(); scrollTo(0, 0); break;
       case 'goRecipes': S.tab = 'recipes'; R.tab = 'mine'; render(); scrollTo(0, 0); break;
       case 'goReceiptsAll': S.tab = 'receipts'; S.rFilter = 'all'; render(); scrollTo(0, 0); break;
       case 'goReceipts': S.tab = 'receipts'; S.rFilter = 'open'; render(); scrollTo(0, 0); break;
