@@ -408,6 +408,14 @@ select.field.small{height:34px;padding:0 8px;font-size:13.5px;width:auto}
 .tdfilt{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.tdfilt button{height:32px;padding:0 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:13px;color:inherit}.tdfilt button[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}.tdfilt .sep{flex-basis:100%;height:0}
 #tdQ{margin:4px 0 8px;flex:none;height:44px}
 .leftq{display:flex;flex-direction:column;gap:6px;margin-top:12px;padding:12px;border:1px dashed var(--line);border-radius:12px}
+.scanner.aiming .bottom,.scanner.aiming .reticle{display:none}
+#snapShutter{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:calc(70px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px));pointer-events:none}
+#snapShutter > *{pointer-events:auto}.snaphint{background:rgba(0,0,0,.55);padding:8px 14px;border-radius:99px;font-weight:600;font-size:15px}
+.snapbox{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:min(80vw,80vh);aspect-ratio:1;border:3px solid #F5C22F;border-radius:18px;box-shadow:0 0 0 9999px rgba(0,0,0,.35);pointer-events:none}
+.snapbar{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;width:100%;max-width:420px}.snaphint{position:relative;z-index:1}.snapbar .btn{background:rgba(0,0,0,.55);color:#fff;border:1px solid rgba(255,255,255,.4);min-width:84px}
+.shutter{width:76px;height:76px;border-radius:50%;border:5px solid #fff;background:rgba(255,255,255,.85);box-shadow:0 0 0 3px rgba(0,0,0,.3)}
+.shutter:active{transform:scale(.94)}
+.snapnow{display:flex;flex-direction:column;gap:6px;margin:4px 0 8px}.snapnow .btn{width:100%}
 .fdlist{display:flex;flex-direction:column;gap:2px;max-height:55vh;overflow:auto;margin:4px 0 8px}
 .fdrow{display:flex;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line)}
 .fdrow input{width:20px;height:20px;flex:none}
@@ -1030,7 +1038,7 @@ const ADMINS = Array.isArray(CFG.admins) ? CFG.admins : [];
 const isMainAdmin = email => ADMINS.some(x => emailIs(x, email));
 const familyName = email => { const g = familyOf(email); if (!g) return ''; const k = Object.keys(g.people).find(e => emailIs(e, email)); return g.people[k] || ''; };
 
-const VERSION = "3.17.5";
+const VERSION = "3.17.6";
 const BASE_CATS = ['Leftovers','Produce','Dairy & Eggs','Meat & Seafood','Bakery','Pantry','Spices & Seasonings','Frozen','Snacks','Drinks','Cleaning','Bathroom','Laundry','Paper & Household','Other'];
 /* the household can add its own categories (Baby, Pets, Garden…); they sit before Other */
 let CATS = BASE_CATS.slice(), _catsKey = '';
@@ -2555,7 +2563,8 @@ function itemFormHtml(s, ctx) {
     ${isCode ? `<div class="lbl">Search by name<div class="addrow"><input class="field" name="q" value="${esc(s.q || '')}" placeholder="e.g. gain detergent" enterkeyhint="search" autocomplete="off"><button class="btn micbtn" type="button" data-mic="[data-form='${ctx}'] [name=q]" aria-label="Say what it is" ${micOk() ? '' : 'hidden'}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><button type="button" class="btn" data-act="nameSearch">Search</button></div>
       <div class="matches">${matchesHtml(s)}</div></div>` : ''}
     ${s.ai === 'busy' ? `<div class="aistatus"><span class="spinner"></span>Reading the label with AI… ${aiWait('label')}</div>` : s.aiMsg ? `<div class="aistatus">${esc(s.aiMsg)}</div>` : ''}
-    ${isCode ? `<div class="minor"><label class="btn small filebtn">${aiShow() ? 'Snap the label to identify it' : 'Take a photo'}<input type="file" data-labelsnap="${ctx}" accept="image/*" capture="environment"></label><label class="btn small filebtn">Choose photo<input type="file" data-labelsnap="${ctx}" accept="image/*"></label></div>` : (s.photo && s.ai !== 'busy' && aiShow() ? `<button type="button" class="btn small aibtn" data-act="aiAgain" data-ctx="${ctx}" style="align-self:flex-start">Identify with AI</button>` : '')}
+    ${isCode && ctx === 'scan' ? `<div class="snapnow"><button type="button" class="btn primary" data-act="snapUnknown">📸 ${s.preview ? 'Snap it again' : aiShow() ? 'Snap it: AI names it' : 'Snap a photo of it'}</button><span class="hint">The form moves aside so you can aim; the photo is saved with the item.</span></div>` : ''}
+    ${isCode ? `<div class="minor"><label class="btn small filebtn">${ctx === 'scan' ? 'Use the camera app' : aiShow() ? 'Snap the label to identify it' : 'Take a photo'}<input type="file" data-labelsnap="${ctx}" accept="image/*" capture="environment"></label><label class="btn small filebtn">Choose photo<input type="file" data-labelsnap="${ctx}" accept="image/*"></label></div>` : (s.photo && s.ai !== 'busy' && aiShow() ? `<button type="button" class="btn small aibtn" data-act="aiAgain" data-ctx="${ctx}" style="align-self:flex-start">Identify with AI</button>` : '')}
     <div class="formgrid">
       <label class="lbl full">What is it?<input class="field" name="name" value="${esc(s.name || '')}" placeholder="${isCode ? 'e.g. Publix black beans 15 oz' : 'e.g. Leftover chicken soup'}" required></label>
       ${isCode ? '' : `<label class="lbl full">Notes (optional)<input class="field" name="note" value="${esc(s.note || '')}" placeholder="e.g. from Sunday, blue container"></label>`}
@@ -2859,11 +2868,36 @@ function idleHints() {
   if (want !== SC.hint) { SC.hint = want; scanMsg(want || MODE_HINT[S.mode], !!want); }
 }
 /* AI look while the barcode readers keep going: whichever answers first wins */
-function scanWithAI() {
-  const v = $('#video'); if (!v.videoWidth) return;
+/* a square photo from the live camera, centered where the item is held */
+function grabFrame() {
+  const v = $('#video'); if (!v || !v.videoWidth) return null;
   const vw = v.videoWidth, vh = v.videoHeight, side = Math.round(Math.min(vw, vh) * .8), c = document.createElement('canvas');
   c.width = c.height = Math.min(1024, side);
   c.getContext('2d').drawImage(v, (vw - side) / 2, Math.max(0, vh * .42 - side / 2), side, side, 0, 0, c.width, c.height);
+  return c;
+}
+/* a barcode nobody knows: take its picture straight from the scanner's camera, then let the AI name it */
+/* the form covers the camera, so snapping first clears the screen: aim at the item, tap the big shutter */
+function snapUnknown(form) {
+  const st = SC.form; if (!st) return;
+  if (form) keepForm(form, st);
+  const sc = $('#scanner'); sc.classList.add('aiming');
+  let sh = $('#snapShutter');
+  if (!sh) { sh = document.createElement('div'); sh.id = 'snapShutter'; sc.appendChild(sh); }
+  sh.innerHTML = `<div class="snaphint">Fill the square with the item, label facing you</div><div class="snapbox"></div>
+    <div class="snapbar"><button type="button" class="btn" data-snap="cancel">Cancel</button><button type="button" class="shutter" data-snap="go" aria-label="Take the photo"></button><span style="width:84px"></span></div>`;
+  sh.hidden = false;
+  sh.onclick = e => { const b = e.target.closest('[data-snap]'); if (!b) return; const go = b.dataset.snap === 'go'; const c = go ? grabFrame() : null;
+    sh.hidden = true; sc.classList.remove('aiming'); if (go) snapDone(st, c); };
+}
+async function snapDone(st, c) {
+  if (!c) { toast('The camera isn’t ready yet. Try again in a second.'); return; }
+  st.photo = c; st.thumb = st.preview = await makeThumb(c); AI.off = false;
+  try { navigator.vibrate?.(30); } catch (e) {}
+  if (aiShow() && !st.name) identifyInto(st, 'scan'); else { $('#scanCard').innerHTML = itemFormHtml(st, 'scan'); scanMsg('Photo saved with it. Name it to keep going'); }
+}
+function scanWithAI() {
+  const c = grabFrame(); if (!c) return;
   makeThumb(c).then(thumb => {
     SC.form = {code: null, category: 'Other', photo: c, thumb, preview: thumb, race: true, loc: S.mode === 'stock' ? S.scanLoc : undefined};
     $('#scanAI').hidden = true; scanMsg('Looking with AI… still watching for a barcode');
@@ -4215,7 +4249,7 @@ async function viewRecipe(r, idea = false) {
       : `<div class="rows">${rows.map(x => x.html).join('') || '<div class="row"><span class="note">No ingredients listed.</span></div>'}</div>`;
     const n = (picked || []).filter(Boolean).length;
     const menu = `${idea ? '' : '<button type="button" class="mi2" id="rvEdit">✏️ Edit</button>'}${!idea && hids.length > 1 ? '<button type="button" class="mi2" id="rvShare">🏠 Share with another household</button>' : ''}
-      ${aiShow() ? `<button type="button" class="mi2" id="rvGen" ${RV.busy ? 'disabled' : ''}>🎨 ${r.img ? 'New AI picture' : 'Make an AI picture'}</button>` : ''}<button type="button" class="mi2" id="rvFind" ${RV.busy ? 'disabled' : ''}>🔎 Find a photo</button>
+      ${picsOk() ? `<button type="button" class="mi2" id="rvGen" ${RV.busy ? 'disabled' : ''}>🎨 ${r.img ? 'New AI picture' : 'Make an AI picture'}</button>` : ''}<button type="button" class="mi2" id="rvFind" ${RV.busy ? 'disabled' : ''}>🔎 Find a photo</button>
       ${idea ? '' : '<button type="button" class="mi2 danger" id="rvDel">🗑 Delete</button>'}`;
     $('#sheetRoot .sheet').innerHTML = `<div class="rvhead"><h3>${esc(r.title)}</h3><details class="rvmore"><summary class="iconbtn" aria-label="More">⋯</summary><div class="rvmenu">${menu}</div></details><button type="button" class="iconbtn" data-act="closeSheet" aria-label="Close">✕</button></div>
       ${r.img ? `<img src="${esc(r.img.replace(/\/preview$/, ''))}" alt="" class="rvimg">` : ''}
@@ -4873,7 +4907,8 @@ function kTile(k) {
 
 /* ================= help and what's new ================= */
 const WHATS_NEW = [
-  ['3.17', 'October 2026', ['Tidy up → All names shows how every item looks grouped (the Quick add tile and fridge label) and ungrouped (the full name), with filters for In stock, On the list, Quick add and Hidden, and A–Z by name or by tile label. Edits save a moment after you stop typing, and closing the sheet by accident saves anything still waiting.',
+  ['3.17', 'October 2026', ['Scanned a barcode nobody knows? 📸 Snap it takes the photo straight from the scanner’s camera (no switching apps), saves it with the item, and the AI names it.',
+    'Tidy up → All names shows how every item looks grouped (the Quick add tile and fridge label) and ungrouped (the full name), with filters for In stock, On the list, Quick add and Hidden, and A–Z by name or by tile label. Edits save a moment after you stop typing, and closing the sheet by accident saves anything still waiting.',
     'We ate out → Bringing leftovers home? Tick 🥡 on the dishes you’re taking (or Yes, all of it) and they go in the fridge as leftovers with a use-by date for that food: 3–4 days for most cooked food, 1–2 for salads, a day for sushi.',
     'Tidy up saves as you go (no Save button to forget), lists items A to Z, keeps unsaved AI suggestions if the sheet closes by accident, and has an All names tab: every name in stock, on the list and on Quick add, with the label each Quick add tile uses and a search box.',
     'Tidy up items: ✨ Clean up with AI fixes names (no more ALL CAPS), splits out the brand and type, and picks the category for every item at once; you check the highlighted changes and save. Show all items to tidy anything.',
@@ -6440,7 +6475,7 @@ async function aiCheckSheet() {
   draw();
   AI.lastRaw = ''; try { await askAI('Reply with only this JSON: {"ok": true}', [], 'check'); rows[1][1] = '✓ Working.'; } catch (e) { rows[1][1] = '✗ ' + e.message + (AI.lastRaw ? ` · Google said: ${AI.lastRaw}` : ''); if (/app.?check/i.test(e.message + AI.lastRaw)) acSwitch = true; }
   draw();
-  AI.lastRaw = ''; try { await aiPicture('A small red apple on a white plate, simple photo.', 200); rows[2][1] = '✓ Working.'; } catch (e) { rows[2][1] = '✗ ' + e.message + (e.raw || AI.lastRaw ? ` · Google said: ${String(e.raw || AI.lastRaw).slice(0, 300)}` : ''); }
+  AI.lastRaw = ''; try { await aiPicture('A small red apple on a white plate, simple photo.', 200); rows[2][1] = '✓ Working.'; ls.set('ai:noPics', null); } catch (e) { rows[2][1] = '✗ ' + e.message + (e.raw || AI.lastRaw ? ` · Google said: ${String(e.raw || AI.lastRaw).slice(0, 300)}` : ''); }
   draw();
 }
 function menuSheet() {
@@ -6610,6 +6645,8 @@ const aiShow = () => !S.aiOff && !AI.off;
 const aiModels = () => (Array.isArray(CFG.aiModels) && CFG.aiModels.length ? CFG.aiModels : ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite']);
 /* "limited-use" App Check tokens are a one-time kind some projects require (replay protection); Check AI can switch to them */
 const aiLimited = () => ls.get('ai:limited') === '1';
+/* AI pictures need a paid Google plan; after Google says no, the button stays hidden (Check AI tries again) */
+const picsOk = () => aiShow() && !ls.get('ai:noPics');
 const aiOpts = m => ({backend: new m.GoogleAIBackend(), ...(aiLimited() ? {useLimitedUseAppCheckTokens: true} : {})});
 async function aiReady() {
   if (AI.models) return AI.models;
@@ -6654,7 +6691,7 @@ async function aiPicture0(prompt, size = 600) {
     }
   } finally { if (AI.run === run) { AI.t0 = 0; AI.run = null; } }
   const msg = String(last?.message || '');
-  if (/billing|paid|free tier|quota|RESOURCE_EXHAUSTED|429|limit: 0/i.test(msg)) throw new Error('Making pictures isn’t included in Google’s free AI plan for this project. Use Find a photo, or a real photo.');
+  if (/billing|paid|free tier|quota|RESOURCE_EXHAUSTED|429|limit: 0/i.test(msg)) { ls.set('ai:noPics', String(Date.now())); throw new Error('Making pictures isn’t included in Google’s free AI plan for this project, so the 🎨 button is hidden from now on. Use 🔎 Find one or a real photo. (Menu → This device → Check AI brings it back if you turn on billing.)'); }
   if (/no image/.test(msg)) throw new Error('The AI didn’t make a picture this time. Try again.');
   const e2 = new Error(await aiErrorFull(last)); e2.raw = msg; throw e2;
 }
@@ -6990,7 +7027,7 @@ function editKitchen(k) {
   const photoHtml = () => `${shown() ? `<img class="preview" src="${esc(shown())}" alt="">` : `<div class="preview none" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h1.5l1.5-2h6l1.5 2H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg></div>`}
     <div class="btns"><label class="btn small filebtn">Take photo<input type="file" class="ePhotoIn" accept="image/*" capture="environment" aria-label="Take a photo with the camera"></label>
     <label class="btn small filebtn">Choose photo<input type="file" class="ePhotoIn" accept="image/*" aria-label="Choose a photo from your gallery"></label>
-    <button type="button" class="btn small ghost" id="ePhotoFind">🔎 Find one</button>${aiShow() ? '<button type="button" class="btn small ghost" id="ePhotoGen">🎨 AI picture</button>' : ''}
+    <button type="button" class="btn small ghost" id="ePhotoFind">🔎 Find one</button>${picsOk() ? '<button type="button" class="btn small ghost" id="ePhotoGen">🎨 AI picture</button>' : ''}
     ${shown() ? '<button type="button" class="btn small ghost danger" id="ePhotoDel">Remove photo</button>' : ''}<span class="hint" id="ePhotoMsg"></span></div>`;
   sheet(`<form id="kEdit" style="display:contents" autocomplete="off">
     <h3 style="min-width:0">${esc(k.name)}</h3>
@@ -7056,7 +7093,7 @@ function editKitchen(k) {
           let src = null;
           if (pf.id === 'ePhotoGen') src = await aiPicture(`A clean, realistic product photo of ${name} (${typeOf({...k, name}).kind}), one grocery item on a plain light background, soft studio light. No text, no labels, no logos.`, 400);
           else { const hits = k.code ? [await lookupOnline(k.code).catch(() => null)].filter(Boolean) : []; const more = hits.some(h => h.image) ? [] : await onlineMatches(name).catch(() => []); src = [...hits, ...more].find(h => h.image)?.image || null; }
-          if (!src) { msg('No photo found. Try the camera' + (aiShow() ? ' or an AI picture.' : '.')); pf.disabled = false; return; }
+          if (!src) { msg('No photo found. Try the camera' + (picsOk() ? ' or an AI picture.' : '.')); pf.disabled = false; return; }
           thumb = await makeThumb(src.startsWith('data:') ? await loadUrl(src) : await loadUrl(src).catch(() => { throw new Error('That photo couldn’t be copied. Try another way.'); })); photoChanged = true; el.querySelector('#ePhoto').innerHTML = photoHtml(); msg('Save to keep it.');
         } catch (err) { msg(err.message || 'Couldn’t get a picture.'); pf.disabled = false; }
       })();
@@ -7141,7 +7178,7 @@ function photoEditor(box, it, nameOf) {
   const draw = (msgText = '') => { box.innerHTML = `${shown() ? `<img class="preview" src="${esc(shown())}" alt="">` : `<div class="preview none" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h1.5l1.5-2h6l1.5 2H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.5"/></svg></div>`}
     <div class="btns"><label class="btn small filebtn">Take photo<input type="file" class="pePhotoIn" accept="image/*" capture="environment" aria-label="Take a photo with the camera"></label>
     <label class="btn small filebtn">Choose photo<input type="file" class="pePhotoIn" accept="image/*" aria-label="Choose a photo from your gallery"></label>
-    <button type="button" class="btn small ghost" data-pe="find">🔎 Find one</button>${aiShow() ? '<button type="button" class="btn small ghost" data-pe="gen">🎨 AI picture</button>' : ''}
+    <button type="button" class="btn small ghost" data-pe="find">🔎 Find one</button>${picsOk() ? '<button type="button" class="btn small ghost" data-pe="gen">🎨 AI picture</button>' : ''}
     ${shown() ? '<button type="button" class="btn small ghost danger" data-pe="del">Remove photo</button>' : ''}<span class="hint pemsg">${esc(msgText)}</span></div>`; };
   const msg = t => { const m = box.querySelector('.pemsg'); if (m) m.textContent = t; };
   const set = async src => { st.thumb = src ? await makeThumb(src) : null; st.changed = true; draw(src ? 'Save to keep it.' : ''); };
@@ -7153,7 +7190,7 @@ function photoEditor(box, it, nameOf) {
       let src = null;
       if (b.dataset.pe === 'gen') src = await aiPicture(`A clean, realistic product photo of ${name} (${typeOf({...it, name}).kind}), one item on a plain light background, soft studio light. No text, no labels, no logos.`, 400);
       else { const hits = it.code ? [await lookupOnline(it.code).catch(() => null)].filter(Boolean) : []; const more = hits.some(h => h.image) ? [] : await onlineMatches(name).catch(() => []); src = [...hits, ...more].find(h => h.image)?.image || null; }
-      if (!src) { msg('No photo found. Try the camera' + (aiShow() ? ' or an AI picture.' : '.')); b.disabled = false; return; }
+      if (!src) { msg('No photo found. Try the camera' + (picsOk() ? ' or an AI picture.' : '.')); b.disabled = false; return; }
       await set(await loadUrl(src).catch(() => { throw new Error('That photo couldn’t be copied. Try another way.'); }));
     } catch (err) { msg(err.message || 'Couldn’t get a picture.'); b.disabled = false; }
   });
@@ -7544,6 +7581,7 @@ document.addEventListener('click', async e => {
       case 'openScanner': openScanner(); break;
       case 'closeScanner': closeScanner(); break;
       case 'scanAI': scanWithAI(); break;
+      case 'snapUnknown': snapUnknown(t.closest('form')); break;
       case 'szoom': {
         if (!SC.track) break; SC.zoom = !SC.zoom; const z = SC.caps.zoom || {};
         try { await SC.track.applyConstraints({advanced: [{zoom: SC.zoom ? Math.min(z.max, 2) : Math.max(z.min || 1, 1)}]}); t.classList.toggle('on', SC.zoom); } catch (err) { SC.zoom = false; }
