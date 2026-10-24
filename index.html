@@ -1089,7 +1089,7 @@ const ADMINS = Array.isArray(CFG.admins) ? CFG.admins : [];
 const isMainAdmin = email => ADMINS.some(x => emailIs(x, email));
 const familyName = email => { const g = familyOf(email); if (!g) return ''; const k = Object.keys(g.people).find(e => emailIs(e, email)); return g.people[k] || ''; };
 
-const VERSION = "3.21.0";
+const VERSION = "3.21.1";
 const BASE_CATS = ['Leftovers','Produce','Dairy & Eggs','Meat & Seafood','Bakery','Pantry','Spices & Seasonings','Frozen','Snacks','Drinks','Cleaning','Bathroom','Laundry','Paper & Household','Other'];
 /* the household can add its own categories (Baby, Pets, Garden…); they sit before Other */
 let CATS = BASE_CATS.slice(), _catsKey = '';
@@ -2134,7 +2134,8 @@ function niceName(pr) {
   if (!base) return '';
   const brand = (pr.brands || '').split(',')[0].trim();
   let n = brand && !lc(base).includes(lc(brand)) ? `${brand} ${base}` : base;
-  if (pr.quantity && !lc(n).includes(lc(pr.quantity))) n += ` ${pr.quantity}`;
+  const qty = String(pr.quantity || '').replace(/\s*unknown\b/gi, '').trim();
+  if (qty && /[a-z]/i.test(qty) && !lc(n).includes(lc(qty))) n += ` ${qty}`;
   return n.replace(/\s+/g, ' ').slice(0, 80);
 }
 async function lookupOnline(code) {
@@ -4934,6 +4935,7 @@ function tidyItems(all = false) {
   const why = it => unnamed(it) ? 'No name yet' : (it.category || 'Other') === 'Other' ? 'Category: Other'
     : it.category === 'Pantry' && guessCat(rtokens(it.name).join(' ').replace(/^/, ' ')) === 'Spices & Seasonings' ? 'Looks like a seasoning'
     : prodOf(it)?.tidied ? ''
+    : /\dunknown\b|\bunknown\b/i.test(it.name || '') ? 'Size reads “unknown”'
     : capsy(it.name) ? 'Name in ALL CAPS' : String(it.name || '').length > 48 ? 'Long name' : (it.code && !(it.brand ?? prodOf(it)?.brand) && !typeOf(it).brand) ? 'No brand' : '';
   for (const k of S.kitchen) { if (k.leftover) continue; const w = why(k); if (w === 'Looks like a seasoning') add({...k, category: 'Spices & Seasonings', _orig: k.category}, w); else if (w || all) add(k, w || 'Looks fine'); }
   for (const [code, p] of Object.entries(S.products)) { const it = {...p, code: /^\d+$/.test(code) ? code : null}; if (!p.name || p.hideQuick) continue;
@@ -6945,7 +6947,7 @@ function usageSheet(k0, back = null) {
         if (t !== 'count' || clearLife || off !== !!pr.noPredict) updateProduct(cur, {...(t !== 'count' ? {lastsDays: lasts > 0 ? lasts : null} : {}), ...(clearLife ? {life: [], buys: []} : {}), noPredict: off || null}).catch(() => {});
         render(); toast(off ? `${k.name} won’t be predicted` : 'Saved'); if (back) setTimeout(back, 120);
       }
-      if (back && e.target.closest('[data-act="closeSheet"]')) setTimeout(back, 60);
+      const cx = e.target.closest('[data-act="closeSheet"]'); if (back && cx && el.contains(cx)) setTimeout(back, 60);
     });
   });
 }
@@ -7026,7 +7028,7 @@ function runoutSheet() {
   S._due = due;
   sheet(`<h3>Running out</h3>
     <p class="hint">Learned from your own history: every − tap, how long one lasts before it’s finished, and how often you buy it. The more you scan and tap −, the better it gets.</p>
-    ${due.length ? `<div class="lbl">Soon or due now<div class="rows">${due.map((d, i) => `<div class="row">${thumbHtml(d.it)}<div class="meta"><div class="name">${esc(d.it.name)}</div><div class="note"><span class="${d.stock ? 'runout' : ''}">${d.stock ? 'Runs out ' + esc(daysWord(d.days)) : 'Not in stock'}</span><span class="bought">${esc(d.why)}</span></div></div><button class="btn small" data-act="dueAdd" data-i="${i}">Add to list</button></div>`).join('')}</div></div>
+    ${due.length ? `<div class="lbl">Soon or due now<div class="rows">${due.map((d, i) => `<div class="row">${thumbHtml(d.it)}<div class="meta"><div class="name">${esc(d.it.name)}</div><div class="note"><span class="${d.stock ? 'runout' : ''}">${d.stock ? 'Runs out ' + esc(daysWord(d.days)) : 'Not in stock'}</span><span class="bought">${esc(d.why)}</span></div></div><div class="minor" style="flex:none;flex-wrap:nowrap"><button class="btn small" data-act="dueAdd" data-i="${i}">Add to list</button>${d.stock && d.it.id ? `<button class="btn small ghost" data-act="usage" data-id="${esc(d.it.id)}">Fix</button>` : `<button class="btn small ghost" data-act="dueStop" data-i="${i}" title="Stop suggesting this">✕</button>`}</div></div>`).join('')}</div></div>
       <button class="btn primary" data-act="dueAll">Add all ${due.length} to the list</button>` : '<div class="empty"><b>Nothing due</b>Nothing looks like it’s about to run out.</div>'}
     ${stock.length ? `<div class="lbl">Later<div class="rows">${stock.map(({k, p}) => `<div class="row">${thumbHtml(k)}<div class="meta"><div class="name">${esc(k.name)}</div><div class="note"><span class="bought">Runs out ${esc(daysWord(p.days))}</span></div></div><button class="btn small ghost" data-act="usage" data-id="${esc(k.id)}">Fix</button></div>`).join('')}</div></div>` : ''}
     <div class="actions col"><button class="btn ghost" data-act="closeSheet">Close</button></div>`);
@@ -8352,6 +8354,7 @@ document.addEventListener('click', async e => {
       case 'dueAll': if ((S._due || []).length) await dueAdd(S._due); break;
       case 'hideToday': ls.set('today:' + (S.hid || '') + ':' + todayYmd(), 1); renderList(); break;
       case 'goExp': S.tab = 'kitchen'; S.zone = 'exp'; render(); scrollTo(0, 0); break;
+      case 'dueStop': { const d = (S._due || [])[+t.dataset.i]; if (d) { await updateProduct(d.it, {noPredict: true}); toast(`Won’t suggest ${d.it.name} anymore`, 'Undo', () => updateProduct(d.it, {noPredict: null})); runoutSheet(); render(); } break; }
       case 'usage': { const k = S.kitchen.find(x => x.id === t.dataset.id); if (k) usageSheet(k); break; }
       case 'chDone': { const c = (S.chores || []).find(x => x.id === t.dataset.id); if (c && !c.done) { t.classList.add('pop'); await completeChore(c); } break; }
       case 'chUndo': { const c = (S.chores || []).find(x => x.id === t.dataset.id); if (c) await undoChore(c); break; }

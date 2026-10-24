@@ -19,7 +19,7 @@ Put it in as `"sha256:<the result>"`. A plain email still works too, but it woul
 **Clearing the old history.** Earlier commits still have the addresses in them. To start the repo clean while keeping the same web address:
 1. On GitHub, open the repo → **Settings** → at the bottom, **Delete this repository**.
 2. Create a new repo with the **same name**, `shelf-and-cart`, and make it **Public**.
-3. **Add file → Upload files**, drag in every file of 3.21.0 (`index.html`, `sw.js`, `firebase-config.js`, `firestore.rules`, `SETUP.md`, `manifest.webmanifest`, `plu.json` and the three icons), then commit.
+3. **Add file → Upload files**, drag in every file of 3.21.1 (`index.html`, `sw.js`, `firebase-config.js`, `firestore.rules`, `SETUP.md`, `manifest.webmanifest`, `plu.json` and the three icons), then commit.
 4. **Settings → Pages →** Source: *Deploy from a branch*, Branch: `main`, folder `/ (root)` → Save. Within a few minutes it's back at the same address.
 
 Firebase, App Check and your saved data don't depend on the repo, so nothing else changes and nobody has to sign in again. One more setting stops future commits from showing your own address: GitHub → your photo → **Settings → Emails →** turn on **Keep my email addresses private**.
@@ -40,7 +40,7 @@ reCAPTCHA has a free monthly allowance that a family app stays well inside (a ch
 
 1. **Publish the new rules.** Firebase → **Firestore** → **Rules** → replace everything with `firestore.rules` → **Publish**. (Your own categories won't save until you do; Spices & Seasonings works right away.)
 2. **Upload to GitHub:** `index.html` and `sw.js`.
-3. Menu (☰) → Help & what’s new should say **Shelf & Cart 3.21.0**.
+3. Menu (☰) → Help & what’s new should say **Shelf & Cart 3.21.1**.
 
 ## Upgrading to 3.11 (cleaner menus, search everywhere, ideas, deals, tip calculator)
 
